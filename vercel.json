@@ -1,0 +1,12 @@
+{
+    "crons": [
+        {
+            "path": "/api/cron/mark-overdue",
+            "schedule": "0 1 * * *"
+        },
+        {
+            "path": "/api/cron/check-topup-eligibility",
+            "schedule": "0 2 * * 0"
+        }
+    ]
+}
