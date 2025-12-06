@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function PATCH(
     request: NextRequest,
@@ -88,8 +89,8 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
-        // Delete from auth (cascade will handle app_users)
-        const supabaseAdmin = await createClient()
+        // Delete from auth using admin client (cascade will handle app_users)
+        const supabaseAdmin = createAdminClient()
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(params.id)
 
         if (authError) {

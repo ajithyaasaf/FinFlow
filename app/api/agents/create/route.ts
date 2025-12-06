@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createAuditLog } from '@/lib/audit-logger'
 
 export async function POST(request: NextRequest) {
@@ -31,10 +32,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
         }
 
-        // Create user in Supabase Auth using Admin API
-        const supabaseAdmin = await createClient()
+        // Create admin client with service role key
+        const supabaseAdmin = createAdminClient()
 
-        // Note: This requires SUPABASE_SERVICE_ROLE_KEY in environment
+        // Create user in Supabase Auth using Admin API
         const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
