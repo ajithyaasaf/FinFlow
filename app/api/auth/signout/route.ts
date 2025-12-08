@@ -17,7 +17,6 @@ async function handleSignOut(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to sign out' }, { status: 500 })
     }
 }
-
 export async function POST(request: NextRequest) {
     return handleSignOut(request)
 }
