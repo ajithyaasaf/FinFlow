@@ -11,7 +11,9 @@ async function handleSignOut(request: NextRequest) {
         const url = new URL(request.url)
         const loginUrl = new URL('/login', url.origin)
 
-        return NextResponse.redirect(loginUrl)
+        // Use status 303 (See Other) to force browser to use GET for redirect
+        // This prevents POSTing to /login which causes service worker issues
+        return NextResponse.redirect(loginUrl, { status: 303 })
     } catch (error) {
         console.error('Sign out error:', error)
         return NextResponse.json({ error: 'Failed to sign out' }, { status: 500 })
