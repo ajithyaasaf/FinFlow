@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
+async function handleSignOut(request: NextRequest) {
     const supabase = await createClient()
 
     // Get the origin from request headers or environment variables
@@ -16,4 +16,12 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         return NextResponse.json({ error: 'Failed to sign out' }, { status: 500 })
     }
+}
+
+export async function POST(request: NextRequest) {
+    return handleSignOut(request)
+}
+
+export async function GET(request: NextRequest) {
+    return handleSignOut(request)
 }
