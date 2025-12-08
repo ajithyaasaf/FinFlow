@@ -91,15 +91,15 @@ export default async function DashboardPage() {
     }
 
     return (
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600 mt-2">Welcome back, {userData?.full_name}</p>
+            <div className="mb-6 md:mb-8">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Welcome back, {userData?.full_name}</p>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
                 <Link href="/dashboard/loans">
                     <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* EMI Payment Stats Row */}
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 <Card className={stats.overdueEMIs > 0 ? "border-red-300 bg-red-50" : ""}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-gray-600">
@@ -193,19 +193,19 @@ export default async function DashboardPage() {
             {/* High-Value Quotations Widget */}
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
-                            <CardTitle className="flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                                 <AlertCircle className="h-5 w-5 text-orange-500" />
                                 High-Value Quotations
                             </CardTitle>
-                            <CardDescription className="mt-2">
+                            <CardDescription className="mt-1 md:mt-2 text-xs md:text-sm">
                                 Quotations above ₹10L or Rate below 12% requiring review
                             </CardDescription>
                         </div>
                         <div className="flex gap-2">
                             <Link href="/dashboard/reports">
-                                <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
+                                <Badge variant="outline" className="cursor-pointer hover:bg-gray-100 text-xs">
                                     View All
                                 </Badge>
                             </Link>
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
                             {highValueQuotes.slice(0, 10).map((quote) => (
                                 <div
                                     key={quote.quote_id}
-                                    className="flex items-start justify-between p-4 border border-orange-200 rounded-lg bg-orange-50/50 hover:bg-orange-50 transition-colors"
+                                    className="flex flex-col lg:flex-row lg:items-start lg:justify-between p-3 md:p-4 border border-orange-200 rounded-lg bg-orange-50/50 hover:bg-orange-50 transition-colors gap-3"
                                 >
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
@@ -238,35 +238,37 @@ export default async function DashboardPage() {
                                             </Badge>
                                         </div>
 
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 text-sm">
                                             <div>
                                                 <p className="text-xs text-gray-600">Amount</p>
-                                                <p className="font-semibold">{formatCurrency(quote.amount)}</p>
+                                                <p className="font-semibold text-sm md:text-base">{formatCurrency(quote.amount)}</p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-600">Rate</p>
-                                                <p className="font-semibold">{quote.interest_rate}% p.a.</p>
+                                                <p className="font-semibold text-sm md:text-base">{quote.interest_rate}% p.a.</p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-600">Tenure</p>
-                                                <p className="font-semibold">{quote.tenure} months</p>
+                                                <p className="font-semibold text-sm md:text-base">{quote.tenure} months</p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-600">By Agent</p>
-                                                <p className="font-semibold text-xs">
+                                                <p className="font-semibold text-xs md:text-sm truncate">
                                                     {quote.created_by_user?.full_name || 'Agent'}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <Phone className="h-3 w-3 text-gray-500" />
-                                            <span className="text-xs text-gray-600">{quote.client?.mobile_number}</span>
-                                            <span className="text-xs text-gray-400 ml-2">• Created {formatDate(quote.created_at)}</span>
+                                        <div className="flex flex-wrap items-center gap-2 mt-2 text-xs">
+                                            <div className="flex items-center gap-1">
+                                                <Phone className="h-3 w-3 text-gray-500" />
+                                                <span className="text-gray-600">{quote.client?.mobile_number}</span>
+                                            </div>
+                                            <span className="text-gray-400">• Created {formatDate(quote.created_at)}</span>
                                         </div>
                                     </div>
 
-                                    <div className="ml-4 flex flex-col gap-2">
+                                    <div className="flex lg:flex-col gap-2 w-full lg:w-auto">
                                         {quote.pdf_document_url && (
                                             <a
                                                 href={quote.pdf_document_url}

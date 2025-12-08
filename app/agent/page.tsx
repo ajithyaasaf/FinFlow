@@ -77,14 +77,9 @@ export default function AgentDashboard() {
     }
 
     const handleLogout = async () => {
-        try {
-            await supabase.auth.signOut()
-            router.replace('/login')
-            router.refresh()
-        } catch (error) {
-            console.error('Logout error:', error)
-            router.replace('/login')
-        }
+        await supabase.auth.signOut()
+        // Use window.location to ensure cookies are fully cleared
+        window.location.href = '/login'
     }
 
     if (loading) {

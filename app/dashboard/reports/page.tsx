@@ -142,11 +142,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
     const quotationGrowth = calculateGrowth(data.thisMonth.quotations, data.lastMonth.quotations)
 
     return (
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
-                <p className="text-gray-600 mt-2">Performance overview</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Reports & Analytics</h1>
+                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Performance overview</p>
             </div>
 
             <ReportsFilter />
@@ -158,7 +158,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                     Overview
                 </h2>
 
-                <div className="grid md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium text-gray-600">New Clients</CardTitle>
@@ -233,7 +233,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                     Agent Performance
                 </h2>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Top Performers - Quotations</CardTitle>
@@ -257,9 +257,9 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                                                     }`}>
                                                     {index + 1}
                                                 </div>
-                                                <span className="font-medium">{agent.full_name}</span>
+                                                <span className="font-medium text-sm md:text-base truncate">{agent.full_name}</span>
                                             </div>
-                                            <Badge variant="outline">{agent.quotations} quotes</Badge>
+                                            <Badge variant="outline" className="text-xs">{agent.quotations} quotes</Badge>
                                         </div>
                                     ))}
                                 </div>
@@ -293,9 +293,9 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                                                         }`}>
                                                         {index + 1}
                                                     </div>
-                                                    <span className="font-medium">{agent.full_name}</span>
+                                                    <span className="font-medium text-sm md:text-base truncate">{agent.full_name}</span>
                                                 </div>
-                                                <Badge variant="outline">{agent.clients} clients</Badge>
+                                                <Badge variant="outline" className="text-xs">{agent.clients} clients</Badge>
                                             </div>
                                         ))}
                                 </div>
@@ -321,7 +321,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                                 {data.recentQuotations.map((quote: any) => (
                                     <div
                                         key={quote.quote_id}
-                                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-gray-50 gap-2"
                                     >
                                         <div className="flex-1">
                                             <p className="font-medium">{quote.client?.full_name || 'Unknown'}</p>

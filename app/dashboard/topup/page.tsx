@@ -63,15 +63,15 @@ export default async function TopUpListPage() {
     }
 
     return (
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
             {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Top-Up Offers</h1>
-                <p className="text-gray-600 mt-2">Manage top-up loan offers for eligible customers</p>
+            <div className="mb-6 md:mb-8">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Top-Up Offers</h1>
+                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Manage top-up loan offers for eligible customers</p>
             </div>
 
             {/* Stats */}
-            <div className="grid md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
                 <Card>
                     <CardContent className="pt-4">
                         <div className="text-2xl font-bold">{stats.total}</div>
@@ -128,27 +128,27 @@ export default async function TopUpListPage() {
                                         key={offer.offer_id}
                                         href={`/dashboard/topup/${offer.offer_id}`}
                                     >
-                                        <div className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer gap-3">
+                                            <div className="flex items-center gap-3 md:gap-4">
+                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                                     <TrendingUp className="h-5 w-5 text-primary" />
                                                 </div>
                                                 <div>
-                                                    <p className="font-semibold">{client?.full_name}</p>
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="font-semibold text-sm md:text-base">{client?.full_name}</p>
+                                                    <p className="text-xs md:text-sm text-gray-500">
                                                         Offered: {formatCurrency(offer.offered_amount)} •
                                                         Original: {formatCurrency(loan?.amount || 0)}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-2 md:gap-4">
                                                 <div className="text-right">
                                                     <StatusBadge status={offer.status} />
                                                     <p className="text-xs text-gray-500 mt-1">
                                                         {formatDate(offer.offered_at)}
                                                     </p>
                                                 </div>
-                                                <ChevronRight className="h-5 w-5 text-gray-400" />
+                                                <ChevronRight className="h-5 w-5 text-gray-400 hidden sm:block" />
                                             </div>
                                         </div>
                                     </Link>

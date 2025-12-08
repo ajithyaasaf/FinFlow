@@ -126,22 +126,22 @@ export default async function AdminLoansPage({ searchParams }: PageProps) {
     const totalPages = Math.ceil(total / pageSize)
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Loan Management</h1>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Loan Management</h1>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1">
                         {total} total loan{total !== 1 ? 's' : ''}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="outline" className="gap-2">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <Button variant="outline" className="gap-2 text-sm">
                         <FileDown className="h-4 w-4" />
-                        Export
+                        <span className="hidden sm:inline">Export</span>
                     </Button>
                     <Link href="/dashboard/loans/new">
-                        <Button className="gap-2">
+                        <Button className="gap-2 text-sm">
                             <Plus className="h-4 w-4" />
                             New Loan
                         </Button>

@@ -115,12 +115,12 @@ export default async function AgentsPage() {
     const stats = await getAgentStats()
 
     return (
-        <div className="p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
             {/* Header */}
             <AgentsPageHeader />
 
             {/* Summary Cards */}
-            <div className="grid md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-gray-600">Total Agents</CardTitle>
@@ -186,16 +186,16 @@ export default async function AgentsPage() {
                             {agents.map((agent) => (
                                 <div
                                     key={agent.id}
-                                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                                    className="border rounded-lg p-3 md:p-4 hover:shadow-md transition-shadow"
                                 >
-                                    <div className="flex items-start justify-between">
+                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="font-semibold text-lg">{agent.full_name}</h3>
-                                                <Badge variant="outline">Agent</Badge>
+                                            <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                                                <h3 className="font-semibold text-base md:text-lg">{agent.full_name}</h3>
+                                                <Badge variant="outline" className="text-xs">Agent</Badge>
                                             </div>
 
-                                            <div className="grid md:grid-cols-2 gap-2 text-sm mb-3">
+                                            <div className="grid sm:grid-cols-2 gap-2 text-sm mb-3">
                                                 <div className="flex items-center gap-2 text-gray-600">
                                                     <Phone className="h-4 w-4" />
                                                     <span>{agent.mobile_number}</span>
@@ -206,18 +206,18 @@ export default async function AgentsPage() {
                                             </div>
 
                                             {/* Performance Metrics */}
-                                            <div className="grid grid-cols-3 gap-4 mt-3 p-3 bg-gray-50 rounded-md">
+                                            <div className="grid grid-cols-3 gap-2 md:gap-4 mt-3 p-2 md:p-3 bg-gray-50 rounded-md">
                                                 <div>
                                                     <p className="text-xs text-gray-600">Clients</p>
-                                                    <p className="text-lg font-bold">{agent.client_count}</p>
+                                                    <p className="text-base md:text-lg font-bold">{agent.client_count}</p>
                                                 </div>
                                                 <div>
                                                     <p className="text-xs text-gray-600">Quotations</p>
-                                                    <p className="text-lg font-bold">{agent.quotation_count}</p>
+                                                    <p className="text-base md:text-lg font-bold">{agent.quotation_count}</p>
                                                 </div>
                                                 <div>
                                                     <p className="text-xs text-gray-600">Conversion</p>
-                                                    <p className="text-lg font-bold">
+                                                    <p className="text-base md:text-lg font-bold">
                                                         {agent.quotation_count > 0
                                                             ? Math.round((agent.converted_count / agent.quotation_count) * 100)
                                                             : 0}%
@@ -227,7 +227,7 @@ export default async function AgentsPage() {
 
                                             {/* Latest Attendance */}
                                             {agent.latest_attendance ? (
-                                                <div className="mt-3 flex items-center gap-2 text-sm">
+                                                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs md:text-sm">
                                                     <CheckCircle className="h-4 w-4 text-green-600" />
                                                     <span className="text-gray-600">
                                                         Last check-in: <strong>{formatDateTime(agent.latest_attendance.check_in_time)}</strong>
@@ -245,7 +245,7 @@ export default async function AgentsPage() {
                                             </p>
                                         </div>
 
-                                        <div className="ml-auto">
+                                        <div className="sm:ml-auto w-full sm:w-auto mt-3 sm:mt-0">
                                             <AgentActions
                                                 agentId={agent.id}
                                                 agentName={agent.full_name}
