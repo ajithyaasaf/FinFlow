@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidatePath } from 'next/cache'
 
 export async function PATCH(
     request: NextRequest,
@@ -54,6 +55,9 @@ export async function PATCH(
             return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
         }
 
+        // Revalidate the agents page to show the updated agent immediately
+        revalidatePath('/dashboard/agents')
+
         return NextResponse.json({
             success: true,
             agent: updatedAgent,
@@ -97,6 +101,9 @@ export async function DELETE(
             console.error('Auth delete error:', authError)
             return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 })
         }
+
+        // Revalidate the agents page to remove the deleted agent immediately
+        revalidatePath('/dashboard/agents')
 
         return NextResponse.json({
             success: true,

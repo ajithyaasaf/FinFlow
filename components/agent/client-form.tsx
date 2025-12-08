@@ -141,9 +141,10 @@ export function KYCUpload({ onFileSelect, disabled }: KYCUploadProps) {
 
 interface ClientFormProps {
     onSuccess?: (client: Client) => void
+    returnUrl?: string
 }
 
-export function ClientForm({ onSuccess }: ClientFormProps) {
+export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
     const router = useRouter()
     const supabase = createClient()
 
@@ -200,9 +201,11 @@ export function ClientForm({ onSuccess }: ClientFormProps) {
             setFormData({ full_name: '', mobile_number: '' })
             setKycFile(null)
 
-            // Call success callback or refresh
+            // Call success callback or navigate back
             if (onSuccess) {
                 onSuccess(client)
+            } else if (returnUrl) {
+                router.push(returnUrl)
             } else {
                 router.refresh()
             }

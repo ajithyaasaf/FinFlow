@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { BottomNavigation } from '@/components/agent/bottom-navigation'
-import { NotificationBell } from '@/components/notifications/notification-bell'
 
 export default async function AgentLayout({
     children,
@@ -27,13 +26,7 @@ export default async function AgentLayout({
     }
 
     return (
-        <div>
-            <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-                <h1 className="text-lg font-bold">FinFlow</h1>
-                <div className="flex items-center gap-2">
-                    <NotificationBell />
-                </div>
-            </div>
+        <div className="min-h-screen">
             {children}
             <BottomNavigation />
         </div>

@@ -5,40 +5,26 @@ import { usePathname } from 'next/navigation'
 import { Home, Users, Calculator, Camera, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const navItems = [
-    {
-        href: '/agent',
-        label: 'Home',
-        icon: Home,
-    },
-    {
-        href: '/agent/clients',
-        label: 'Clients',
-        icon: Users,
-    },
-    {
-        href: '/agent/quotation',
-        label: 'Quote',
-        icon: Calculator,
-    },
-    {
-        href: '/agent/attendance',
-        label: 'Attend',
-        icon: Camera,
-    },
-    {
-        href: '/agent/profile',
-        label: 'Profile',
-        icon: User,
-    },
-]
-
 export function BottomNavigation() {
     const pathname = usePathname()
 
+    const navItems = [
+        { href: '/agent', label: 'Home', icon: Home },
+        { href: '/agent/clients', label: 'Clients', icon: Users },
+        { href: '/agent/quotation', label: 'Quote', icon: Calculator },
+        { href: '/agent/attendance', label: 'Attend', icon: Camera },
+        { href: '/agent/profile', label: 'Profile', icon: User },
+    ]
+
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-            <div className="grid grid-cols-5 h-16">
+        <nav
+            className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg"
+            style={{
+                zIndex: 50,
+                paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))'
+            }}
+        >
+            <div className="grid grid-cols-5">
                 {navItems.map((item) => {
                     const isActive = pathname === item.href
                     const Icon = item.icon
@@ -48,14 +34,22 @@ export function BottomNavigation() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                'flex flex-col items-center justify-center gap-1 transition-colors',
+                                'flex flex-col items-center justify-center gap-1 transition-all duration-200',
+                                'min-h-[64px] py-2 px-1 relative',
+                                'active:scale-95',
                                 isActive
-                                    ? 'text-primary'
-                                    : 'text-gray-500 hover:text-gray-900'
+                                    ? 'text-blue-600 font-semibold'
+                                    : 'text-gray-600 hover:text-gray-900'
                             )}
                         >
-                            <Icon className="h-5 w-5" />
-                            <span className="text-xs font-medium">{item.label}</span>
+                            {isActive && (
+                                <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600" />
+                            )}
+                            <Icon className={cn(
+                                'transition-all',
+                                isActive ? 'h-6 w-6' : 'h-5 w-5'
+                            )} />
+                            <span className="text-[10px] leading-tight font-medium">{item.label}</span>
                         </Link>
                     )
                 })}

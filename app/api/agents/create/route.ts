@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createAuditLog } from '@/lib/audit-logger'
+import { revalidatePath } from 'next/cache'
 
 export async function POST(request: NextRequest) {
     try {
@@ -69,6 +70,9 @@ export async function POST(request: NextRequest) {
             console.error('Database error:', dbError)
             return NextResponse.json({ error: 'Failed to create agent profile' }, { status: 500 })
         }
+
+        // Revalidate the agents page to show the new agent immediately
+        revalidatePath('/dashboard/agents')
 
         return NextResponse.json({
             success: true,

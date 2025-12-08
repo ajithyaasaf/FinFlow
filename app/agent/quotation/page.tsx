@@ -7,13 +7,14 @@ import { pdf } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/client'
 import { uploadQuotationPDF } from '@/lib/storage'
 import { isHighValueQuotation, calculateEMI, calculateTotalAmount, formatCurrency } from '@/lib/utils'
+import { PageHeader } from '@/components/agent/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Calculator, Download, ArrowLeft, AlertTriangle } from 'lucide-react'
+import { Loader2, Calculator, Download, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { QuotationPDF } from '@/lib/pdf/quotation-template'
 import type { Client } from '@/types'
@@ -180,65 +181,61 @@ export default function QuotationPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-                <div className="flex items-center gap-3">
-                    <Link href="/agent">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-lg font-bold text-gray-900">Quotation Calculator</h1>
-                        <p className="text-xs text-gray-600">Generate instant loan quotes</p>
-                    </div>
-                </div>
-            </header>
+        <div className="min-h-screen bg-gray-50">
+            <PageHeader
+                title="Quotation Calculator"
+                subtitle="Generate instant loan quotes"
+                backHref="/agent"
+            />
 
             {/* Main Content */}
             <main className="p-4 pb-24 space-y-4">
                 {/* Client Selection */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Client Details</CardTitle>
+                <Card className="border border-gray-200">
+                    <CardHeader className="bg-gray-50 border-b border-gray-200">
+                        <CardTitle className="text-base text-gray-900">Client Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label>Select Client *</Label>
+                            <Label className="text-gray-700 font-medium">Select Client *</Label>
                             {clients.length === 0 ? (
-                                <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded-md">
-                                    No clients found. <Link href="/agent/clients" className="text-primary underline">Add a client first</Link>
+                                <div className="text-sm text-gray-600 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    No clients found. <Link href="/agent/clients/new" className="text-blue-600 underline font-semibold">Add a client first</Link>
                                 </div>
                             ) : (
-                                <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose a client" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {clients.map((client) => (
-                                            <SelectItem key={client.client_id} value={client.client_id}>
-                                                {client.full_name} - {client.mobile_number}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <>
+                                    <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                                        <SelectTrigger className="h-11">
+                                            <SelectValue placeholder="Choose a client" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {clients.map((client) => (
+                                                <SelectItem key={client.client_id} value={client.client_id}>
+                                                    {client.full_name} - {client.mobile_number}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-gray-600 mt-2">
+                                        Client not in list? <Link href="/agent/clients/new?return=/agent/quotation" className="text-blue-600 underline font-semibold">Add new client</Link>
+                                    </p>
+                                </>
                             )}
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Loan Details */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
+                <Card className="border border-gray-200">
+                    <CardHeader className="bg-gray-50 border-b border-gray-200">
+                        <CardTitle className="text-base flex items-center gap-2 text-gray-900">
                             <Calculator className="h-5 w-5" />
                             Loan Parameters
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 pt-4">
                         <div className="space-y-2">
-                            <Label htmlFor="amount">Loan Amount (₹) *</Label>
+                            <Label htmlFor="amount" className="text-gray-700 font-medium">Loan Amount (₹) *</Label>
                             <Input
                                 id="amount"
                                 type="number"
@@ -247,11 +244,12 @@ export default function QuotationPage() {
                                 onChange={(e) => setAmount(e.target.value)}
                                 min="10000"
                                 max="10000000"
+                                className="h-11"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="rate">Interest Rate (% per annum) *</Label>
+                            <Label htmlFor="rate" className="text-gray-700 font-medium">Interest Rate (% per annum) *</Label>
                             <Input
                                 id="rate"
                                 type="number"
@@ -261,11 +259,12 @@ export default function QuotationPage() {
                                 min="1"
                                 max="36"
                                 step="0.1"
+                                className="h-11"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="tenure">Tenure (months) *</Label>
+                            <Label htmlFor="tenure" className="text-gray-700 font-medium">Tenure (months) *</Label>
                             <Input
                                 id="tenure"
                                 type="number"
@@ -274,6 +273,7 @@ export default function QuotationPage() {
                                 onChange={(e) => setTenure(e.target.value)}
                                 min="1"
                                 max="360"
+                                className="h-11"
                             />
                         </div>
                     </CardContent>
@@ -281,9 +281,9 @@ export default function QuotationPage() {
 
                 {/* EMI Calculation Result */}
                 {emi > 0 && (
-                    <Card className={highValue ? 'border-orange-300' : ''}>
-                        <CardHeader>
-                            <CardTitle className="text-lg flex items-center justify-between">
+                    <Card className={`border-2 ${highValue ? 'border-orange-500' : 'border-blue-500'}`}>
+                        <CardHeader className={`${highValue ? 'bg-orange-50 border-b border-orange-200' : 'bg-blue-50 border-b border-blue-200'}`}>
+                            <CardTitle className="text-base flex items-center justify-between text-gray-900">
                                 <span>Calculation Result</span>
                                 {highValue && (
                                     <Badge variant="destructive" className="gap-1">
@@ -293,31 +293,31 @@ export default function QuotationPage() {
                                 )}
                             </CardTitle>
                             {highValue && (
-                                <CardDescription className="text-orange-600">
+                                <CardDescription className="text-orange-700 font-medium">
                                     This quotation requires admin approval (Amount ≥ ₹10 Lakhs)
                                 </CardDescription>
                             )}
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                            <div className="bg-blue-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">Monthly EMI</p>
-                                <p className="text-2xl font-bold text-blue-600">{formatCurrency(emi)}</p>
+                        <CardContent className="space-y-3 pt-4">
+                            <div className={`p-4 rounded-lg ${highValue ? 'bg-orange-100 border border-orange-300' : 'bg-blue-100 border border-blue-300'}`}>
+                                <p className={`text-sm mb-1 font-medium ${highValue ? 'text-orange-900' : 'text-blue-900'}`}>Monthly EMI</p>
+                                <p className={`text-3xl font-bold ${highValue ? 'text-orange-600' : 'text-blue-600'}`}>{formatCurrency(emi)}</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-xs text-gray-600">Principal</p>
-                                    <p className="text-sm font-semibold">{formatCurrency(parseFloat(amount))}</p>
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <p className="text-xs text-gray-600 font-medium">Principal</p>
+                                    <p className="text-base font-bold text-gray-900 mt-1">{formatCurrency(parseFloat(amount))}</p>
                                 </div>
-                                <div className="bg-gray-50 p-3 rounded">
-                                    <p className="text-xs text-gray-600">Total Interest</p>
-                                    <p className="text-sm font-semibold">{formatCurrency(totalAmount - parseFloat(amount))}</p>
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <p className="text-xs text-gray-600 font-medium">Total Interest</p>
+                                    <p className="text-base font-bold text-gray-900 mt-1">{formatCurrency(totalAmount - parseFloat(amount))}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50 p-3 rounded">
-                                <p className="text-xs text-gray-600">Total Payable</p>
-                                <p className="text-lg font-bold text-slate-900">{formatCurrency(totalAmount)}</p>
+                            <div className="bg-gray-900 p-4 rounded-lg">
+                                <p className="text-xs text-gray-400 mb-1 font-medium">Total Payable</p>
+                                <p className="text-2xl font-bold text-white">{formatCurrency(totalAmount)}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -326,14 +326,14 @@ export default function QuotationPage() {
                 {/* Generate Button */}
                 <Button
                     onClick={handleGeneratePDF}
-                    className="w-full"
+                    className="w-full h-12"
                     size="lg"
                     disabled={!selectedClientId || !amount || !interestRate || !tenure || generating}
                 >
-                    {generating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {generating && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                     {generating ? 'Generating PDF...' : (
                         <>
-                            <Download className="mr-2 h-4 w-4" />
+                            <Download className="mr-2 h-5 w-5" />
                             Generate & Download PDF
                         </>
                     )}

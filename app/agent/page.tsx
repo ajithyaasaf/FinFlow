@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/agent/page-header'
 import Link from 'next/link'
-import { Users, Calculator, Camera, LogOut } from 'lucide-react'
+import { Users, Calculator, Camera, LogOut, TrendingUp, DollarSign, FileText } from 'lucide-react'
 
 export default async function AgentPage() {
     const supabase = await createClient()
@@ -15,75 +16,107 @@ export default async function AgentPage() {
         .single()
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100">
-            {/* Mobile Header */}
-            <header className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center">
-                <div>
-                    <h1 className="text-lg font-bold text-gray-900">FinFlow</h1>
-                    <p className="text-sm text-gray-600">{userData?.full_name}</p>
-                </div>
-                <form action="/api/auth/signout" method="POST">
-                    <Button variant="ghost" size="icon" type="submit">
-                        <LogOut className="h-5 w-5" />
-                    </Button>
-                </form>
-            </header>
+        <div className="min-h-screen bg-gray-50">
+            <PageHeader
+                title="FinFlow"
+                subtitle={userData?.full_name || 'Agent Dashboard'}
+                showNotifications={true}
+                actions={
+                    <form action="/api/auth/signout" method="POST">
+                        <Button variant="ghost" size="icon" type="submit" className="h-10 w-10 hover:bg-red-50 hover:text-red-600 transition-colors">
+                            <LogOut className="h-5 w-5" />
+                        </Button>
+                    </form>
+                }
+            />
 
             {/* Main Content */}
             <main className="p-4 pb-24">
-                <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
+                {/* Welcome Card */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
+                    <h2 className="text-xl font-bold mb-1">Welcome Back</h2>
+                    <p className="text-blue-100 text-sm">Manage your loans and clients efficiently</p>
+                </div>
 
-                <div className="grid gap-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Welcome to FinFlow</CardTitle>
-                            <CardDescription>
-                                Your mobile loan management companion
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <Link href="/agent/clients">
-                                <Button className="w-full justify-start" variant="outline">
-                                    <Users className="mr-2 h-4 w-4" />
-                                    Manage Clients
-                                </Button>
-                            </Link>
-                            <Link href="/agent/quotation">
-                                <Button className="w-full justify-start" variant="outline">
-                                    <Calculator className="mr-2 h-4 w-4" />
-                                    Create Quotation
-                                </Button>
-                            </Link>
-                            <Link href="/agent/attendance">
-                                <Button className="w-full justify-start" variant="outline">
-                                    <Camera className="mr-2 h-4 w-4" />
-                                    Mark Attendance
-                                </Button>
-                            </Link>
+                {/* Quick Action Cards */}
+                <div className="space-y-3 mb-6">
+                    <Link href="/agent/clients">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                        <Users className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900">Manage Clients</h3>
+                                        <p className="text-sm text-gray-600">View and manage your clients</p>
+                                    </div>
+                                    <div className="text-gray-400">
+                                        <span>→</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
+                    <Link href="/agent/quotation">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                        <Calculator className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900">Create Quotation</h3>
+                                        <p className="text-sm text-gray-600">Generate instant loan quotes</p>
+                                    </div>
+                                    <div className="text-gray-400">
+                                        <span>→</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
+                    <Link href="/agent/attendance">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                        <Camera className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900">Mark Attendance</h3>
+                                        <p className="text-sm text-gray-600">Check-in with location & photo</p>
+                                    </div>
+                                    <div className="text-gray-400">
+                                        <span>→</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                    <Card className="border border-gray-200 bg-white">
+                        <CardContent className="p-4">
+                            <TrendingUp className="h-8 w-8 mb-2 text-blue-600" />
+                            <p className="text-2xl font-bold text-gray-900">0</p>
+                            <p className="text-sm text-gray-600">Active Loans</p>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm">Quick Stats</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">
-                                Stats coming soon...
-                            </p>
+                    <Card className="border border-gray-200 bg-white">
+                        <CardContent className="p-4">
+                            <FileText className="h-8 w-8 mb-2 text-blue-600" />
+                            <p className="text-2xl font-bold text-gray-900">0</p>
+                            <p className="text-sm text-gray-600">Quotations</p>
                         </CardContent>
                     </Card>
                 </div>
             </main>
-
-            {/* Bottom Navigation - Coming Soon */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
-                <div className="flex justify-around">
-                    <div className="text-center text-xs text-gray-500">
-                        Navigation coming soon
-                    </div>
-                </div>
-            </nav>
         </div>
     )
 }
