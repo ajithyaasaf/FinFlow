@@ -77,6 +77,7 @@ export default function AgentDashboard() {
     }
 
     const handleLogout = async () => {
+        console.log('[FinFlow] Agent logout initiated')
         await supabase.auth.signOut()
         // Use window.location to ensure cookies are fully cleared
         window.location.href = '/login'
