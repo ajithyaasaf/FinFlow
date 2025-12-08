@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { PageHeader } from '@/components/agent/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { LogOut, Users, Calculator, Camera, TrendingUp, FileText } from 'lucide-
 
 export default function AgentDashboard() {
     const supabase = createClient()
+    const router = useRouter()
     const [userData, setUserData] = useState<any>(null)
     const [stats, setStats] = useState({
         activeLoans: 0,
@@ -26,7 +27,8 @@ export default function AgentDashboard() {
     const checkAuth = async () => {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) {
-            redirect('/auth/login')
+            router.replace('/login')
+            return
         }
 
         const { data: profile } = await supabase
@@ -74,6 +76,17 @@ export default function AgentDashboard() {
         }
     }
 
+    const handleLogout = async () => {
+        try {
+            await supabase.auth.signOut()
+            router.replace('/login')
+            router.refresh()
+        } catch (error) {
+            console.error('Logout error:', error)
+            router.replace('/login')
+        }
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50">
@@ -92,10 +105,7 @@ export default function AgentDashboard() {
                     <Button
                         variant="ghost"
                         size="icon"
-                        onClick={async () => {
-                            await supabase.auth.signOut()
-                            window.location.href = '/login'
-                        }}
+                        onClick={handleLogout}
                         className="h-10 w-10 hover:bg-red-50 hover:text-red-600 transition-colors"
                     >
                         <LogOut className="h-5 w-5" />
