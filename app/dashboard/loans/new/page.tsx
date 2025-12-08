@@ -23,7 +23,7 @@ export default async function NewLoanPage() {
     const clients = await getClients()
 
     return (
-        <div className="p-8 max-w-4xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
             {/* Header */}
             <div className="mb-6 flex items-center gap-4">
                 <Link href="/dashboard/loans">
@@ -32,8 +32,8 @@ export default async function NewLoanPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Create New Loan</h1>
-                    <p className="text-sm text-gray-500">Create a loan application for an existing client</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Create New Loan</h1>
+                    <p className="text-xs md:text-sm text-gray-500">Create a loan application for an existing client</p>
                 </div>
             </div>
 

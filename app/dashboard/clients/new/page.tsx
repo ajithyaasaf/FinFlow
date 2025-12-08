@@ -23,7 +23,7 @@ export default async function NewClientPage() {
     const agents = await getAgents()
 
     return (
-        <div className="p-8 max-w-4xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
             {/* Header */}
             <div className="mb-6 flex items-center gap-4">
                 <Link href="/dashboard/clients">
@@ -32,8 +32,8 @@ export default async function NewClientPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Add New Client</h1>
-                    <p className="text-sm text-gray-500">Create a new client profile</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Add New Client</h1>
+                    <p className="text-xs md:text-sm text-gray-500">Create a new client profile</p>
                 </div>
             </div>
 

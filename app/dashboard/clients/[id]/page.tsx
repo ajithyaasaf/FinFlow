@@ -118,7 +118,7 @@ function LoansSection({ loans, clientId }: { loans: LoanApplication[], clientId:
             <CardContent className="space-y-3">
                 {loans.map((loan) => (
                     <Link key={loan.loan_id} href={`/dashboard/loans/${loan.loan_id}`}>
-                        <div className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer gap-3">
                             <div className="flex items-center gap-4">
                                 <div className="p-2 bg-primary/10 rounded-lg">
                                     <CreditCard className="h-5 w-5 text-primary" />
@@ -130,11 +130,11 @@ function LoansSection({ loans, clientId }: { loans: LoanApplication[], clientId:
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 md:gap-3">
                                 <Badge className={STAGE_COLORS[loan.process_stage] || 'bg-gray-100'}>
                                     {loan.process_stage}
                                 </Badge>
-                                <ChevronRight className="h-5 w-5 text-gray-400" />
+                                <ChevronRight className="h-5 w-5 text-gray-400 hidden sm:block" />
                             </div>
                         </div>
                     </Link>
@@ -194,9 +194,9 @@ export default async function ClientDetailPage({ params }: PageProps) {
         : client.onboarding_agent
 
     return (
-        <div className="p-8 max-w-6xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard/clients">
                         <Button variant="ghost" size="icon">
@@ -204,8 +204,8 @@ export default async function ClientDetailPage({ params }: PageProps) {
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{client.full_name}</h1>
-                        <p className="text-sm text-gray-500">Client Profile</p>
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900">{client.full_name}</h1>
+                        <p className="text-xs md:text-sm text-gray-500">Client Profile</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -218,7 +218,7 @@ export default async function ClientDetailPage({ params }: PageProps) {
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Left Column - Client Info */}
                 <div className="space-y-6">
                     {/* Profile Card */}

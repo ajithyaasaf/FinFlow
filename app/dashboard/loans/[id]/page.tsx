@@ -83,9 +83,9 @@ export default async function LoanDetailsPage({ params }: PageProps) {
     }
 
     return (
-        <div className="p-8 max-w-6xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard/loans">
                         <Button variant="ghost" size="icon">
@@ -93,11 +93,11 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Loan Application</h1>
-                        <p className="text-sm text-gray-500">ID: {loan.loan_id}</p>
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Loan Application</h1>
+                        <p className="text-xs md:text-sm text-gray-500">ID: {loan.loan_id}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
                     <Badge className={`text-sm px-3 py-1 ${STAGE_COLORS[loan.process_stage]}`}>
                         {loan.process_stage}
                     </Badge>
@@ -132,7 +132,7 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Left Column - Loan & Client Info */}
                 <div className="md:col-span-2 space-y-6">
                     {/* Client Profile Card */}
@@ -180,18 +180,18 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid sm:grid-cols-3 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                                <div className="text-center p-2">
-                                    <p className="text-sm text-gray-500 mb-1">Principal Amount</p>
-                                    <p className="text-2xl font-bold text-slate-900">{formatCurrency(loan.amount)}</p>
+                            <div className="grid grid-cols-3 gap-2 md:gap-4 p-3 md:p-4 bg-slate-50 rounded-lg border border-slate-100">
+                                <div className="text-center p-1 md:p-2">
+                                    <p className="text-xs md:text-sm text-gray-500 mb-1">Principal Amount</p>
+                                    <p className="text-lg md:text-2xl font-bold text-slate-900">{formatCurrency(loan.amount)}</p>
                                 </div>
-                                <div className="text-center p-2 border-l border-slate-200">
-                                    <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
-                                    <p className="text-2xl font-bold text-slate-900">{loan.interest_rate}%</p>
+                                <div className="text-center p-1 md:p-2 border-l border-slate-200">
+                                    <p className="text-xs md:text-sm text-gray-500 mb-1">Interest Rate</p>
+                                    <p className="text-lg md:text-2xl font-bold text-slate-900">{loan.interest_rate}%</p>
                                 </div>
-                                <div className="text-center p-2 border-l border-slate-200">
-                                    <p className="text-sm text-gray-500 mb-1">Tenure</p>
-                                    <p className="text-2xl font-bold text-slate-900">{loan.tenure} <span className="text-sm font-normal text-gray-500">months</span></p>
+                                <div className="text-center p-1 md:p-2 border-l border-slate-200">
+                                    <p className="text-xs md:text-sm text-gray-500 mb-1">Tenure</p>
+                                    <p className="text-lg md:text-2xl font-bold text-slate-900">{loan.tenure} <span className="text-xs md:text-sm font-normal text-gray-500">months</span></p>
                                 </div>
                             </div>
                         </CardContent>
@@ -242,6 +242,6 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                     <ActivityTimeline logs={auditLogs as any} />
                 </div>
             </div>
-        </div>
+        </div >
     )
 }

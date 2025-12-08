@@ -66,9 +66,9 @@ export default async function TopUpOfferPage({ params }: PageProps) {
     }
 
     return (
-        <div className="p-8 max-w-4xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
             {/* Header */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard">
                         <button className="p-2 hover:bg-gray-100 rounded-lg">
@@ -76,14 +76,14 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                         </button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Top-Up Loan Offer</h1>
-                        <p className="text-sm text-gray-500">Offer ID: {offer.offer_id.slice(0, 8)}</p>
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Top-Up Loan Offer</h1>
+                        <p className="text-xs md:text-sm text-gray-500">Offer ID: {offer.offer_id.slice(0, 8)}</p>
                     </div>
                 </div>
                 {getStatusBadge(offer.status)}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Main Details */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Offer Amount */}
@@ -92,9 +92,9 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                             <CardTitle className="text-lg">Offered Amount</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-2">Top-Up Loan</p>
-                                <p className="text-4xl font-bold text-blue-600">
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-6 rounded-lg">
+                                <p className="text-xs md:text-sm text-gray-600 mb-2">Top-Up Loan</p>
+                                <p className="text-2xl md:text-4xl font-bold text-blue-600">
                                     {formatCurrency(offer.offered_amount)}
                                 </p>
                             </div>
@@ -110,7 +110,7 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-sm text-gray-600">Name</p>
                                     <p className="font-semibold">{client.full_name}</p>
