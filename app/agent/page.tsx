@@ -89,11 +89,17 @@ export default function AgentDashboard() {
                 subtitle={userData?.full_name || 'Agent Dashboard'}
                 showNotifications={true}
                 actions={
-                    <form action="/api/auth/signout" method="POST">
-                        <Button variant="ghost" size="icon" type="submit" className="h-10 w-10 hover:bg-red-50 hover:text-red-600 transition-colors">
-                            <LogOut className="h-5 w-5" />
-                        </Button>
-                    </form>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={async () => {
+                            await supabase.auth.signOut()
+                            window.location.href = '/login'
+                        }}
+                        className="h-10 w-10 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    >
+                        <LogOut className="h-5 w-5" />
+                    </Button>
                 }
             />
 
