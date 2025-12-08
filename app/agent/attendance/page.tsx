@@ -97,7 +97,7 @@ export default function AttendancePage() {
             if (!user) throw new Error('Not authenticated')
 
             // Upload selfie
-            const selfieUrl = await uploadSelfie(selfieFile, user.id)
+            const selfieUrl = await uploadSelfie(selfieFile)
 
             // Create attendance log
             const { data, error } = await supabase
