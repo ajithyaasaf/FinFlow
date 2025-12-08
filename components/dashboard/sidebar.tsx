@@ -114,17 +114,21 @@ export function Sidebar() {
                     </div>
                 </div>
 
-                <form action="/api/auth/signout" method="POST">
-                    <Button
-                        type="submit"
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-gray-500 hover:text-red-600 hover:bg-red-50"
-                    >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign Out
-                    </Button>
-                </form>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-gray-500 hover:text-red-600 hover:bg-red-50"
+                    onClick={async () => {
+                        const { createClient } = await import('@/lib/supabase/client')
+                        const supabase = createClient()
+                        await supabase.auth.signOut()
+                        window.location.href = '/login'
+                    }}
+                >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                </Button>
             </div>
 
             {/* Godiva Tech Branding */}

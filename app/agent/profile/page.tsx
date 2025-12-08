@@ -40,7 +40,9 @@ export default function AgentProfilePage() {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
-        router.push('/login')
+        // Use window.location to ensure cookies are fully cleared
+        // before the next request to /login
+        window.location.href = '/login'
     }
 
     return (

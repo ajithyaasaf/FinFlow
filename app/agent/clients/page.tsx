@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
-import { ChevronRight, User, Search, Plus, FileText, Phone } from 'lucide-react'
+import { ChevronRight, User, Search, Plus, FileText, Phone, Eye } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
 interface Client {
@@ -185,6 +185,15 @@ export default function AgentClientsPage() {
                                                     </Link>
                                                 </Button>
                                             )}
+                                            <Button asChild
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-10 w-10 p-0 border-gray-300 hover:bg-blue-50 hover:border-blue-600"
+                                            >
+                                                <Link href={`/agent/clients/${client.client_id}`}>
+                                                    <Eye className="h-4 w-4 text-blue-600" />
+                                                </Link>
+                                            </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
