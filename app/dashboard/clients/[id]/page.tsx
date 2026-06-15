@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
     ArrowLeft, User, Phone, Mail, CreditCard, FileText,
-    Calendar, MapPin, Building, ChevronRight, Plus, Edit
+    Calendar, MapPin, Building, ChevronRight, Plus, Edit, Download
 } from 'lucide-react'
 import Link from 'next/link'
 import { ClientEditModal } from '@/components/dashboard/client-edit-modal'
 import { ClientDeleteDialog } from '@/components/dashboard/client-delete-dialog'
+import { ConvertToLoan } from '@/components/dashboard/convert-to-loan'
 import type { Client, LoanApplication, Quotation } from '@/types'
 import { getClientDetails } from '@/lib/services/clientService'
 
@@ -108,7 +109,7 @@ function LoansSection({ loans, clientId }: { loans: LoanApplication[], clientId:
 }
 
 // Quotations Section Component
-function QuotationsSection({ quotations }: { quotations: Quotation[] }) {
+function QuotationsSection({ quotations, clientName }: { quotations: Quotation[], clientName: string }) {
     if (quotations.length === 0) return null
 
     return (
@@ -120,21 +121,42 @@ function QuotationsSection({ quotations }: { quotations: Quotation[] }) {
                 {quotations.slice(0, 5).map((quote) => (
                     <div
                         key={quote.quote_id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg gap-3"
                     >
                         <div>
-                            <p className="font-semibold">{formatCurrency(quote.amount)}</p>
+                            <p className="font-bold text-gray-900">{formatCurrency(quote.amount)}</p>
                             <p className="text-sm text-gray-500">
-                                {quote.tenure} months @ {quote.interest_rate}%
+                                {quote.tenure} months @ {quote.interest_rate}% • Created {formatDate(quote.created_at)}
                             </p>
                         </div>
-                        <div className="text-right">
-                            <Badge variant={quote.converted_to_loan_id ? 'default' : 'secondary'}>
-                                {quote.converted_to_loan_id ? 'Converted' : 'Pending'}
-                            </Badge>
-                            <p className="text-xs text-gray-500 mt-1">
-                                {formatDate(quote.created_at)}
-                            </p>
+                        <div className="flex items-center gap-2">
+                            {quote.pdf_document_url && (
+                                <a
+                                    href={quote.pdf_document_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Button size="sm" variant="outline" className="h-8">
+                                        <Download className="h-3.5 w-3.5 mr-1" />
+                                        PDF
+                                    </Button>
+                                </a>
+                            )}
+                            
+                            {quote.converted_to_loan_id ? (
+                                <Badge variant="default" className="bg-green-50 text-green-700 border-green-200">
+                                    Converted
+                                </Badge>
+                            ) : (
+                                <ConvertToLoan
+                                    quotationId={quote.quote_id}
+                                    clientId={quote.client_id}
+                                    amount={quote.amount}
+                                    interestRate={quote.interest_rate}
+                                    tenure={quote.tenure}
+                                    clientName={clientName}
+                                />
+                            )}
                         </div>
                     </div>
                 ))}
@@ -260,7 +282,7 @@ export default async function ClientDetailPage({ params }: PageProps) {
                 {/* Right Column - Loans & Quotations */}
                 <div className="md:col-span-2 space-y-6">
                     <LoansSection loans={loans} clientId={client.client_id} />
-                    <QuotationsSection quotations={quotations} />
+                    <QuotationsSection quotations={quotations} clientName={client.full_name} />
                 </div>
             </div>
         </div>
