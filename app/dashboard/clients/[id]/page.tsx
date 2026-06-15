@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { ClientEditModal } from '@/components/dashboard/client-edit-modal'
 import { ClientDeleteDialog } from '@/components/dashboard/client-delete-dialog'
 import { ConvertToLoan } from '@/components/dashboard/convert-to-loan'
+import { RejectQuotationDialog } from '@/components/dashboard/reject-quotation-dialog'
 import type { Client, LoanApplication, Quotation } from '@/types'
 import { getClientDetails } from '@/lib/services/clientService'
 
@@ -118,48 +119,71 @@ function QuotationsSection({ quotations, clientName }: { quotations: Quotation[]
                 <CardTitle className="text-lg">Quotations ({quotations.length})</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-                {quotations.slice(0, 5).map((quote) => (
-                    <div
-                        key={quote.quote_id}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-lg gap-3"
-                    >
-                        <div>
-                            <p className="font-bold text-gray-900">{formatCurrency(quote.amount)}</p>
-                            <p className="text-sm text-gray-500">
-                                {quote.tenure} months @ {quote.interest_rate}% • Created {formatDate(quote.created_at)}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {quote.pdf_document_url && (
-                                <a
-                                    href={quote.pdf_document_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    <Button size="sm" variant="outline" className="h-8">
-                                        <Download className="h-3.5 w-3.5 mr-1" />
-                                        PDF
-                                    </Button>
-                                </a>
+                {quotations.slice(0, 5).map((quote) => {
+                    const currentStatus = quote.status || (quote.converted_to_loan_id ? 'CONVERTED' : 'PENDING')
+                    const isPending = currentStatus === 'PENDING'
+
+                    return (
+                        <div
+                            key={quote.quote_id}
+                            className="flex flex-col p-4 bg-gray-50 rounded-lg gap-3 border border-gray-150 hover:border-gray-200 transition-colors"
+                        >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                    <p className="font-bold text-gray-900">{formatCurrency(quote.amount)}</p>
+                                    <p className="text-sm text-gray-500">
+                                        {quote.tenure} months @ {quote.interest_rate}% • Created {formatDate(quote.created_at)}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {quote.pdf_document_url && (
+                                        <a
+                                            href={quote.pdf_document_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <Button size="sm" variant="outline" className="h-8">
+                                                <Download className="h-3.5 w-3.5 mr-1" />
+                                                PDF
+                                            </Button>
+                                        </a>
+                                    )}
+                                    
+                                    {currentStatus === 'CONVERTED' ? (
+                                        <Badge variant="default" className="bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">
+                                            Converted
+                                        </Badge>
+                                    ) : currentStatus === 'REJECTED' ? (
+                                        <Badge variant="destructive" className="bg-red-50 text-red-700 border border-red-200">
+                                            Rejected
+                                        </Badge>
+                                    ) : (
+                                        <div className="flex items-center gap-1.5">
+                                            <RejectQuotationDialog
+                                                quotationId={quote.quote_id}
+                                                clientName={clientName}
+                                            />
+                                            <ConvertToLoan
+                                                quotationId={quote.quote_id}
+                                                clientId={quote.client_id}
+                                                amount={quote.amount}
+                                                interestRate={quote.interest_rate}
+                                                tenure={quote.tenure}
+                                                clientName={clientName}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {currentStatus === 'REJECTED' && quote.rejection_reason && (
+                                <div className="bg-red-50/70 border border-red-100 rounded-md p-2.5 text-xs text-red-800">
+                                    <span className="font-semibold">Rejection Feedback:</span> {quote.rejection_reason}
+                                </div>
                             )}
-                            
-                            {quote.converted_to_loan_id ? (
-                                <Badge variant="default" className="bg-green-50 text-green-700 border-green-200">
-                                    Converted
-                                </Badge>
-                            ) : (
-                                <ConvertToLoan
-                                    quotationId={quote.quote_id}
-                                    clientId={quote.client_id}
-                                    amount={quote.amount}
-                                    interestRate={quote.interest_rate}
-                                    tenure={quote.tenure}
-                                    clientName={clientName}
-                                />
-                            )}
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
             </CardContent>
         </Card>
     )

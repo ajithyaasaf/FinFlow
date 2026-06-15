@@ -70,6 +70,8 @@ export interface Quotation {
     is_high_value: boolean;
     pdf_document_url: string | null;
     converted_to_loan_id?: string | null;
+    status?: 'PENDING' | 'CONVERTED' | 'REJECTED';
+    rejection_reason?: string | null;
     created_by: string;
     created_at: string;
 }

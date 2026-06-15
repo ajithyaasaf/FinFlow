@@ -12,7 +12,8 @@ import {
     ChevronRight,
     TrendingUp,
     Clock,
-    X
+    X,
+    FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,11 @@ const navItems = [
         href: '/dashboard/loans',
         label: 'Loan Applications',
         icon: CreditCard,
+    },
+    {
+        href: '/dashboard/quotations',
+        label: 'Quotations',
+        icon: FileText,
     },
     {
         href: '/dashboard/agents',

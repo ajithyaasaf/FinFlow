@@ -17,6 +17,7 @@ export async function getUnconvertedQuotations(): Promise<QuotationWithDetails[]
             created_by_user:app_users!quotations_created_by_fkey(*)
         `)
         .is('converted_to_loan_id', null)
+        .neq('status', 'REJECTED')
         .order('created_at', { ascending: false })
 
     if (error) {
@@ -62,6 +63,26 @@ export async function getAgentQuotations(agentId: string): Promise<QuotationWith
 
     if (error) {
         console.error('Error fetching agent quotations:', error)
+        return []
+    }
+
+    return (data || []) as QuotationWithDetails[]
+}
+
+export async function getAllQuotationsWithDetails(): Promise<QuotationWithDetails[]> {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('quotations')
+        .select(`
+            *,
+            client:clients(*),
+            created_by_user:app_users!quotations_created_by_fkey(*)
+        `)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching all quotations:', error)
         return []
     }
 

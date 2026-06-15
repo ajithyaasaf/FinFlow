@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
-import { Search, Plus, FileText, Download, Calendar, ArrowUpRight, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Search, Plus, FileText, Download, Calendar, ArrowUpRight, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 
 interface Quotation {
@@ -21,6 +21,8 @@ interface Quotation {
     is_high_value: boolean
     pdf_document_url: string | null
     converted_to_loan_id: string | null
+    status?: 'PENDING' | 'CONVERTED' | 'REJECTED'
+    rejection_reason?: string | null
     created_at: string
     client: {
         full_name: string
@@ -120,74 +122,90 @@ export default function AgentQuotationsPage() {
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        {filteredQuotations.map((quote) => (
-                            <Card key={quote.quote_id} className="border border-gray-200 bg-white hover:shadow-sm transition-all duration-200">
-                                <CardContent className="p-4">
-                                    <div className="flex items-start justify-between gap-2 mb-3">
-                                        <div>
-                                            <h4 className="font-bold text-gray-900 text-base">
-                                                {quote.client?.full_name || 'Unknown Client'}
-                                            </h4>
-                                            <p className="text-xs text-gray-600 font-medium">
-                                                {quote.client?.mobile_number}
-                                            </p>
+                        {filteredQuotations.map((quote) => {
+                            const currentStatus = quote.status || (quote.converted_to_loan_id ? 'CONVERTED' : 'PENDING')
+
+                            return (
+                                <Card key={quote.quote_id} className="border border-gray-200 bg-white hover:shadow-sm transition-all duration-200">
+                                    <CardContent className="p-4">
+                                        <div className="flex items-start justify-between gap-2 mb-3">
+                                            <div>
+                                                <h4 className="font-bold text-gray-900 text-base">
+                                                    {quote.client?.full_name || 'Unknown Client'}
+                                                </h4>
+                                                <p className="text-xs text-gray-600 font-medium">
+                                                    {quote.client?.mobile_number}
+                                                </p>
+                                            </div>
+                                            {currentStatus === 'CONVERTED' ? (
+                                                <Badge className="bg-green-50 text-green-700 hover:bg-green-50 border border-green-200 font-semibold gap-1 rounded-lg">
+                                                    <CheckCircle2 className="h-3 w-3" />
+                                                    Converted
+                                                </Badge>
+                                            ) : currentStatus === 'REJECTED' ? (
+                                                <Badge className="bg-red-50 text-red-700 hover:bg-red-50 border border-red-200 font-semibold gap-1 rounded-lg">
+                                                    <XCircle className="h-3 w-3" />
+                                                    Rejected
+                                                </Badge>
+                                            ) : (
+                                                <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50 border border-blue-200 font-semibold gap-1 rounded-lg">
+                                                    <AlertCircle className="h-3 w-3" />
+                                                    Pending
+                                                </Badge>
+                                            )}
                                         </div>
-                                        {quote.converted_to_loan_id ? (
-                                            <Badge className="bg-green-50 text-green-700 hover:bg-green-50 border border-green-200 font-semibold gap-1 rounded-lg">
-                                                <CheckCircle2 className="h-3 w-3" />
-                                                Converted
-                                            </Badge>
-                                        ) : (
-                                            <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50 border border-blue-200 font-semibold gap-1 rounded-lg">
-                                                <AlertCircle className="h-3 w-3" />
-                                                Pending
-                                            </Badge>
+
+                                        {/* Quote Details */}
+                                        <div className="grid grid-cols-2 gap-y-2 border-t border-b border-gray-100 py-3 mb-3 text-sm">
+                                            <div>
+                                                <span className="text-xs text-gray-600 font-medium block">Principal Amount</span>
+                                                <span className="font-bold text-gray-900">{formatCurrency(quote.amount)}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-gray-600 font-medium block">Total Payable</span>
+                                                <span className="font-bold text-gray-900">{formatCurrency(quote.final_amount)}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-gray-600 font-medium block">Interest Rate</span>
+                                                <span className="font-medium text-gray-900">{quote.interest_rate}% p.a.</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-gray-600 font-medium block">Tenure</span>
+                                                <span className="font-medium text-gray-900">{quote.tenure} Months</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Rejection Feedback */}
+                                        {currentStatus === 'REJECTED' && quote.rejection_reason && (
+                                            <div className="bg-red-50/70 text-red-800 text-xs rounded-lg p-2.5 mb-3 border border-red-150 font-medium">
+                                                <span className="font-bold">Admin Feedback:</span> {quote.rejection_reason}
+                                            </div>
                                         )}
-                                    </div>
 
-                                    {/* Quote Details */}
-                                    <div className="grid grid-cols-2 gap-y-2 border-t border-b border-gray-100 py-3 mb-3 text-sm">
-                                        <div>
-                                            <span className="text-xs text-gray-600 font-medium block">Principal Amount</span>
-                                            <span className="font-bold text-gray-900">{formatCurrency(quote.amount)}</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-xs text-gray-600 font-medium block">Total Payable</span>
-                                            <span className="font-bold text-gray-900">{formatCurrency(quote.final_amount)}</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-xs text-gray-600 font-medium block">Interest Rate</span>
-                                            <span className="font-medium text-gray-900">{quote.interest_rate}% p.a.</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-xs text-gray-600 font-medium block">Tenure</span>
-                                            <span className="font-medium text-gray-900">{quote.tenure} Months</span>
-                                        </div>
-                                    </div>
+                                        {/* Footer Info */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                                                <Calendar className="h-3.5 w-3.5" />
+                                                <span>{formatDateTime(quote.created_at)}</span>
+                                            </div>
 
-                                    {/* Footer Info */}
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
-                                            <Calendar className="h-3.5 w-3.5" />
-                                            <span>{formatDateTime(quote.created_at)}</span>
+                                            {quote.pdf_document_url && (
+                                                <a
+                                                    href={quote.pdf_document_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    download={`Quotation-${quote.client?.full_name || 'Client'}.pdf`}
+                                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100/80 rounded-lg transition-colors"
+                                                >
+                                                    <Download className="h-3.5 w-3.5" />
+                                                    <span>PDF</span>
+                                                </a>
+                                            )}
                                         </div>
-
-                                        {quote.pdf_document_url && (
-                                            <a
-                                                href={quote.pdf_document_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                download={`Quotation-${quote.client?.full_name || 'Client'}.pdf`}
-                                                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100/80 rounded-lg transition-colors"
-                                            >
-                                                <Download className="h-3.5 w-3.5" />
-                                                <span>PDF</span>
-                                            </a>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                    </CardContent>
+                                </Card>
+                            )
+                        })}
                     </div>
                 )}
             </main>

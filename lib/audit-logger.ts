@@ -13,7 +13,8 @@ export type AuditAction =
     | 'AGENT_DELETED'
     | 'CLIENT_CREATED'
     | 'CLIENT_UPDATED'
-    | 'QUOTATION_CREATED';
+    | 'QUOTATION_CREATED'
+    | 'QUOTATION_REJECTED';
 
 export type EntityType = 'LOAN' | 'AGENT' | 'CLIENT' | 'USER' | 'QUOTATION';
 

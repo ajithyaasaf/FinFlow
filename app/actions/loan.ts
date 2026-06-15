@@ -21,7 +21,26 @@ export async function convertQuotationToLoanAction(params: ConvertQuoteToLoanPar
         throw new Error('Unauthorized')
     }
 
-    // 2. Create the loan application
+    // 2. Validate quotation status before conversion
+    const { data: quote, error: quoteFetchError } = await supabase
+        .from('quotations')
+        .select('status, converted_to_loan_id')
+        .eq('quote_id', params.quotationId)
+        .single()
+
+    if (quoteFetchError || !quote) {
+        return { success: false, error: 'Quotation not found' }
+    }
+
+    if (quote.status === 'REJECTED') {
+        return { success: false, error: 'Cannot convert a rejected quotation to a loan.' }
+    }
+
+    if (quote.status === 'CONVERTED' || quote.converted_to_loan_id) {
+        return { success: false, error: 'Quotation has already been converted to a loan.' }
+    }
+
+    // 3. Create the loan application
     const { data: loan, error: loanError } = await supabase
         .from('loan_applications')
         .insert({
@@ -39,10 +58,13 @@ export async function convertQuotationToLoanAction(params: ConvertQuoteToLoanPar
         return { success: false, error: loanError?.message || 'Failed to create loan application' }
     }
 
-    // 3. Link quotation to loan
+    // 4. Link quotation to loan and update status
     const { error: quoteUpdateError } = await supabase
         .from('quotations')
-        .update({ converted_to_loan_id: loan.loan_id })
+        .update({ 
+            converted_to_loan_id: loan.loan_id,
+            status: 'CONVERTED'
+        })
         .eq('quote_id', params.quotationId)
 
     if (quoteUpdateError) {
@@ -57,7 +79,7 @@ export async function convertQuotationToLoanAction(params: ConvertQuoteToLoanPar
         return { success: false, error: 'Failed to link quotation to loan. Operation rolled back.' }
     }
 
-    // 4. Log audit event
+    // 5. Log audit event
     try {
         await createAuditLog({
             userId: user.id,
@@ -77,9 +99,60 @@ export async function convertQuotationToLoanAction(params: ConvertQuoteToLoanPar
         // Don't fail the transaction if only audit logging failed
     }
 
-    // 5. Revalidate dashboards to reflect changes
+    // 6. Revalidate dashboards to reflect changes
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/loans')
+    revalidatePath('/dashboard/quotations')
 
     return { success: true, loanId: loan.loan_id }
+}
+
+interface RejectQuotationParams {
+    quotationId: string
+    reason: string
+}
+
+export async function rejectQuotationAction(params: RejectQuotationParams) {
+    const supabase = await createClient()
+
+    // 1. Get current logged-in user for audit logging
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        throw new Error('Unauthorized')
+    }
+
+    // 2. Update the quotation status and rejection reason
+    const { error } = await supabase
+        .from('quotations')
+        .update({
+            status: 'REJECTED',
+            rejection_reason: params.reason
+        })
+        .eq('quote_id', params.quotationId)
+
+    if (error) {
+        console.error('Failed to reject quotation:', error)
+        return { success: false, error: error.message || 'Failed to reject quotation' }
+    }
+
+    // 3. Log audit event
+    try {
+        await createAuditLog({
+            userId: user.id,
+            action: 'QUOTATION_REJECTED',
+            entityType: 'QUOTATION',
+            entityId: params.quotationId,
+            newValue: {
+                rejection_reason: params.reason
+            }
+        })
+    } catch (auditError) {
+        console.error('Failed to write audit log:', auditError)
+    }
+
+    // 4. Revalidate dashboards to reflect changes
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/quotations')
+
+    return { success: true }
 }

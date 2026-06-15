@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConvertToLoan } from '@/components/dashboard/convert-to-loan'
+import { RejectQuotationDialog } from '@/components/dashboard/reject-quotation-dialog'
 import { AlertCircle, TrendingUp, Download, FileText, Phone, Calendar, CreditCard } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
@@ -239,14 +240,20 @@ export default async function DashboardPage() {
                                             )}
 
                                             {quote.client && (
-                                                <ConvertToLoan
-                                                    quotationId={quote.quote_id}
-                                                    clientId={quote.client_id}
-                                                    amount={quote.amount}
-                                                    interestRate={quote.interest_rate}
-                                                    tenure={quote.tenure}
-                                                    clientName={quote.client.full_name}
-                                                />
+                                                <div className="flex lg:flex-col items-stretch gap-2 w-full lg:w-auto">
+                                                    <RejectQuotationDialog
+                                                        quotationId={quote.quote_id}
+                                                        clientName={quote.client.full_name}
+                                                    />
+                                                    <ConvertToLoan
+                                                        quotationId={quote.quote_id}
+                                                        clientId={quote.client_id}
+                                                        amount={quote.amount}
+                                                        interestRate={quote.interest_rate}
+                                                        tenure={quote.tenure}
+                                                        clientName={quote.client.full_name}
+                                                    />
+                                                </div>
                                             )}
                                         </div>
                                     </div>
