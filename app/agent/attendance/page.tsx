@@ -126,7 +126,7 @@ export default function AttendancePage() {
 
         } catch (error) {
             console.error('Error marking attendance:', error)
-            toast.error('Failed to mark attendance')
+            toast.error(error instanceof Error ? error.message : 'Failed to mark attendance')
         } finally {
             setLoading(false)
         }
