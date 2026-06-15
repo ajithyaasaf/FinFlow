@@ -62,7 +62,7 @@ export function ClientSearchSelect({
                         className="h-8 w-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-0 text-sm shadow-none"
                     />
                 </div>
-                <ScrollArea className="h-60">
+                <ScrollArea className="max-h-60">
                     <div className="p-1">
                         {filteredClients.length === 0 ? (
                             <div className="text-sm text-gray-500 text-center py-6">
