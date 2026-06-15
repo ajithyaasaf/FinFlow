@@ -46,3 +46,24 @@ export async function getRecentQuotations(limit: number = 10) {
 
     return data || []
 }
+
+export async function getAgentQuotations(agentId: string): Promise<QuotationWithDetails[]> {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('quotations')
+        .select(`
+            *,
+            client:clients(*),
+            created_by_user:app_users!quotations_created_by_fkey(*)
+        `)
+        .eq('created_by', agentId)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching agent quotations:', error)
+        return []
+    }
+
+    return (data || []) as QuotationWithDetails[]
+}

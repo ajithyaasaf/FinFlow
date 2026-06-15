@@ -3,6 +3,11 @@ import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/rendere
 import { formatCurrency, formatDate, calculateEMI } from '@/lib/utils'
 import type { Quotation, Client } from '@/types'
 
+// Helper to format currency for PDF by replacing ₹ with Rs. to prevent character rendering bugs
+const formatPDFCurrency = (amount: number): string => {
+    return formatCurrency(amount).replace('₹', 'Rs. ')
+}
+
 // Register fonts (optional - using default for now)
 // Font.register({
 //   family: 'Roboto',
@@ -166,7 +171,7 @@ export function QuotationPDF({ quotation, client, quoteNumber }: QuotationPDFPro
                     <Text style={styles.sectionTitle}>Loan Details</Text>
                     <View style={styles.row}>
                         <Text style={styles.label}>Loan Amount:</Text>
-                        <Text style={styles.value}>{formatCurrency(quotation.amount)}</Text>
+                        <Text style={styles.value}>{formatPDFCurrency(quotation.amount)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Interest Rate:</Text>
@@ -181,7 +186,7 @@ export function QuotationPDF({ quotation, client, quoteNumber }: QuotationPDFPro
                 {/* EMI Highlight */}
                 <View style={styles.highlight}>
                     <Text style={styles.highlightText}>
-                        Monthly EMI: {formatCurrency(emi)}
+                        Monthly EMI: {formatPDFCurrency(emi)}
                     </Text>
                 </View>
 
@@ -195,19 +200,19 @@ export function QuotationPDF({ quotation, client, quoteNumber }: QuotationPDFPro
                         </View>
                         <View style={styles.tableRow}>
                             <Text style={styles.col1}>Principal Amount</Text>
-                            <Text style={styles.col2}>{formatCurrency(quotation.amount)}</Text>
+                            <Text style={styles.col2}>{formatPDFCurrency(quotation.amount)}</Text>
                         </View>
                         <View style={styles.tableRow}>
                             <Text style={styles.col1}>Total Interest</Text>
-                            <Text style={styles.col2}>{formatCurrency(totalInterest)}</Text>
+                            <Text style={styles.col2}>{formatPDFCurrency(totalInterest)}</Text>
                         </View>
                         <View style={styles.tableRow}>
                             <Text style={styles.col1}>Processing Fee (1%)</Text>
-                            <Text style={styles.col2}>{formatCurrency(processingFee)}</Text>
+                            <Text style={styles.col2}>{formatPDFCurrency(processingFee)}</Text>
                         </View>
                         <View style={[styles.tableRow, { backgroundColor: '#f1f5f9', fontWeight: 'bold' }]}>
                             <Text style={styles.col1}>Total Payable</Text>
-                            <Text style={styles.col2}>{formatCurrency(quotation.final_amount + processingFee)}</Text>
+                            <Text style={styles.col2}>{formatPDFCurrency(quotation.final_amount + processingFee)}</Text>
                         </View>
                     </View>
                 </View>

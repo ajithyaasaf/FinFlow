@@ -179,21 +179,25 @@ export default function AgentDashboard() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                    <Card className="border border-gray-200 bg-white">
-                        <CardContent className="p-4">
-                            <TrendingUp className="h-8 w-8 mb-2 text-blue-600" />
-                            <p className="text-2xl font-bold text-gray-900">{stats.activeLoans}</p>
-                            <p className="text-sm text-gray-600">Active Loans</p>
-                        </CardContent>
-                    </Card>
+                    <Link href="/agent/loans">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
+                            <CardContent className="p-4">
+                                <TrendingUp className="h-8 w-8 mb-2 text-blue-600" />
+                                <p className="text-2xl font-bold text-gray-900">{stats.activeLoans}</p>
+                                <p className="text-sm text-gray-600">Active Loans</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
 
-                    <Card className="border border-gray-200 bg-white">
-                        <CardContent className="p-4">
-                            <FileText className="h-8 w-8 mb-2 text-blue-600" />
-                            <p className="text-2xl font-bold text-gray-900">{stats.quotations}</p>
-                            <p className="text-sm text-gray-600">Quotations</p>
-                        </CardContent>
-                    </Card>
+                    <Link href="/agent/quotations">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
+                            <CardContent className="p-4">
+                                <FileText className="h-8 w-8 mb-2 text-blue-600" />
+                                <p className="text-2xl font-bold text-gray-900">{stats.quotations}</p>
+                                <p className="text-sm text-gray-600">Quotations</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
                 </div>
             </main>
         </div>
