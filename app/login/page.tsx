@@ -169,8 +169,8 @@ export default function LoginPage() {
                             Demo Credentials
                         </p>
                         <div className="text-[11px] text-[#6a6a6a] leading-relaxed">
-                            <p><span className="font-semibold text-gray-700">Admin:</span> admin@finflow.com / password</p>
-                            <p><span className="font-semibold text-gray-700">Agent:</span> agent@finflow.com / password</p>
+                            <p><span className="font-semibold text-gray-700">Admin:</span> admin@finflow.com / password123</p>
+                            <p><span className="font-semibold text-gray-700">Agent:</span> agent@finflow.com / password123</p>
                         </div>
                     </div>
                 </div>
