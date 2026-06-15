@@ -32,7 +32,13 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
     // Form states
     const [editLogId, setEditLogId] = useState<string | null>(null)
     const [selectedAgentId, setSelectedAgentId] = useState('')
-    const [checkInTime, setCheckInTime] = useState('')
+    
+    // 12-hour format states
+    const [checkInDate, setCheckInDate] = useState('')
+    const [checkInHour, setCheckInHour] = useState('12')
+    const [checkInMinute, setCheckInMinute] = useState('00')
+    const [checkInAmPm, setCheckInAmPm] = useState('AM')
+    
     const [latitude, setLatitude] = useState('12.9252') // Default office latitude
     const [longitude, setLongitude] = useState('79.1198') // Default office longitude
     const [selfieUrl, setSelfieUrl] = useState('')
@@ -42,14 +48,29 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
         router.push(`/dashboard/attendance?date=${e.target.value}`)
     }
 
+    const parseDateTimeToStates = (dateObj: Date) => {
+        const year = dateObj.getFullYear()
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+        const day = String(dateObj.getDate()).padStart(2, '0')
+        setCheckInDate(`${year}-${month}-${day}`)
+
+        let hours = dateObj.getHours()
+        const ampm = hours >= 12 ? 'PM' : 'AM'
+        hours = hours % 12
+        hours = hours ? hours : 12 // the hour '0' should be '12'
+        
+        setCheckInHour(String(hours).padStart(2, '0'))
+        setCheckInMinute(String(dateObj.getMinutes()).padStart(2, '0'))
+        setCheckInAmPm(ampm)
+    }
+
     const openAddDialog = () => {
         setEditLogId(null)
         setSelectedAgentId(agents[0]?.id || '')
-        // Set local date-time string matching current time
+        
         const now = new Date()
-        const tzOffset = now.getTimezoneOffset() * 60000
-        const localISOTime = new Date(now.getTime() - tzOffset).toISOString().slice(0, 16)
-        setCheckInTime(localISOTime)
+        parseDateTimeToStates(now)
+        
         setLatitude('12.9252')
         setLongitude('79.1198')
         setSelfieUrl('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=80') // Default manual checkin placeholder
@@ -59,11 +80,10 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
     const openEditDialog = (log: AttendanceLogWithAgent) => {
         setEditLogId(log.log_id)
         setSelectedAgentId(log.agent_id)
-        // Format log timestamp to local datetime-local input string
+        
         const logDate = new Date(log.check_in_time)
-        const tzOffset = logDate.getTimezoneOffset() * 60000
-        const localISOTime = new Date(logDate.getTime() - tzOffset).toISOString().slice(0, 16)
-        setCheckInTime(localISOTime)
+        parseDateTimeToStates(logDate)
+        
         const details = log.check_in_details || {}
         setLatitude(String(details.lat ?? '12.9252'))
         setLongitude(String(details.lng ?? '79.1198'))
@@ -73,15 +93,27 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!selectedAgentId || !checkInTime) {
+        if (!selectedAgentId || !checkInDate || !checkInHour || !checkInMinute || !checkInAmPm) {
             toast.error('Please fill in all required fields')
             return
         }
 
+        // Convert 12-hour format to 24-hour time string
+        let hours = parseInt(checkInHour)
+        if (checkInAmPm === 'PM' && hours < 12) {
+            hours += 12
+        } else if (checkInAmPm === 'AM' && hours === 12) {
+            hours = 0
+        }
+
+        const timeString = `${String(hours).padStart(2, '0')}:${checkInMinute}:00`
+        const combinedDateTimeStr = `${checkInDate}T${timeString}`
+        const finalCheckInTime = new Date(combinedDateTimeStr).toISOString()
+
         setLoading(true)
         const res = await saveManualAttendanceAction({
             agentId: selectedAgentId,
-            checkInTime: new Date(checkInTime).toISOString(),
+            checkInTime: finalCheckInTime,
             latitude: parseFloat(latitude) || 0,
             longitude: parseFloat(longitude) || 0,
             selfieUrl: selfieUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=80'
@@ -309,15 +341,55 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="check-in-time" className="text-sm font-semibold text-[#222222]">Check-In Time</Label>
+                            <Label htmlFor="check-in-date" className="text-sm font-semibold text-[#222222]">Check-In Date</Label>
                             <Input
-                                id="check-in-time"
-                                type="datetime-local"
-                                value={checkInTime}
-                                onChange={(e) => setCheckInTime(e.target.value)}
+                                id="check-in-date"
+                                type="date"
+                                value={checkInDate}
+                                onChange={(e) => setCheckInDate(e.target.value)}
                                 className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all"
                                 required
                             />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label className="text-sm font-semibold text-[#222222]">Check-In Time (12-Hour Format)</Label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {/* Hour Select */}
+                                <Select value={checkInHour} onValueChange={setCheckInHour}>
+                                    <SelectTrigger className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all">
+                                        <SelectValue placeholder="Hour" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl shadow-airbnb-lg border-gray-150 max-h-[200px] overflow-y-auto">
+                                        {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map(h => (
+                                            <SelectItem key={h} value={h} className="rounded-lg">{h}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Minute Select */}
+                                <Select value={checkInMinute} onValueChange={setCheckInMinute}>
+                                    <SelectTrigger className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all">
+                                        <SelectValue placeholder="Min" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl shadow-airbnb-lg border-gray-150 max-h-[200px] overflow-y-auto">
+                                        {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map(m => (
+                                            <SelectItem key={m} value={m} className="rounded-lg">{m}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* AM/PM Select */}
+                                <Select value={checkInAmPm} onValueChange={setCheckInAmPm}>
+                                    <SelectTrigger className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all">
+                                        <SelectValue placeholder="AM/PM" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl shadow-airbnb-lg border-gray-150">
+                                        <SelectItem value="AM" className="rounded-lg">AM</SelectItem>
+                                        <SelectItem value="PM" className="rounded-lg">PM</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
