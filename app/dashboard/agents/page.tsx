@@ -1,25 +1,42 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, Calendar, CheckCircle, MapPin, FileText, Phone } from 'lucide-react'
+import { Users, Calendar, CheckCircle, MapPin, FileText, Phone, Loader2 } from 'lucide-react'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { AgentsPageHeader } from '@/components/dashboard/agents-page-header'
 import { AgentActions } from '@/components/dashboard/agent-actions'
 import { getAgents, getAgentStats } from '@/lib/services/agentService'
+import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function AgentsPage() {
+export default function AgentsPage() {
+    return (
+        <div className="p-4 sm:p-6 lg:p-8">
+            {/* Header */}
+            <AgentsPageHeader />
+
+            <Suspense fallback={
+                <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                    <p className="text-sm text-gray-500 font-medium">Loading agents list...</p>
+                </div>
+            }>
+                <AgentsLoader />
+            </Suspense>
+        </div>
+    )
+}
+
+async function AgentsLoader() {
     const [agents, stats] = await Promise.all([
         getAgents(),
         getAgentStats()
     ])
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
-            {/* Header */}
-            <AgentsPageHeader />
+        <>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -203,6 +220,6 @@ export default async function AgentsPage() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </>
     )
 }

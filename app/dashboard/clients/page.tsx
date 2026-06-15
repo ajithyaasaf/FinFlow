@@ -3,12 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { getClients } from '@/lib/services/clientService'
+import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ClientsPage() {
-    const clients = await getClients()
-
+export default function ClientsPage() {
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -24,7 +23,21 @@ export default async function ClientsPage() {
                 </Link>
             </div>
 
-            <ClientList initialClients={clients || []} />
+            <Suspense fallback={
+                <div className="space-y-4 py-4">
+                    <div className="h-8 bg-gray-100 rounded animate-pulse w-full"></div>
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="h-12 bg-gray-55 rounded animate-pulse w-full"></div>
+                    ))}
+                </div>
+            }>
+                <ClientsLoader />
+            </Suspense>
         </div>
     )
+}
+
+async function ClientsLoader() {
+    const clients = await getClients()
+    return <ClientList initialClients={clients || []} />
 }

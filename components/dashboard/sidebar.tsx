@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -18,7 +19,6 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useMobileMenu } from './mobile-menu-context'
-import { useEffect } from 'react'
 
 const navItems = [
     {
@@ -66,9 +66,11 @@ const navItems = [
 export function Sidebar() {
     const pathname = usePathname()
     const { isOpen, closeMenu } = useMobileMenu()
+    const [clickedHref, setClickedHref] = useState<string | null>(null)
 
-    // Close menu when route changes
+    // Close menu when route changes and reset clicked state
     useEffect(() => {
+        setClickedHref(null)
         closeMenu()
     }, [pathname, closeMenu])
 
@@ -120,14 +122,20 @@ export function Sidebar() {
                     </p>
 
                     {navItems.map((item) => {
-                        const isActive = pathname === item.href ||
-                            (item.href !== '/dashboard' && pathname.startsWith(item.href))
+                        const isActive = clickedHref
+                            ? clickedHref === item.href
+                            : (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
                         const Icon = item.icon
 
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                onClick={() => {
+                                    if (pathname !== item.href) {
+                                        setClickedHref(item.href)
+                                    }
+                                }}
                                 className={cn(
                                     'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                                     isActive

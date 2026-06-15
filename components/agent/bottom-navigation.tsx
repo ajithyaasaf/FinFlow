@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Users, Calculator, Camera, User } from 'lucide-react'
@@ -7,6 +8,12 @@ import { cn } from '@/lib/utils'
 
 export function BottomNavigation() {
     const pathname = usePathname()
+    const [clickedHref, setClickedHref] = useState<string | null>(null)
+
+    // Reset clicked state when route changes
+    useEffect(() => {
+        setClickedHref(null)
+    }, [pathname])
 
     const navItems = [
         { href: '/agent', label: 'Home', icon: Home },
@@ -26,13 +33,18 @@ export function BottomNavigation() {
         >
             <div className="grid grid-cols-5">
                 {navItems.map((item) => {
-                    const isActive = pathname === item.href
+                    const isActive = clickedHref ? clickedHref === item.href : pathname === item.href
                     const Icon = item.icon
 
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
+                            onClick={() => {
+                                if (pathname !== item.href) {
+                                    setClickedHref(item.href)
+                                }
+                            }}
                             className={cn(
                                 'flex flex-col items-center justify-center gap-1 transition-all duration-200',
                                 'min-h-[64px] py-2 px-1 relative',

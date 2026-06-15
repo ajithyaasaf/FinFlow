@@ -6,6 +6,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { TrendingUp, ChevronRight, Clock, CheckCircle, X, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import type { TopUpOffer, Client, LoanApplication } from '@/types'
+import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,7 +53,32 @@ function StatusBadge({ status }: { status: string }) {
     )
 }
 
-export default async function TopUpListPage() {
+export default function TopUpListPage() {
+    return (
+        <div className="p-4 sm:p-6 lg:p-8">
+            {/* Header */}
+            <div className="mb-6 md:mb-8">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Top-Up Offers</h1>
+                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Manage top-up loan offers for eligible customers</p>
+            </div>
+
+            <Suspense fallback={
+                <div className="space-y-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse"></div>
+                        ))}
+                    </div>
+                    <div className="h-64 bg-gray-50 rounded-xl animate-pulse"></div>
+                </div>
+            }>
+                <TopUpListLoader />
+            </Suspense>
+        </div>
+    )
+}
+
+async function TopUpListLoader() {
     const offers = await getTopUpOffers()
 
     const stats = {
@@ -63,13 +89,7 @@ export default async function TopUpListPage() {
     }
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
-            {/* Header */}
-            <div className="mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Top-Up Offers</h1>
-                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Manage top-up loan offers for eligible customers</p>
-            </div>
-
+        <>
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
                 <Card>
@@ -127,6 +147,7 @@ export default async function TopUpListPage() {
                                     <Link
                                         key={offer.offer_id}
                                         href={`/dashboard/topup/${offer.offer_id}`}
+                                        className="block"
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer gap-3">
                                             <div className="flex items-center gap-3 md:gap-4">
@@ -158,6 +179,6 @@ export default async function TopUpListPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
+        </>
     )
 }
