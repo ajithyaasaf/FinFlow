@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { Phone, FileText, Calendar, User, CreditCard, Plus } from 'lucide-react'
+import { Phone, FileText, Calendar, User, CreditCard, Plus, Download, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 
 interface ClientDetailsProps {
@@ -31,6 +31,17 @@ interface ClientData {
         created_at: string
         interest_rate: number
         tenure: number
+    }[]
+    quotations?: {
+        quote_id: string
+        amount: number
+        interest_rate: number
+        tenure: number
+        final_amount: number
+        pdf_document_url: string | null
+        status?: string
+        rejection_reason?: string | null
+        created_at: string
     }[]
 }
 
@@ -56,6 +67,17 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                         interest_rate,
                         tenure,
                         status:process_stage,
+                        created_at
+                    ),
+                    quotations:quotations(
+                        quote_id,
+                        amount,
+                        interest_rate,
+                        tenure,
+                        final_amount,
+                        pdf_document_url,
+                        status,
+                        rejection_reason,
                         created_at
                     )
                 `)
@@ -212,6 +234,87 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Quotations Card */}
+                <Card className="border border-gray-200">
+                    <CardHeader className="bg-gray-50 border-b border-gray-200">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <FileText className="h-5 w-5" />
+                            Quotation History ({client.quotations?.length || 0})
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                        {!client.quotations || client.quotations.length === 0 ? (
+                            <div className="text-center py-8">
+                                <p className="text-sm text-gray-600 mb-4">No quotations generated yet</p>
+                                <Button asChild size="sm">
+                                    <Link href={`/agent/quotation?client=${client.client_id}`}>
+                                        <Plus className="h-4 w-4 mr-1" />
+                                        Create Quotation
+                                    </Link>
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {client.quotations.map((quote) => {
+                                    const quoteStatus = quote.status || 'PENDING'
+                                    return (
+                                        <div key={quote.quote_id} className="border border-gray-200 rounded-lg p-3 bg-white space-y-2">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="text-base font-bold text-gray-900">{formatCurrency(quote.amount)}</p>
+                                                    <p className="text-xs text-gray-600">Total Payable: {formatCurrency(quote.final_amount)}</p>
+                                                    <p className="text-xs text-gray-600">{quote.interest_rate}% p.a. • {quote.tenure} months</p>
+                                                </div>
+                                                {quoteStatus === 'CONVERTED' ? (
+                                                    <Badge className="bg-green-50 text-green-700 hover:bg-green-50 border border-green-200 font-semibold gap-1 rounded-lg text-xs">
+                                                        <CheckCircle2 className="h-3 w-3" />
+                                                        Converted
+                                                    </Badge>
+                                                ) : quoteStatus === 'REJECTED' ? (
+                                                    <Badge className="bg-red-50 text-red-700 hover:bg-red-50 border border-red-200 font-semibold gap-1 rounded-lg text-xs">
+                                                        <XCircle className="h-3 w-3" />
+                                                        Rejected
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50 border border-blue-200 font-semibold gap-1 rounded-lg text-xs">
+                                                        <AlertCircle className="h-3 w-3" />
+                                                        Pending
+                                                    </Badge>
+                                                )}
+                                            </div>
+
+                                            {quoteStatus === 'REJECTED' && quote.rejection_reason && (
+                                                <div className="bg-red-50/70 text-red-800 text-xs rounded-lg p-2 border border-red-150 font-medium">
+                                                    <span className="font-bold">Feedback:</span> {quote.rejection_reason}
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-between border-t border-gray-100 pt-2 text-xs">
+                                                <p className="text-gray-600">
+                                                    <Calendar className="h-3 w-3 inline mr-1" />
+                                                    {formatDateTime(quote.created_at)}
+                                                </p>
+                                                {quote.pdf_document_url && (
+                                                    <a
+                                                        href={quote.pdf_document_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        download
+                                                        className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1 rounded-lg transition-colors"
+                                                    >
+                                                        <Download className="h-3 w-3" />
+                                                        <span>PDF</span>
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         )}
                     </CardContent>

@@ -157,6 +157,25 @@ export default function AgentDashboard() {
                         </Card>
                     </Link>
 
+                    <Link href="/agent/quotations">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                        <FileText className="h-6 w-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900">My Quotations</h3>
+                                        <p className="text-sm text-gray-600">View and track quotation status</p>
+                                    </div>
+                                    <div className="text-gray-400">
+                                        <span>→</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
                     <Link href="/agent/attendance">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
