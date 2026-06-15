@@ -105,9 +105,11 @@ export default function AttendancePage() {
                 .insert({
                     agent_id: user.id,
                     check_in_time: new Date().toISOString(),
-                    latitude: location.latitude,
-                    longitude: location.longitude,
-                    selfie_url: selfieUrl,
+                    check_in_details: {
+                        lat: location.latitude,
+                        lng: location.longitude,
+                        selfie_url: selfieUrl,
+                    }
                 })
                 .select()
                 .single()
@@ -131,7 +133,7 @@ export default function AttendancePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#f7f7f7]">
             <PageHeader
                 title="Attendance"
                 subtitle="Mark your daily check-in"
@@ -139,18 +141,18 @@ export default function AttendancePage() {
             />
 
             {/* Main Content */}
-            <main className="p-4 pb-24 space-y-4">
+            <main className="p-4 pb-24 space-y-4 max-w-md mx-auto">
                 {/* Last Check-In Status */}
                 {lastCheckIn && (
-                    <Card className="border-2 border-green-500 bg-green-50">
+                    <Card className="border border-emerald-100 bg-emerald-50/40 shadow-airbnb-sm rounded-2xl overflow-hidden">
                         <CardContent className="p-4">
                             <div className="flex items-start gap-3">
-                                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                                    <CheckCircle className="h-6 w-6 text-green-600" />
+                                <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle className="h-5 w-5 text-emerald-600" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-green-900">Check-in Successful!</p>
-                                    <p className="text-sm text-green-700 mt-1">
+                                    <p className="font-semibold text-emerald-900">Check-in Successful!</p>
+                                    <p className="text-xs text-emerald-700 mt-0.5">
                                         {formatDateTime(lastCheckIn.check_in_time)}
                                     </p>
                                 </div>
@@ -160,26 +162,26 @@ export default function AttendancePage() {
                 )}
 
                 {/* Step 1: Capture Location */}
-                <Card className="border border-gray-200">
-                    <CardHeader className={`${location ? 'bg-green-50 border-b border-green-200' : 'bg-gray-50 border-b border-gray-200'}`}>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${location ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-600'} font-semibold`}>
+                <Card className="border border-gray-100 shadow-airbnb-sm rounded-2xl overflow-hidden bg-white">
+                    <CardHeader className={`${location ? 'bg-emerald-50/30 border-b border-emerald-100/60' : 'bg-[#f7f7f7]/50 border-b border-gray-100'} p-4`}>
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#222222]">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${location ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'} font-bold`}>
                                 {location ? '✓' : '1'}
                             </div>
-                            <span className="text-gray-900">Capture Location</span>
+                            <span>Capture Location</span>
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs text-[#6a6a6a]">
                             We need your location to verify you're at the office
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 pt-4">
+                    <CardContent className="space-y-3 pt-4 p-4">
                         {location ? (
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
+                            <div className="bg-emerald-50/20 border border-emerald-100/80 rounded-2xl p-3.5 space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-green-900">Location Captured</span>
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                    <span className="text-xs font-semibold text-emerald-900">Location Captured</span>
+                                    <CheckCircle className="h-4.5 w-4.5 text-emerald-600" />
                                 </div>
-                                <div className="text-xs text-green-700 space-y-1 bg-white rounded-lg p-3">
+                                <div className="text-[11px] text-emerald-800 space-y-0.5 bg-white border border-emerald-100 rounded-xl p-3">
                                     <p className="font-medium">Latitude: {location.latitude.toFixed(6)}</p>
                                     <p className="font-medium">Longitude: {location.longitude.toFixed(6)}</p>
                                     <p className="font-medium">Accuracy: ±{location.accuracy.toFixed(0)}m</p>
@@ -189,7 +191,7 @@ export default function AttendancePage() {
                                     size="sm"
                                     onClick={captureLocation}
                                     disabled={gpsLoading}
-                                    className="w-full mt-2 h-10 border-gray-300"
+                                    className="w-full mt-1.5 h-10 border-gray-200 rounded-full text-[#222222] font-semibold"
                                 >
                                     {gpsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Recapture Location
@@ -199,20 +201,20 @@ export default function AttendancePage() {
                             <Button
                                 onClick={captureLocation}
                                 disabled={gpsLoading}
-                                className="w-full h-12"
+                                className="w-full h-11 rounded-full text-sm font-semibold"
                                 size="lg"
                             >
-                                {gpsLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                                <MapPin className="mr-2 h-5 w-5" />
+                                {gpsLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                <MapPin className="mr-2 h-4.5 w-4.5" />
                                 Get My Location
                             </Button>
                         )}
 
                         {!location && !gpsLoading && (
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-3">
                                 <div className="flex gap-2">
-                                    <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                                    <p className="text-xs text-blue-900">
+                                    <AlertCircle className="h-4.5 w-4.5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <p className="text-[11px] text-blue-900">
                                         Make sure location services are enabled on your device. You may need to grant permission when prompted.
                                     </p>
                                 </div>
@@ -222,19 +224,19 @@ export default function AttendancePage() {
                 </Card>
 
                 {/* Step 2: Take Selfie */}
-                <Card className="border border-gray-200">
-                    <CardHeader className={`${selfieFile ? 'bg-green-50 border-b border-green-200' : 'bg-gray-50 border-b border-gray-200'}`}>
-                        <CardTitle className="text-base flex items-center gap-2">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selfieFile ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-600'} font-semibold`}>
+                <Card className="border border-gray-100 shadow-airbnb-sm rounded-2xl overflow-hidden bg-white">
+                    <CardHeader className={`${selfieFile ? 'bg-emerald-50/30 border-b border-emerald-100/60' : 'bg-[#f7f7f7]/50 border-b border-gray-100'} p-4`}>
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#222222]">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${selfieFile ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'} font-bold`}>
                                 {selfieFile ? '✓' : '2'}
                             </div>
-                            <span className="text-gray-900">Take Selfie</span>
+                            <span>Take Selfie</span>
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-xs text-[#6a6a6a]">
                             Capture a clear photo of yourself for verification
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4 pt-4">
+                    <CardContent className="space-y-3 pt-4 p-4">
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -246,20 +248,20 @@ export default function AttendancePage() {
 
                         {selfiePreview ? (
                             <div className="space-y-3">
-                                <div className="relative">
+                                <div className="relative overflow-hidden rounded-2xl border border-gray-200">
                                     <img
                                         src={selfiePreview}
                                         alt="Selfie Preview"
-                                        className="w-full h-64 object-cover rounded-lg border-2 border-green-200"
+                                        className="w-full h-56 object-cover"
                                     />
-                                    <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-2 shadow-md">
+                                    <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1.5 shadow-md">
                                         <CheckCircle className="h-4 w-4" />
                                     </div>
                                 </div>
                                 <Button
                                     variant="outline"
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full h-10 border-gray-300"
+                                    className="w-full h-10 border-gray-200 rounded-full text-[#222222] font-semibold"
                                 >
                                     <Camera className="mr-2 h-4 w-4" />
                                     Retake Selfie
@@ -269,16 +271,16 @@ export default function AttendancePage() {
                             <Button
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={!location}
-                                className="w-full h-12"
+                                className="w-full h-11 rounded-full text-sm font-semibold"
                                 size="lg"
                             >
-                                <Camera className="mr-2 h-5 w-5" />
+                                <Camera className="mr-2 h-4.5 w-4.5" />
                                 Open Camera
                             </Button>
                         )}
 
                         {!location && (
-                            <p className="text-xs text-gray-600 text-center bg-gray-50 py-2 rounded-lg">
+                            <p className="text-[11px] text-[#6a6a6a] text-center bg-[#f7f7f7] py-2 rounded-xl">
                                 Please capture your location first
                             </p>
                         )}
@@ -289,13 +291,13 @@ export default function AttendancePage() {
                 <Button
                     onClick={handleCheckIn}
                     disabled={!location || !selfieFile || loading}
-                    className="w-full h-12"
+                    className="w-full h-12 rounded-full text-sm font-semibold shadow-airbnb-md mt-2"
                     size="lg"
                 >
-                    {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                    {loading && <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />}
                     {loading ? 'Marking Attendance...' : (
                         <>
-                            <CheckCircle className="mr-2 h-5 w-5" />
+                            <CheckCircle className="mr-2 h-4.5 w-4.5" />
                             Check In
                         </>
                     )}

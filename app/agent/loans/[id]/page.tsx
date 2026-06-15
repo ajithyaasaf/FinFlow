@@ -31,26 +31,27 @@ async function getLoanWithEMI(supabase: any, loanId: string) {
 
     if (loanError || !loan) return { loan: null, client: null, emiSchedule: [] }
 
-    // Fetch client
-    const { data: client } = await supabase
-        .from('clients')
-        .select('client_id, full_name, onboarding_agent_id')
-        .eq('client_id', loan.client_id)
-        .single()
+    // Fetch client and EMI schedule in parallel
+    const [clientRes, emiRes] = await Promise.all([
+        supabase
+            .from('clients')
+            .select('client_id, full_name, onboarding_agent_id')
+            .eq('client_id', loan.client_id)
+            .single(),
+        loan.process_stage === 'Disbursed'
+            ? supabase
+                .from('emi_schedule')
+                .select('*')
+                .eq('loan_id', loanId)
+                .order('emi_number', { ascending: true })
+            : Promise.resolve({ data: [] })
+    ])
 
-    // Fetch EMI schedule if loan is disbursed
-    let emiSchedule: EMISchedule[] = []
-    if (loan.process_stage === 'Disbursed') {
-        const { data: schedule } = await supabase
-            .from('emi_schedule')
-            .select('*')
-            .eq('loan_id', loanId)
-            .order('emi_number', { ascending: true })
-
-        emiSchedule = schedule || []
+    return {
+        loan,
+        client: clientRes.data || null,
+        emiSchedule: emiRes.data || []
     }
-
-    return { loan, client, emiSchedule }
 }
 
 // EMI Status Badge Component
@@ -221,7 +222,7 @@ export default async function AgentLoanDetailsPage({ params }: PageProps) {
                             <EMISummaryCard schedule={emiSchedule} />
 
                             <div className="space-y-2 max-h-64 overflow-y-auto">
-                                {emiSchedule.slice(0, 6).map((emi) => (
+                                {emiSchedule.slice(0, 6).map((emi: EMISchedule) => (
                                     <div
                                         key={emi.schedule_id}
                                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"

@@ -1,19 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
 import { ClientList } from '@/components/dashboard/client-list'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
+import { getClients } from '@/lib/services/clientService'
+
+export const dynamic = 'force-dynamic'
 
 export default async function ClientsPage() {
-    const supabase = await createClient()
-
-    const { data: clients } = await supabase
-        .from('clients')
-        .select(`
-            *,
-            onboarding_agent:app_users!clients_onboarding_agent_id_fkey(full_name)
-        `)
-        .order('created_at', { ascending: false })
+    const clients = await getClients()
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">

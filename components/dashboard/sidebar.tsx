@@ -11,6 +11,7 @@ import {
     CreditCard,
     ChevronRight,
     TrendingUp,
+    Clock,
     X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -33,6 +34,11 @@ const navItems = [
         href: '/dashboard/agents',
         label: 'Agents',
         icon: Users,
+    },
+    {
+        href: '/dashboard/attendance',
+        label: 'Attendance Tracker',
+        icon: Clock,
     },
     {
         href: '/dashboard/clients',
@@ -116,7 +122,6 @@ export function Sidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                prefetch={false}
                                 className={cn(
                                     'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                                     isActive

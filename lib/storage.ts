@@ -1,6 +1,58 @@
 import { createClient } from './supabase/client'
 
 /**
+ * Compress images client-side before upload to reduce size and improve speed on field networks
+ */
+async function compressImage(file: File, maxWidth = 1024, maxHeight = 1024, quality = 0.75): Promise<Blob | File> {
+    // Return original file if not an image or if running on server-side
+    if (typeof window === 'undefined' || !file.type.startsWith('image/')) {
+        return file
+    }
+
+    return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = (event) => {
+            const img = new Image()
+            img.src = event.target?.result as string
+            img.onload = () => {
+                const canvas = document.createElement('canvas')
+                let width = img.width
+                let height = img.height
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width)
+                        width = maxWidth
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height)
+                        height = maxHeight
+                    }
+                }
+
+                canvas.width = width
+                canvas.height = height
+
+                const ctx = canvas.getContext('2d')
+                ctx?.drawImage(img, 0, 0, width, height)
+
+                canvas.toBlob(
+                    (blob) => {
+                        resolve(blob || file)
+                    },
+                    'image/jpeg',
+                    quality
+                )
+            }
+            img.onerror = () => resolve(file)
+        }
+        reader.onerror = () => resolve(file)
+    })
+}
+
+/**
  * Upload a file to Supabase Storage
  * @param file - File to upload
  * @param bucket - Storage bucket name
@@ -14,17 +66,23 @@ export async function uploadFile(
 ): Promise<string> {
     const supabase = createClient()
 
-    // Generate unique filename
-    const fileExt = file.name.split('.').pop()
+    // Compress the image before uploading if applicable
+    const isImage = file.type.startsWith('image/')
+    const uploadBody = isImage ? await compressImage(file) : file
+
+    // Generate unique filename (change extension to jpg if it was compressed)
+    const originalExt = file.name.split('.').pop()
+    const fileExt = isImage ? 'jpg' : originalExt
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
     const filePath = `${path}/${fileName}`
 
     try {
         const { error: uploadError } = await supabase.storage
             .from(bucket)
-            .upload(filePath, file, {
+            .upload(filePath, uploadBody, {
                 cacheControl: '3600',
-                upsert: false
+                upsert: false,
+                contentType: isImage ? 'image/jpeg' : file.type
             })
 
         if (uploadError) {

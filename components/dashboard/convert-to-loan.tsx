@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { calculateEMI, calculateTotalAmount } from '@/lib/utils'
 import { Loader2, FileCheck } from 'lucide-react'
+import { convertQuotationToLoanAction } from '@/app/actions/loan'
 
 interface ConvertToLoanProps {
     quotationId: string
@@ -20,7 +20,6 @@ interface ConvertToLoanProps {
 
 export function ConvertToLoan({ quotationId, clientId, amount, interestRate, tenure, clientName }: ConvertToLoanProps) {
     const router = useRouter()
-    const supabase = createClient()
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -29,37 +28,24 @@ export function ConvertToLoan({ quotationId, clientId, amount, interestRate, ten
         setLoading(true)
 
         try {
-            // Create loan application
-            const { data: loan, error } = await supabase
-                .from('loan_applications')
-                .insert({
-                    client_id: clientId,
-                    amount: amount,
-                    interest_rate: interestRate,
-                    tenure: tenure,
-                    process_stage: 'Application Submitted',
-                })
-                .select()
-                .single()
+            const res = await convertQuotationToLoanAction({
+                quotationId,
+                clientId,
+                amount,
+                interestRate,
+                tenure
+            })
 
-            if (error) throw error
-
-            // Mark quotation as converted
-            const { error: updateError } = await supabase
-                .from('quotations')
-                .update({ converted_to_loan_id: loan.loan_id })
-                .eq('quote_id', quotationId)
-
-            if (updateError) {
-                console.error('Failed to update quotation:', updateError)
-                // Don't fail the whole operation, loan is already created
+            if (!res.success) {
+                toast.error(res.error || 'Failed to convert quotation')
+                return
             }
 
             toast.success('Quotation converted to loan application successfully!')
             setOpen(false)
             router.refresh()
 
-            // Optionally redirect to loan details
+            // Redirect to loan details
             setTimeout(() => {
                 router.push('/dashboard/loans')
             }, 1000)

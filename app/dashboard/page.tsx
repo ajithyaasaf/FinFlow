@@ -2,92 +2,36 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ConvertToLoan } from '@/components/dashboard/convert-to-loan'
 import { AlertCircle, TrendingUp, Download, FileText, Phone, Calendar, CreditCard } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import type { Quotation, Client, AppUser } from '@/types'
+import { getUnconvertedQuotations } from '@/lib/services/quotationService'
+import { getLoanDashboardStats } from '@/lib/services/loanService'
 
 export const dynamic = 'force-dynamic'
-
-interface QuotationWithDetails extends Quotation {
-    client: Client | null
-    created_by_user: AppUser | null
-}
-
-async function getQuotations(): Promise<QuotationWithDetails[]> {
-    const supabase = await createClient()
-
-    const { data, error } = await supabase
-        .from('quotations')
-        .select(`
-      *,
-      client:clients(*),
-      created_by_user:app_users!quotations_created_by_fkey(*)
-    `)
-        .is('converted_to_loan_id', null)  // Only show unconverted quotations
-        .order('created_at', { ascending: false })
-
-    if (error) {
-        console.error('Error fetching quotations:', error)
-        return []
-    }
-
-    return (data || []) as QuotationWithDetails[]
-}
 
 export default async function DashboardPage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const { data: userData } = await supabase
-        .from('app_users')
-        .select('full_name')
-        .eq('id', user!.id)
-        .single()
+    // Run all database calls in parallel to resolve waterfalls
+    const [userDataRes, statsRes, quotations] = await Promise.all([
+        supabase
+            .from('app_users')
+            .select('full_name')
+            .eq('id', user!.id)
+            .single(),
+        getLoanDashboardStats(),
+        getUnconvertedQuotations()
+    ])
 
-    const quotations = await getQuotations()
+    const userData = userDataRes.data
     const highValueQuotes = quotations.filter(q => q.is_high_value)
-
-    // Calculate stats
-    const { count: totalLoans } = await supabase
-        .from('loan_applications')
-        .select('*', { count: 'exact', head: true })
-
-    const { count: activeAgents } = await supabase
-        .from('app_users')
-        .select('*', { count: 'exact', head: true })
-        .eq('role', 'AGENT')
-
-    const { count: pendingApprovals } = await supabase
-        .from('loan_applications')
-        .select('*', { count: 'exact', head: true })
-        .in('process_stage', ['Document Verification', 'Credit Appraisal'])
-
-    // EMI stats - overdue count
-    const { count: overdueEMIs } = await supabase
-        .from('emi_schedule')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'OVERDUE')
-
-    // EMI stats - upcoming payments (due in next 7 days)
-    const today = new Date()
-    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-    const { count: upcomingPayments } = await supabase
-        .from('emi_schedule')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'PENDING')
-        .gte('due_date', today.toISOString().split('T')[0])
-        .lte('due_date', nextWeek.toISOString().split('T')[0])
-
+    
     const stats = {
-        totalLoans: totalLoans || 0,
-        activeAgents: activeAgents || 0,
-        highValueQuotes: highValueQuotes.length,
-        pendingApprovals: pendingApprovals || 0,
-        overdueEMIs: overdueEMIs || 0,
-        upcomingPayments: upcomingPayments || 0,
+        ...statsRes,
+        highValueQuotes: highValueQuotes.length
     }
 
     return (

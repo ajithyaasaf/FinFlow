@@ -58,6 +58,12 @@ const config = {
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
             },
+            boxShadow: {
+                'airbnb-sm': '0 2px 4px rgba(0, 0, 0, 0.03)',
+                'airbnb-md': '0 6px 16px rgba(0, 0, 0, 0.05)',
+                'airbnb-lg': '0 12px 24px rgba(0, 0, 0, 0.06)',
+                'airbnb-xl': '0 24px 32px rgba(0, 0, 0, 0.07)',
+            },
             keyframes: {
                 "accordion-down": {
                     from: { height: "0" },

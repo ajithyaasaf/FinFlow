@@ -18,7 +18,7 @@ export function BottomNavigation() {
 
     return (
         <nav
-            className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg"
+            className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-airbnb-lg"
             style={{
                 zIndex: 50,
                 paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))'
@@ -39,7 +39,7 @@ export function BottomNavigation() {
                                 'active:scale-95',
                                 isActive
                                     ? 'text-blue-600 font-semibold'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                    : 'text-[#6a6a6a] hover:text-[#222222]'
                             )}
                         >
                             {isActive && (

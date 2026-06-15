@@ -1,118 +1,20 @@
-import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Calendar, CheckCircle, MapPin, FileText, Phone } from 'lucide-react'
 import { formatDate, formatDateTime } from '@/lib/utils'
-import type { AppUser, AttendanceLog, Client } from '@/types'
 import { AgentsPageHeader } from '@/components/dashboard/agents-page-header'
 import { AgentActions } from '@/components/dashboard/agent-actions'
+import { getAgents, getAgentStats } from '@/lib/services/agentService'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-interface AgentWithStats extends AppUser {
-    client_count: number
-    quotation_count: number
-    converted_count: number
-    latest_attendance?: AttendanceLog
-}
-
-async function getAgents() {
-    const supabase = await createClient()
-
-    // Get all agents
-    const { data: agents, error } = await supabase
-        .from('app_users')
-        .select('*')
-        .eq('role', 'AGENT')
-        .order('created_at', { ascending: false })
-
-    if (error || !agents) {
-        console.error('Error fetching agents:', error)
-        return []
-    }
-
-    // Get stats for each agent
-    const agentsWithStats: AgentWithStats[] = await Promise.all(
-        agents.map(async (agent) => {
-            // Count clients
-            const { count: clientCount } = await supabase
-                .from('clients')
-                .select('*', { count: 'exact', head: true })
-                .eq('onboarding_agent_id', agent.id)
-
-            // Count quotations
-            const { count: quotationCount } = await supabase
-                .from('quotations')
-                .select('*', { count: 'exact', head: true })
-                .eq('created_by', agent.id)
-
-            // Count converted quotations (those that became loans)
-            const { count: convertedCount } = await supabase
-                .from('quotations')
-                .select('*', { count: 'exact', head: true })
-                .eq('created_by', agent.id)
-                .not('converted_to_loan_id', 'is', null)
-
-            // Get latest attendance
-            const { data: attendance } = await supabase
-                .from('attendance_logs')
-                .select('*')
-                .eq('agent_id', agent.id)
-                .order('check_in_time', { ascending: false })
-                .limit(1)
-                .single()
-
-            return {
-                ...agent,
-                client_count: clientCount || 0,
-                quotation_count: quotationCount || 0,
-                converted_count: convertedCount || 0,
-                latest_attendance: attendance || undefined,
-            }
-        })
-    )
-
-    return agentsWithStats
-}
-
-async function getAgentStats() {
-    const supabase = await createClient()
-
-    const { count: totalAgents } = await supabase
-        .from('app_users')
-        .select('*', { count: 'exact', head: true })
-        .eq('role', 'AGENT')
-
-    const { count: totalClients } = await supabase
-        .from('clients')
-        .select('*', { count: 'exact', head: true })
-
-    const { count: totalQuotations } = await supabase
-        .from('quotations')
-        .select('*', { count: 'exact', head: true })
-
-    // Get today's attendance count
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    const { count: todayAttendance } = await supabase
-        .from('attendance_logs')
-        .select('*', { count: 'exact', head: true })
-        .gte('check_in_time', today.toISOString())
-
-    return {
-        totalAgents: totalAgents || 0,
-        totalClients: totalClients || 0,
-        totalQuotations: totalQuotations || 0,
-        todayAttendance: todayAttendance || 0,
-    }
-}
-
 export default async function AgentsPage() {
-    const agents = await getAgents()
-    const stats = await getAgentStats()
+    const [agents, stats] = await Promise.all([
+        getAgents(),
+        getAgentStats()
+    ])
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">

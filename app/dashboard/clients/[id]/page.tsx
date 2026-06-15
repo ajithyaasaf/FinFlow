@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,48 +11,12 @@ import Link from 'next/link'
 import { ClientEditModal } from '@/components/dashboard/client-edit-modal'
 import { ClientDeleteDialog } from '@/components/dashboard/client-delete-dialog'
 import type { Client, LoanApplication, Quotation } from '@/types'
+import { getClientDetails } from '@/lib/services/clientService'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
     params: Promise<{ id: string }>
-}
-
-// Data fetching functions
-async function getClientDetails(clientId: string) {
-    const supabase = await createClient()
-
-    // Fetch client with agent info
-    const { data: client, error } = await supabase
-        .from('clients')
-        .select(`
-            *,
-            onboarding_agent:app_users!clients_onboarding_agent_id_fkey(id, full_name, email)
-        `)
-        .eq('client_id', clientId)
-        .single()
-
-    if (error || !client) return null
-
-    // Fetch client's loans
-    const { data: loans } = await supabase
-        .from('loan_applications')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false })
-
-    // Fetch client's quotations
-    const { data: quotations } = await supabase
-        .from('quotations')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false })
-
-    return {
-        client,
-        loans: loans || [],
-        quotations: quotations || []
-    }
 }
 
 // Stage color mapping
