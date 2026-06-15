@@ -8,13 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
+import { ClientSearchSelect } from '@/components/ui/client-search-select'
 import { Loader2, Calculator, Search } from 'lucide-react'
 import Link from 'next/link'
 import type { Client } from '@/types'
@@ -30,19 +24,12 @@ export function CreateLoanForm({ clients }: CreateLoanFormProps) {
     const supabase = createClient()
 
     const [loading, setLoading] = useState(false)
-    const [searchTerm, setSearchTerm] = useState('')
     const [formData, setFormData] = useState({
         client_id: '',
         amount: '',
         interest_rate: '12',
         tenure: '12',
     })
-
-    // Filter clients based on search
-    const filteredClients = clients.filter(client =>
-        client.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.mobile_number.includes(searchTerm)
-    )
 
     // Calculate EMI preview
     const amount = parseFloat(formData.amount) || 0
@@ -118,43 +105,12 @@ export function CreateLoanForm({ clients }: CreateLoanFormProps) {
                     <CardTitle className="text-lg">Select Client</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                            placeholder="Search clients by name or mobile..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-
-                    {/* Client Selector */}
-                    <Select
-                        value={formData.client_id}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, client_id: value }))}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a client" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {filteredClients.length === 0 ? (
-                                <div className="p-4 text-center text-gray-500 text-sm">
-                                    No clients found
-                                </div>
-                            ) : (
-                                filteredClients.map((client) => (
-                                    <SelectItem key={client.client_id} value={client.client_id}>
-                                        <div className="flex items-center gap-2">
-                                            <span>{client.full_name}</span>
-                                            <span className="text-gray-400">•</span>
-                                            <span className="text-gray-500">{client.mobile_number}</span>
-                                        </div>
-                                    </SelectItem>
-                                ))
-                            )}
-                        </SelectContent>
-                    </Select>
+                    <ClientSearchSelect
+                        clients={clients}
+                        selectedClientId={formData.client_id}
+                        onSelect={(value) => setFormData(prev => ({ ...prev, client_id: value }))}
+                        placeholder="Select a client"
+                    />
 
                     {/* Selected Client Info */}
                     {selectedClient && (

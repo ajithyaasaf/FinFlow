@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ClientSearchSelect } from '@/components/ui/client-search-select'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Calculator, Download, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
@@ -204,18 +204,11 @@ export default function QuotationPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                                        <SelectTrigger className="h-11">
-                                            <SelectValue placeholder="Choose a client" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {clients.map((client) => (
-                                                <SelectItem key={client.client_id} value={client.client_id}>
-                                                    {client.full_name} - {client.mobile_number}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <ClientSearchSelect
+                                        clients={clients}
+                                        selectedClientId={selectedClientId}
+                                        onSelect={setSelectedClientId}
+                                    />
                                     <p className="text-xs text-gray-600 mt-2">
                                         Client not in list? <Link href="/agent/clients/new?return=/agent/quotation" className="text-blue-600 underline font-semibold">Add new client</Link>
                                     </p>
