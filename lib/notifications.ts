@@ -1,4 +1,5 @@
 import { createClient } from './supabase/server'
+import { createAdminClient } from './supabase/admin'
 
 export type NotificationType = 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR'
 
@@ -25,7 +26,8 @@ export async function createNotification({
     linkUrl,
 }: CreateNotificationParams): Promise<void> {
     try {
-        const supabase = await createClient()
+        // Must use admin client to bypass the INSERT RLS policy (WITH CHECK (false))
+        const supabase = createAdminClient()
 
         const { error } = await supabase
             .from('notifications')

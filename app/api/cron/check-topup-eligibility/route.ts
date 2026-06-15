@@ -1,6 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { findEligibleLoans, wasRecentlyNotified } from '@/lib/topup-eligibility'
+import { createNotification } from '@/lib/notifications'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,13 +19,19 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const supabase = await createClient()
+        const supabase = createAdminClient()
 
         // Find all eligible loans
         const eligibleLoans = await findEligibleLoans()
 
         const offersCreated: string[] = []
         const skippedDueToRecent: string[] = []
+
+        // Get all admin users to notify them
+        const { data: admins } = await supabase
+            .from('app_users')
+            .select('id')
+            .eq('role', 'ADMIN')
 
         // Process each eligible loan
         for (const { loanId, clientId, eligibility } of eligibleLoans) {
@@ -60,10 +67,43 @@ export async function GET(request: Request) {
 
             offersCreated.push(offer.offer_id)
 
-            // TODO: Send notifications (will be implemented in next step)
-            // - Email to client
-            // - In-app notification to admin
-            // - Generate WhatsApp link
+            // 1. Fetch client info and onboarding agent
+            const { data: client } = await supabase
+                .from('clients')
+                .select('full_name, onboarding_agent_id')
+                .eq('client_id', clientId)
+                .single()
+
+            const clientName = client?.full_name || 'Client'
+            const formattedAmount = `₹${eligibility.maxAmount.toLocaleString('en-IN')}`
+
+            // 2. Notify admins about new top-up opportunity
+            if (admins && admins.length > 0) {
+                for (const admin of admins) {
+                    await createNotification({
+                        userId: admin.id,
+                        title: 'New Top-Up Opportunity',
+                        message: `${clientName} qualifies for a top-up loan of ${formattedAmount}`,
+                        type: 'SUCCESS',
+                        entityType: 'topup_offer',
+                        entityId: offer.offer_id,
+                        linkUrl: `/dashboard/topup/${offer.offer_id}`
+                    })
+                }
+            }
+
+            // 3. Notify onboarding agent specifically
+            if (client?.onboarding_agent_id) {
+                await createNotification({
+                    userId: client.onboarding_agent_id,
+                    title: 'Top-Up Offer Available',
+                    message: `Your client ${clientName} qualifies for a top-up of ${formattedAmount}`,
+                    type: 'SUCCESS',
+                    entityType: 'topup_offer',
+                    entityId: offer.offer_id,
+                    linkUrl: `/dashboard/topup/${offer.offer_id}`
+                })
+            }
         }
 
         console.log(`✅ Top-Up Detection Complete: ${offersCreated.length} new offers created`)

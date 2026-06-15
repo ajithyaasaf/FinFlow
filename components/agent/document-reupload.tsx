@@ -37,9 +37,13 @@ export function DocumentReupload({ documents, loanId }: DocumentReuploadProps) {
 
         setLoading(true)
         try {
-            // Upload file
+            // Get current user for storage RLS prefix
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error('Not authenticated')
+
+            // Upload file with userId prefix to satisfy RLS
             const fileExt = file.name.split('.').pop()
-            const fileName = `${loanId}/${selectedDoc.document_type}_${Date.now()}.${fileExt}`
+            const fileName = `${user.id}/${loanId}/${selectedDoc.document_type}_${Date.now()}.${fileExt}`
 
             const { error: uploadError } = await supabase.storage
                 .from('documents')

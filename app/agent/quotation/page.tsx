@@ -147,7 +147,7 @@ export default function QuotationPage() {
             const blob = await pdf(pdfDoc).toBlob()
 
             // Upload PDF to storage
-            const pdfUrl = await uploadQuotationPDF(blob, quotation.quote_id)
+            const pdfUrl = await uploadQuotationPDF(blob, quotation.quote_id, user.id)
 
             // Update quotation with PDF URL
             await supabase

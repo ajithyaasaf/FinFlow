@@ -8,7 +8,7 @@
  * - Loan status
  */
 
-import { createClient } from './supabase/server'
+import { createAdminClient } from './supabase/admin'
 
 export interface TopUpEligibility {
     isEligible: boolean
@@ -37,7 +37,7 @@ export interface TopUpRules {
 export async function checkTopUpEligibility(
     loanId: string
 ): Promise<TopUpEligibility> {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // 1. Get loan details
     const { data: loan, error: loanError } = await supabase
@@ -197,7 +197,7 @@ export async function findEligibleLoans(): Promise<Array<{
     clientId: string
     eligibility: TopUpEligibility
 }>> {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // Get all disbursed loans
     const { data: loans } = await supabase
@@ -237,7 +237,7 @@ export async function wasRecentlyNotified(
     loanId: string,
     frequencyDays: number
 ): Promise<boolean> {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - frequencyDays)

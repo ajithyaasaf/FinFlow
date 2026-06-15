@@ -177,7 +177,7 @@ export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
             let kycUrl = null
             if (kycFile) {
                 toast.loading('Uploading KYC document...', { id: 'kyc-upload' })
-                kycUrl = await uploadKYC(kycFile)
+                kycUrl = await uploadKYC(kycFile, user.id)
                 toast.dismiss('kyc-upload')
             }
 

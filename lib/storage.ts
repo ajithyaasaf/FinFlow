@@ -104,23 +104,23 @@ export async function uploadFile(
 /**
  * Upload KYC document
  */
-export async function uploadKYC(file: File): Promise<string> {
-    return uploadFile(file, 'documents', 'kyc')
+export async function uploadKYC(file: File, userId: string): Promise<string> {
+    return uploadFile(file, 'documents', `${userId}/kyc`)
 }
 
 /**
  * Upload selfie for attendance
  */
-export async function uploadSelfie(file: File): Promise<string> {
-    return uploadFile(file, 'documents', 'attendance')
+export async function uploadSelfie(file: File, userId: string): Promise<string> {
+    return uploadFile(file, 'documents', `${userId}/attendance`)
 }
 
 /**
  * Upload quotation PDF
  */
-export async function uploadQuotationPDF(file: Blob, quotationId: string): Promise<string> {
+export async function uploadQuotationPDF(file: Blob, quotationId: string, userId: string): Promise<string> {
     const supabase = createClient()
-    const filePath = `quotations/${quotationId}.pdf`
+    const filePath = `${userId}/quotations/${quotationId}.pdf`
 
     try {
         const { error: uploadError } = await supabase.storage

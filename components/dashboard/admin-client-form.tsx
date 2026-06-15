@@ -248,11 +248,15 @@ export function AdminClientForm({
         setLoading(true)
 
         try {
+            // Get current user for storage RLS prefix
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error('Not authenticated')
+
             // Upload KYC if provided
             let kycUrl = initialData?.kyc_document_url || null
             if (kycFile) {
                 toast.loading('Uploading KYC document...', { id: 'kyc-upload' })
-                kycUrl = await uploadKYC(kycFile)
+                kycUrl = await uploadKYC(kycFile, user.id)
                 toast.dismiss('kyc-upload')
             }
 
