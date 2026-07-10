@@ -1,38 +1,78 @@
-import { getAttendanceLogs } from '@/lib/services/attendanceService'
-import { getAgents } from '@/lib/services/agentService'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { AttendanceClient } from '@/components/dashboard/attendance-client'
-import { Suspense } from 'react'
-import { Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import Loading from './loading'
 
-export const dynamic = 'force-dynamic'
+function AttendancePageContent() {
+    const searchParams = useSearchParams()
+    const selectedDate = searchParams.get('date') || new Date().toISOString().split('T')[0]
 
-interface PageProps {
-    searchParams: Promise<{
-        date?: string
-    }>
-}
+    const [loading, setLoading] = useState(true)
+    const [logs, setLogs] = useState<any[]>([])
+    const [agents, setAgents] = useState<any[]>([])
 
-export default async function AttendancePage({ searchParams }: PageProps) {
-    const params = await searchParams
-    const selectedDate = params.date || new Date().toISOString().split('T')[0]
-    
-    return (
-        <Suspense fallback={
-            <div className="p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center min-h-[400px] gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-gray-500 font-medium font-sans">Loading attendance records...</p>
-            </div>
-        }>
-            <AttendanceLoader selectedDate={selectedDate} />
-        </Suspense>
-    )
-}
+    useEffect(() => {
+        async function fetchAttendanceData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
 
-async function AttendanceLoader({ selectedDate }: { selectedDate: string }) {
-    const [logs, agents] = await Promise.all([
-        getAttendanceLogs(selectedDate),
-        getAgents()
-    ])
+                // Calculate date range
+                const [year, month, day] = selectedDate.split('-').map(Number)
+                const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0)
+                const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999)
+
+                // Fetch logs and agents
+                const [logsRes, agentsRes] = await Promise.all([
+                    supabase
+                        .from('attendance_logs')
+                        .select('*')
+                        .gte('check_in_time', startOfDay.toISOString())
+                        .lte('check_in_time', endOfDay.toISOString())
+                        .order('check_in_time', { ascending: false }),
+                    supabase
+                        .from('app_users')
+                        .select('*')
+                        .eq('role', 'AGENT')
+                ])
+
+                const fetchedLogs = logsRes.data || []
+                const fetchedAgents = agentsRes.data || []
+
+                // Map agents by ID
+                const agentsMap = new Map<string, any>()
+                fetchedAgents.forEach(a => agentsMap.set(a.id, a))
+
+                // Zip logs with agent details
+                const zippedLogs = fetchedLogs
+                    .map(log => {
+                        const agent = agentsMap.get(log.agent_id)
+                        if (!agent) return null
+                        return {
+                            ...log,
+                            agent
+                        }
+                    })
+                    .filter(item => item !== null)
+
+                setLogs(zippedLogs)
+                setAgents(fetchedAgents)
+            } catch (error) {
+                console.error('Error fetching attendance data:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchAttendanceData()
+    }, [selectedDate])
+
+    if (loading) {
+        return <Loading />
+    }
 
     return (
         <AttendanceClient 
@@ -40,5 +80,15 @@ async function AttendanceLoader({ selectedDate }: { selectedDate: string }) {
             agents={agents} 
             selectedDate={selectedDate} 
         />
+    )
+}
+
+import { Suspense } from 'react'
+
+export default function AttendancePage() {
+    return (
+        <Suspense fallback={<Loading />}>
+            <AttendancePageContent />
+        </Suspense>
     )
 }

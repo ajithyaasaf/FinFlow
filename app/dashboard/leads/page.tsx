@@ -1,11 +1,68 @@
-import { getLeads } from '@/lib/services/leadService'
-import { getAgents } from '@/lib/services/agentService'
-import { LeadsBoard } from '@/components/dashboard/leads-board'
-import { Suspense } from 'react'
+'use client'
 
-export const dynamic = 'force-dynamic'
+import { useState, useEffect } from 'react'
+import { LeadsBoard } from '@/components/dashboard/leads-board'
+import { createClient } from '@/lib/supabase/client'
+import Loading from './loading'
 
 export default function LeadsPage() {
+    const [loading, setLoading] = useState(true)
+    const [leads, setLeads] = useState<any[]>([])
+    const [agents, setAgents] = useState<any[]>([])
+
+    useEffect(() => {
+        async function fetchLeadsData() {
+            try {
+                const supabase = createClient()
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) return
+
+                // Fetch role
+                const { data: profile } = await supabase
+                    .from('app_users')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single()
+
+                if (!profile) return
+
+                // Build query
+                let query = supabase.from('leads').select(`
+                    *,
+                    assigned_agent:app_users(id, full_name, email)
+                `)
+
+                if (profile.role === 'AGENT') {
+                    query = query.eq('assigned_agent_id', user.id)
+                }
+
+                // Fetch leads and agents in parallel
+                const [leadsRes, agentsRes] = await Promise.all([
+                    query.order('created_at', { ascending: false }),
+                    supabase.from('app_users').select('id, full_name').eq('role', 'AGENT')
+                ])
+
+                if (leadsRes.data) {
+                    setLeads(leadsRes.data)
+                }
+
+                if (agentsRes.data) {
+                    setAgents(agentsRes.data)
+                }
+            } catch (error) {
+                console.error('Error fetching leads:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchLeadsData()
+    }, [])
+
+    if (loading) {
+        return <Loading />
+    }
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
             <div>
@@ -13,33 +70,7 @@ export default function LeadsPage() {
                 <p className="text-xs md:text-sm text-gray-500">Track raw inquiries, call logs, and customer conversion pipelines.</p>
             </div>
 
-            <Suspense fallback={
-                <div className="space-y-4 py-4">
-                    <div className="h-10 bg-gray-100 rounded animate-pulse w-full"></div>
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className="h-[400px] bg-gray-50 rounded-xl animate-pulse border border-gray-200"></div>
-                        ))}
-                    </div>
-                </div>
-            }>
-                <LeadsLoader />
-            </Suspense>
+            <LeadsBoard initialLeads={leads} agents={agents} />
         </div>
     )
-}
-
-async function LeadsLoader() {
-    const [leads, agents] = await Promise.all([
-        getLeads(),
-        getAgents()
-    ])
-
-    // Format agents for select components
-    const formattedAgents = agents.map(a => ({
-        id: a.id,
-        full_name: a.full_name
-    }))
-
-    return <LeadsBoard initialLeads={leads || []} agents={formattedAgents} />
 }

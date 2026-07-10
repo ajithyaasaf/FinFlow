@@ -1,28 +1,59 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { BottomNavigation } from '@/components/agent/bottom-navigation'
+'use client'
 
-export default async function AgentLayout({
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { BottomNavigation } from '@/components/agent/bottom-navigation'
+import { Loader2 } from 'lucide-react'
+
+export default function AgentLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const router = useRouter()
+    const [loading, setLoading] = useState(true)
 
-    if (!user) {
-        redirect('/login')
-    }
+    useEffect(() => {
+        async function checkAuth() {
+            try {
+                const supabase = createClient()
+                const { data: { user } } = await supabase.auth.getUser()
 
-    // Verify user is an agent
-    const { data: userData } = await supabase
-        .from('app_users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+                if (!user) {
+                    router.push('/login')
+                    return
+                }
 
-    if (!userData || userData.role !== 'AGENT') {
-        redirect('/dashboard')
+                // Verify user is an agent
+                const { data: userData } = await supabase
+                    .from('app_users')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single()
+
+                if (!userData || userData.role !== 'AGENT') {
+                    router.push('/dashboard')
+                    return
+                }
+
+                setLoading(false)
+            } catch (error) {
+                console.error('Agent auth check error:', error)
+                router.push('/login')
+            }
+        }
+
+        checkAuth()
+    }, [router])
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Verifying authorization...</p>
+            </div>
+        )
     }
 
     return (

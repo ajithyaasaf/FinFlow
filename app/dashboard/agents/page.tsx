@@ -1,42 +1,123 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, Calendar, CheckCircle, MapPin, FileText, Phone, Loader2 } from 'lucide-react'
+import { Users, Calendar, CheckCircle, Phone } from 'lucide-react'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { AgentsPageHeader } from '@/components/dashboard/agents-page-header'
 import { AgentActions } from '@/components/dashboard/agent-actions'
-import { getAgents, getAgentStats } from '@/lib/services/agentService'
-import { Suspense } from 'react'
-
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+import { createClient } from '@/lib/supabase/client'
+import type { AgentWithStats } from '@/lib/services/agentService'
+import Loading from './loading'
 
 export default function AgentsPage() {
+    const [loading, setLoading] = useState(true)
+    const [agents, setAgents] = useState<AgentWithStats[]>([])
+    const [stats, setStats] = useState({
+        totalAgents: 0,
+        totalClients: 0,
+        totalQuotations: 0,
+        todayAttendance: 0,
+    })
+
+    useEffect(() => {
+        async function fetchAgentsData() {
+            try {
+                const supabase = createClient()
+
+                // Fetch all agents
+                const { data: agentsData, error: agentsError } = await supabase
+                    .from('app_users')
+                    .select('*')
+                    .eq('role', 'AGENT')
+                    .order('created_at', { ascending: false })
+
+                if (agentsError || !agentsData) {
+                    console.error('Error fetching agents:', agentsError)
+                    return
+                }
+
+                // Fetch Stats
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                const todayStr = today.toISOString()
+
+                const [clientsRes, quotationsRes, attendanceRes, totalAgentsRes, totalClientsRes, totalQuotationsRes, todayAttendanceRes] = await Promise.all([
+                    supabase.from('clients').select('onboarding_agent_id'),
+                    supabase.from('quotations').select('created_by, converted_to_loan_id'),
+                    supabase.from('attendance_logs').select('*').order('check_in_time', { ascending: false }),
+                    supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'AGENT'),
+                    supabase.from('clients').select('*', { count: 'exact', head: true }),
+                    supabase.from('quotations').select('*', { count: 'exact', head: true }),
+                    supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', todayStr)
+                ])
+
+                const clientsList = clientsRes.data || []
+                const quotationsList = quotationsRes.data || []
+                const attendanceList = attendanceRes.data || []
+
+                // Group client counts
+                const clientCounts: Record<string, number> = {}
+                clientsList.forEach(c => {
+                    if (c.onboarding_agent_id) {
+                        clientCounts[c.onboarding_agent_id] = (clientCounts[c.onboarding_agent_id] || 0) + 1
+                    }
+                })
+
+                // Group quotation and converted counts
+                const quotationCounts: Record<string, number> = {}
+                const convertedCounts: Record<string, number> = {}
+                quotationsList.forEach(q => {
+                    if (q.created_by) {
+                        quotationCounts[q.created_by] = (quotationCounts[q.created_by] || 0) + 1
+                        if (q.converted_to_loan_id) {
+                            convertedCounts[q.created_by] = (convertedCounts[q.created_by] || 0) + 1
+                        }
+                    }
+                })
+
+                // Group latest attendance per agent
+                const latestAttendance: Record<string, any> = {}
+                attendanceList.forEach(a => {
+                    if (a.agent_id && !latestAttendance[a.agent_id]) {
+                        latestAttendance[a.agent_id] = a
+                    }
+                })
+
+                const processedAgents = agentsData.map(agent => ({
+                    ...agent,
+                    client_count: clientCounts[agent.id] || 0,
+                    quotation_count: quotationCounts[agent.id] || 0,
+                    converted_count: convertedCounts[agent.id] || 0,
+                    latest_attendance: latestAttendance[agent.id]
+                })) as AgentWithStats[]
+
+                setAgents(processedAgents)
+                setStats({
+                    totalAgents: totalAgentsRes.count || 0,
+                    totalClients: totalClientsRes.count || 0,
+                    totalQuotations: totalQuotationsRes.count || 0,
+                    todayAttendance: todayAttendanceRes.count || 0,
+                })
+            } catch (error) {
+                console.error('Error fetching agents data:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchAgentsData()
+    }, [])
+
+    if (loading) {
+        return <Loading />
+    }
+
     return (
         <div className="p-4 sm:p-6 lg:p-8">
-            {/* Header */}
             <AgentsPageHeader />
-
-            <Suspense fallback={
-                <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
-                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                    <p className="text-sm text-gray-500 font-medium">Loading agents list...</p>
-                </div>
-            }>
-                <AgentsLoader />
-            </Suspense>
-        </div>
-    )
-}
-
-async function AgentsLoader() {
-    const [agents, stats] = await Promise.all([
-        getAgents(),
-        getAgentStats()
-    ])
-
-    return (
-        <>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -220,6 +301,6 @@ async function AgentsLoader() {
                     </CardContent>
                 </Card>
             </div>
-        </>
+        </div>
     )
 }

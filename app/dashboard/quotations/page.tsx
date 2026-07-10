@@ -1,12 +1,44 @@
-import { Suspense } from 'react'
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, Loader2 } from 'lucide-react'
 import { QuotationsList } from '@/components/dashboard/quotations-list'
-import { getAllQuotationsWithDetails } from '@/lib/services/quotationService'
+import { createClient } from '@/lib/supabase/client'
+import type { QuotationWithDetails } from '@/lib/services/quotationService'
 
-export const dynamic = 'force-dynamic'
+export default function AdminQuotationsPage() {
+    const [quotations, setQuotations] = useState<QuotationWithDetails[]>([])
+    const [loading, setLoading] = useState(true)
 
-export default async function AdminQuotationsPage() {
+    useEffect(() => {
+        async function loadQuotations() {
+            try {
+                const supabase = createClient()
+                const { data, error } = await supabase
+                    .from('quotations')
+                    .select(`
+                        *,
+                        client:clients(*),
+                        created_by_user:app_users!quotations_created_by_fkey(*)
+                    `)
+                    .order('created_at', { ascending: false })
+
+                if (error) {
+                    console.error('Error fetching quotations:', error)
+                } else {
+                    setQuotations((data || []) as QuotationWithDetails[])
+                }
+            } catch (err) {
+                console.error('Failed to load quotations:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadQuotations()
+    }, [])
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
             {/* Header */}
@@ -26,21 +58,16 @@ export default async function AdminQuotationsPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Suspense fallback={
+                    {loading ? (
                         <div className="flex flex-col items-center justify-center py-12 gap-3">
                             <Loader2 className="h-8 w-8 text-primary animate-spin" />
                             <p className="text-sm text-gray-500">Loading quotations...</p>
                         </div>
-                    }>
-                        <QuotationsLoader />
-                    </Suspense>
+                    ) : (
+                        <QuotationsList quotations={quotations} />
+                    )}
                 </CardContent>
             </Card>
         </div>
     )
-}
-
-async function QuotationsLoader() {
-    const quotations = await getAllQuotationsWithDetails()
-    return <QuotationsList quotations={quotations} />
 }

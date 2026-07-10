@@ -19,7 +19,7 @@ import Link from 'next/link'
 import { QuotationPDF } from '@/lib/pdf/quotation-template'
 import type { Client } from '@/types'
 
-export default function QuotationPage() {
+function QuotationPageContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const supabase = createClient()
@@ -333,5 +333,32 @@ export default function QuotationPage() {
                 </Button>
             </main>
         </div>
+    )
+}
+
+import dynamic from 'next/dynamic'
+
+import { Suspense } from 'react'
+
+const QuotationPageDynamic = dynamic(() => Promise.resolve(QuotationPageContent), {
+    ssr: false,
+    loading: () => (
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-sm text-gray-500 font-medium font-sans">Loading calculator...</p>
+        </div>
+    )
+})
+
+export default function QuotationPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Loading calculator...</p>
+            </div>
+        }>
+            <QuotationPageDynamic />
+        </Suspense>
     )
 }

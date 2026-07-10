@@ -1,131 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { BarChart3, TrendingUp, Users, FileText, Calendar, AlertCircle } from 'lucide-react'
+import { TrendingUp, Users, FileText, Calendar, AlertCircle } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
-
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-async function getReportData(params?: { from?: string; to?: string }) {
-    const supabase = await createClient()
-
-    // Get date ranges
-    const now = new Date()
-    const startOfMonth = params?.from ? new Date(params.from) : new Date(now.getFullYear(), now.getMonth(), 1)
-    const endOfMonth = params?.to ? new Date(params.to) : new Date()
-
-    // For comparison (previous period)
-    const duration = endOfMonth.getTime() - startOfMonth.getTime()
-    const startOfLastPeriod = new Date(startOfMonth.getTime() - duration)
-    const endOfLastPeriod = new Date(startOfMonth.getTime())
-
-    // This month stats
-    const { count: thisMonthClients } = await supabase
-        .from('clients')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', startOfMonth.toISOString())
-        .lte('created_at', endOfMonth.toISOString())
-
-    const { count: thisMonthQuotations } = await supabase
-        .from('quotations')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', startOfMonth.toISOString())
-        .lte('created_at', endOfMonth.toISOString())
-
-    const { count: thisMonthHighValue } = await supabase
-        .from('quotations')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_high_value', true)
-        .eq('is_high_value', true)
-        .gte('created_at', startOfMonth.toISOString())
-        .lte('created_at', endOfMonth.toISOString())
-
-    // Last month stats (for comparison)
-    const { count: lastMonthClients } = await supabase
-        .from('clients')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', startOfLastPeriod.toISOString())
-        .lte('created_at', endOfLastPeriod.toISOString())
-
-    const { count: lastMonthQuotations } = await supabase
-        .from('quotations')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', startOfLastPeriod.toISOString())
-        .lte('created_at', endOfLastPeriod.toISOString())
-
-    // Total amounts
-    const { data: quotationsData } = await supabase
-        .from('quotations')
-        .select('amount')
-        .gte('created_at', startOfMonth.toISOString())
-        .lte('created_at', endOfMonth.toISOString())
-
-    const totalQuotationValue = quotationsData?.reduce((sum, q) => sum + Number(q.amount), 0) || 0
-
-    // Average quote size
-    const avgQuoteSize = thisMonthQuotations && thisMonthQuotations > 0
-        ? totalQuotationValue / thisMonthQuotations
-        : 0
-
-    // Get top agents
-    const { data: agents } = await supabase
-        .from('app_users')
-        .select('id, full_name')
-        .eq('role', 'AGENT')
-
-    const agentStats = await Promise.all(
-        (agents || []).map(async (agent) => {
-            const { count: quotations } = await supabase
-                .from('quotations')
-                .select('*', { count: 'exact', head: true })
-                .eq('created_by', agent.id)
-                .eq('created_by', agent.id)
-                .gte('created_at', startOfMonth.toISOString())
-                .lte('created_at', endOfMonth.toISOString())
-
-            const { count: clients } = await supabase
-                .from('clients')
-                .select('*', { count: 'exact', head: true })
-                .eq('onboarding_agent_id', agent.id)
-                .eq('onboarding_agent_id', agent.id)
-                .gte('created_at', startOfMonth.toISOString())
-                .lte('created_at', endOfMonth.toISOString())
-
-            return {
-                ...agent,
-                quotations: quotations || 0,
-                clients: clients || 0,
-            }
-        })
-    )
-
-    // Recent quotations
-    const { data: recentQuotations } = await supabase
-        .from('quotations')
-        .select(`
-      *,
-      client:clients(full_name)
-    `)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-    return {
-        thisMonth: {
-            clients: thisMonthClients || 0,
-            quotations: thisMonthQuotations || 0,
-            highValue: thisMonthHighValue || 0,
-            totalValue: totalQuotationValue,
-            avgQuoteSize,
-        },
-        lastMonth: {
-            clients: lastMonthClients || 0,
-            quotations: lastMonthQuotations || 0,
-        },
-        agentStats: agentStats.sort((a, b) => b.quotations - a.quotations),
-        recentQuotations: recentQuotations || [],
-    }
-}
+import { createClient } from '@/lib/supabase/client'
+import { ReportsFilter } from '@/components/dashboard/reports-filter'
+import Loading from './loading'
 
 function calculateGrowth(current: number, previous: number): { value: number; positive: boolean } {
     if (previous === 0) return { value: current > 0 ? 100 : 0, positive: true }
@@ -133,13 +16,98 @@ function calculateGrowth(current: number, previous: number): { value: number; po
     return { value: Math.abs(Math.round(growth)), positive: growth >= 0 }
 }
 
-import { ReportsFilter } from '@/components/dashboard/reports-filter'
+function ReportsPageContent() {
+    const searchParams = useSearchParams()
+    const from = searchParams.get('from') || ''
+    const to = searchParams.get('to') || ''
 
-export default async function ReportsPage({ searchParams }: { searchParams: { from?: string; to?: string } }) {
-    const data = await getReportData(searchParams)
+    const [loading, setLoading] = useState(true)
+    const [reportData, setReportData] = useState<any>(null)
 
-    const clientGrowth = calculateGrowth(data.thisMonth.clients, data.lastMonth.clients)
-    const quotationGrowth = calculateGrowth(data.thisMonth.quotations, data.lastMonth.quotations)
+    useEffect(() => {
+        async function fetchReportData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
+
+                // Get date ranges
+                const now = new Date()
+                const startOfMonth = from ? new Date(from) : new Date(now.getFullYear(), now.getMonth(), 1)
+                const endOfMonth = to ? new Date(to) : new Date()
+
+                // For comparison (previous period)
+                const duration = endOfMonth.getTime() - startOfMonth.getTime()
+                const startOfLastPeriod = new Date(startOfMonth.getTime() - duration)
+                const endOfLastPeriod = new Date(startOfMonth.getTime())
+
+                // Fetch current period stats
+                const [thisMonthClientsRes, thisMonthQuotationsRes, thisMonthHighValueRes, lastMonthClientsRes, lastMonthQuotationsRes, quotationsRes, agentsRes, recentQuotationsRes] = await Promise.all([
+                    supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
+                    supabase.from('quotations').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
+                    supabase.from('quotations').select('*', { count: 'exact', head: true }).eq('is_high_value', true).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
+                    supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', startOfLastPeriod.toISOString()).lte('created_at', endOfLastPeriod.toISOString()),
+                    supabase.from('quotations').select('*', { count: 'exact', head: true }).gte('created_at', startOfLastPeriod.toISOString()).lte('created_at', endOfLastPeriod.toISOString()),
+                    supabase.from('quotations').select('amount').gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
+                    supabase.from('app_users').select('id, full_name').eq('role', 'AGENT'),
+                    supabase.from('quotations').select(`*, client:clients(full_name)`).order('created_at', { ascending: false }).limit(10)
+                ])
+
+                const thisMonthClients = thisMonthClientsRes.count || 0
+                const thisMonthQuotations = thisMonthQuotationsRes.count || 0
+                const thisMonthHighValue = thisMonthHighValueRes.count || 0
+                const lastMonthClients = lastMonthClientsRes.count || 0
+                const lastMonthQuotations = lastMonthQuotationsRes.count || 0
+                
+                const totalQuotationValue = quotationsRes.data?.reduce((sum, q) => sum + Number(q.amount), 0) || 0
+                const avgQuoteSize = thisMonthQuotations > 0 ? totalQuotationValue / thisMonthQuotations : 0
+
+                // Fetch agent stats in parallel
+                const agentsList = agentsRes.data || []
+                const agentStats = await Promise.all(
+                    agentsList.map(async (agent) => {
+                        const [agentQuotesRes, agentClientsRes] = await Promise.all([
+                            supabase.from('quotations').select('*', { count: 'exact', head: true }).eq('created_by', agent.id).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
+                            supabase.from('clients').select('*', { count: 'exact', head: true }).eq('onboarding_agent_id', agent.id).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString())
+                        ])
+                        return {
+                            ...agent,
+                            quotations: agentQuotesRes.count || 0,
+                            clients: agentClientsRes.count || 0,
+                        }
+                    })
+                )
+
+                setReportData({
+                    thisMonth: {
+                        clients: thisMonthClients,
+                        quotations: thisMonthQuotations,
+                        highValue: thisMonthHighValue,
+                        totalValue: totalQuotationValue,
+                        avgQuoteSize,
+                    },
+                    lastMonth: {
+                        clients: lastMonthClients,
+                        quotations: lastMonthQuotations,
+                    },
+                    agentStats: agentStats.sort((a, b) => b.quotations - a.quotations),
+                    recentQuotations: recentQuotationsRes.data || [],
+                })
+            } catch (error) {
+                console.error('Error fetching report data:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchReportData()
+    }, [from, to])
+
+    if (loading || !reportData) {
+        return <Loading />
+    }
+
+    const clientGrowth = calculateGrowth(reportData.thisMonth.clients, reportData.lastMonth.clients)
+    const quotationGrowth = calculateGrowth(reportData.thisMonth.quotations, reportData.lastMonth.quotations)
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
@@ -164,7 +132,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                             <CardTitle className="text-sm font-medium text-gray-600">New Clients</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold">{data.thisMonth.clients}</p>
+                            <p className="text-2xl font-bold">{reportData.thisMonth.clients}</p>
                             <div className={`text-xs mt-1 flex items-center gap-1 ${clientGrowth.positive ? 'text-green-600' : 'text-red-600'}`}>
                                 <TrendingUp className={`h-3 w-3 ${!clientGrowth.positive && 'rotate-180'}`} />
                                 {clientGrowth.value}% vs previous period
@@ -177,7 +145,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                             <CardTitle className="text-sm font-medium text-gray-600">Quotations</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold">{data.thisMonth.quotations}</p>
+                            <p className="text-2xl font-bold">{reportData.thisMonth.quotations}</p>
                             <div className={`text-xs mt-1 flex items-center gap-1 ${quotationGrowth.positive ? 'text-green-600' : 'text-red-600'}`}>
                                 <TrendingUp className={`h-3 w-3 ${!quotationGrowth.positive && 'rotate-180'}`} />
                                 {quotationGrowth.value}% vs previous period
@@ -190,7 +158,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                             <CardTitle className="text-sm font-medium text-gray-600">Total Value</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold">{formatCurrency(data.thisMonth.totalValue)}</p>
+                            <p className="text-2xl font-bold">{formatCurrency(reportData.thisMonth.totalValue)}</p>
                             <p className="text-xs text-gray-500 mt-1">In quotations</p>
                         </CardContent>
                     </Card>
@@ -200,7 +168,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                             <CardTitle className="text-sm font-medium text-gray-600">Avg Quote Size</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold">{formatCurrency(data.thisMonth.avgQuoteSize)}</p>
+                            <p className="text-2xl font-bold">{formatCurrency(reportData.thisMonth.avgQuoteSize)}</p>
                             <p className="text-xs text-gray-500 mt-1">Per quotation</p>
                         </CardContent>
                     </Card>
@@ -208,14 +176,14 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
             </div>
 
             {/* High-Value Alert */}
-            {data.thisMonth.highValue > 0 && (
+            {reportData.thisMonth.highValue > 0 && (
                 <Card className="mb-6 border-orange-200 bg-orange-50">
                     <CardContent className="py-4">
                         <div className="flex items-center gap-3">
                             <AlertCircle className="h-6 w-6 text-orange-600" />
                             <div>
                                 <p className="font-semibold text-orange-900">
-                                    {data.thisMonth.highValue} High-Value Quotations This Month
+                                    {reportData.thisMonth.highValue} High-Value Quotations This Month
                                 </p>
                                 <p className="text-sm text-orange-700">
                                     Quotations above ₹10L or below 12% interest rate require review
@@ -240,11 +208,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                             <CardDescription>Agents ranked by quotations created</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {data.agentStats.length === 0 ? (
-                                <p className="text-sm text-gray-500 text-center py-8">No data available</p>
+                            {reportData.agentStats.length === 0 ? (
+                                <p className="text-sm text-gray-550 text-center py-8">No data available</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {data.agentStats.slice(0, 5).map((agent, index) => (
+                                    {reportData.agentStats.slice(0, 5).map((agent: any, index: number) => (
                                         <div
                                             key={agent.id}
                                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -273,14 +241,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                             <CardDescription>Agents ranked by clients onboarded</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {data.agentStats.length === 0 ? (
-                                <p className="text-sm text-gray-500 text-center py-8">No data available</p>
+                            {reportData.agentStats.length === 0 ? (
+                                <p className="text-sm text-gray-550 text-center py-8">No data available</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {data.agentStats
-                                        .sort((a, b) => b.clients - a.clients)
+                                    {reportData.agentStats
+                                        .slice()
+                                        .sort((a: any, b: any) => b.clients - a.clients)
                                         .slice(0, 5)
-                                        .map((agent, index) => (
+                                        .map((agent: any, index: number) => (
                                             <div
                                                 key={agent.id}
                                                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -314,21 +283,21 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
 
                 <Card>
                     <CardContent className="pt-6">
-                        {data.recentQuotations.length === 0 ? (
-                            <p className="text-sm text-gray-500 text-center py-8">No quotations yet</p>
+                        {reportData.recentQuotations.length === 0 ? (
+                            <p className="text-sm text-gray-550 text-center py-8">No quotations yet</p>
                         ) : (
                             <div className="space-y-3">
-                                {data.recentQuotations.map((quote: any) => (
+                                {reportData.recentQuotations.map((quote: any) => (
                                     <div
                                         key={quote.quote_id}
-                                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-gray-50 gap-2"
+                                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg hover:bg-gray-55 gap-2"
                                     >
                                         <div className="flex-1">
                                             <p className="font-medium">{quote.client?.full_name || 'Unknown'}</p>
                                             <p className="text-sm text-gray-600">
                                                 {formatCurrency(quote.amount)} • {quote.interest_rate}% • {quote.tenure} months
                                             </p>
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="text-xs text-gray-450 mt-1">
                                                 {formatDate(quote.created_at)}
                                             </p>
                                         </div>
@@ -342,8 +311,16 @@ export default async function ReportsPage({ searchParams }: { searchParams: { fr
                     </CardContent>
                 </Card>
             </div>
-
-
         </div>
+    )
+}
+
+import { Suspense } from 'react'
+
+export default function ReportsPage() {
+    return (
+        <Suspense fallback={<Loading />}>
+            <ReportsPageContent />
+        </Suspense>
     )
 }

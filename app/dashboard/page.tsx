@@ -1,4 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,32 +9,93 @@ import { RejectQuotationDialog } from '@/components/dashboard/reject-quotation-d
 import { AlertCircle, TrendingUp, Download, FileText, Phone, Calendar, CreditCard } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { getUnconvertedQuotations } from '@/lib/services/quotationService'
-import { getLoanDashboardStats } from '@/lib/services/loanService'
+import { createClient } from '@/lib/supabase/client'
+import type { QuotationWithDetails } from '@/lib/services/quotationService'
+import Loading from './loading'
 
-export const dynamic = 'force-dynamic'
+export default function DashboardPage() {
+    const [loading, setLoading] = useState(true)
+    const [fullName, setFullName] = useState('')
+    const [quotations, setQuotations] = useState<QuotationWithDetails[]>([])
+    const [stats, setStats] = useState({
+        totalLoans: 0,
+        activeAgents: 0,
+        pendingApprovals: 0,
+        overdueEMIs: 0,
+        upcomingPayments: 0,
+        highValueQuotes: 0,
+    })
 
-export default async function DashboardPage() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    useEffect(() => {
+        async function loadDashboard() {
+            try {
+                const supabase = createClient()
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) return
 
-    // Run all database calls in parallel to resolve waterfalls
-    const [userDataRes, statsRes, quotations] = await Promise.all([
-        supabase
-            .from('app_users')
-            .select('full_name')
-            .eq('id', user!.id)
-            .single(),
-        getLoanDashboardStats(),
-        getUnconvertedQuotations()
-    ])
+                // Fetch app user details
+                const userPromise = supabase
+                    .from('app_users')
+                    .select('full_name')
+                    .eq('id', user.id)
+                    .single()
 
-    const userData = userDataRes.data
-    const highValueQuotes = quotations.filter(q => q.is_high_value)
-    
-    const stats = {
-        ...statsRes,
-        highValueQuotes: highValueQuotes.length
+                // Fetch quotations
+                const quotesPromise = supabase
+                    .from('quotations')
+                    .select(`
+                        *,
+                        client:clients(*),
+                        created_by_user:app_users!quotations_created_by_fkey(*)
+                    `)
+                    .is('converted_to_loan_id', null)
+                    .neq('status', 'REJECTED')
+                    .order('created_at', { ascending: false })
+
+                // Fetch stats (EMI and loan totals)
+                const today = new Date()
+                const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+                const todayStr = today.toISOString().split('T')[0]
+                const nextWeekStr = nextWeek.toISOString().split('T')[0]
+
+                const [userRes, quotesRes, totalLoansRes, activeAgentsRes, pendingApprovalsRes, overdueEMIsRes, upcomingPaymentsRes] = await Promise.all([
+                    userPromise,
+                    quotesPromise,
+                    supabase.from('loan_applications').select('*', { count: 'exact', head: true }),
+                    supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'AGENT'),
+                    supabase.from('loan_applications').select('*', { count: 'exact', head: true }).in('process_stage', ['Document Verification', 'Credit Appraisal']),
+                    supabase.from('emi_schedule').select('*', { count: 'exact', head: true }).eq('status', 'OVERDUE'),
+                    supabase.from('emi_schedule').select('*', { count: 'exact', head: true }).eq('status', 'PENDING').gte('due_date', todayStr).lte('due_date', nextWeekStr)
+                ])
+
+                if (userRes.data) {
+                    setFullName(userRes.data.full_name)
+                }
+
+                const fetchedQuotes = (quotesRes.data || []) as QuotationWithDetails[]
+                const highValueQuotes = fetchedQuotes.filter(q => q.is_high_value)
+
+                setQuotations(fetchedQuotes)
+                setStats({
+                    totalLoans: totalLoansRes.count || 0,
+                    activeAgents: activeAgentsRes.count || 0,
+                    pendingApprovals: pendingApprovalsRes.count || 0,
+                    overdueEMIs: overdueEMIsRes.count || 0,
+                    upcomingPayments: upcomingPaymentsRes.count || 0,
+                    highValueQuotes: highValueQuotes.length,
+                })
+            } catch (error) {
+                console.error('Error loading dashboard data:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadDashboard()
+    }, [])
+
+    if (loading) {
+        return <Loading />
     }
 
     return (
@@ -40,7 +103,7 @@ export default async function DashboardPage() {
             {/* Header */}
             <div className="mb-6 md:mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Welcome back, {userData?.full_name}</p>
+                <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Welcome back, {fullName}</p>
             </div>
 
             {/* KPI Cards */}

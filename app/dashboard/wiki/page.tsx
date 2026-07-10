@@ -1,10 +1,47 @@
-import { getArticles, getCategories } from '@/lib/services/articleService'
-import { WikiHub } from '@/components/dashboard/wiki-hub'
-import { Suspense } from 'react'
+'use client'
 
-export const dynamic = 'force-dynamic'
+import { useState, useEffect } from 'react'
+import { WikiHub } from '@/components/dashboard/wiki-hub'
+import { createClient } from '@/lib/supabase/client'
+import Loading from './loading'
 
 export default function AdminWikiPage() {
+    const [loading, setLoading] = useState(true)
+    const [articles, setArticles] = useState<any[]>([])
+    const [categories, setCategories] = useState<string[]>([])
+
+    useEffect(() => {
+        async function fetchWikiData() {
+            try {
+                const supabase = createClient()
+                
+                const [articlesRes, categoriesRes] = await Promise.all([
+                    supabase.from('knowledge_articles').select('*').order('created_at', { ascending: false }),
+                    supabase.from('knowledge_articles').select('category')
+                ])
+
+                if (articlesRes.data) {
+                    setArticles(articlesRes.data)
+                }
+
+                if (categoriesRes.data) {
+                    const cats = new Set(categoriesRes.data.map(item => item.category))
+                    setCategories(Array.from(cats))
+                }
+            } catch (error) {
+                console.error('Failed to load wiki data:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchWikiData()
+    }, [])
+
+    if (loading) {
+        return <Loading />
+    }
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
             <div>
@@ -12,33 +49,11 @@ export default function AdminWikiPage() {
                 <p className="text-xs md:text-sm text-gray-500">Manage internal policy updates, commission structures, and verification guides.</p>
             </div>
 
-            <Suspense fallback={
-                <div className="space-y-4 py-4">
-                    <div className="h-10 bg-gray-100 rounded animate-pulse w-full"></div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-48 bg-gray-50 rounded-xl animate-pulse border border-gray-200"></div>
-                        ))}
-                    </div>
-                </div>
-            }>
-                <WikiLoader />
-            </Suspense>
+            <WikiHub
+                initialArticles={articles}
+                categories={categories}
+                isAdmin={true}
+            />
         </div>
-    )
-}
-
-async function WikiLoader() {
-    const [articles, categories] = await Promise.all([
-        getArticles(),
-        getCategories()
-    ])
-
-    return (
-        <WikiHub
-            initialArticles={articles || []}
-            categories={categories || []}
-            isAdmin={true}
-        />
     )
 }

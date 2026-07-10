@@ -1,32 +1,118 @@
-import { Suspense } from 'react'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, FileDown, Loader2 } from 'lucide-react'
+import { Plus, FileDown } from 'lucide-react'
 import Link from 'next/link'
 import { LoansDataTable } from '@/components/dashboard/loans-data-table'
 import { LoansFilters } from '@/components/dashboard/loans-filters'
-import { getLoans } from '@/lib/services/loanService'
-import { getAgents } from '@/lib/services/agentService'
+import { createClient } from '@/lib/supabase/client'
 import type { LoanWithRelations } from '@/lib/services/loanService'
+import Loading from './loading'
 
-export type { LoanWithRelations }
+function AdminLoansPageContent() {
+    const searchParams = useSearchParams()
+    
+    const [loading, setLoading] = useState(true)
+    const [agents, setAgents] = useState<any[]>([])
+    const [loans, setLoans] = useState<LoanWithRelations[]>([])
+    const [total, setTotal] = useState(0)
 
-export const dynamic = 'force-dynamic'
+    const status = searchParams.get('status') || 'all'
+    const agent = searchParams.get('agent') || 'all'
+    const search = searchParams.get('search') || ''
+    const fromDate = searchParams.get('from') || ''
+    const toDate = searchParams.get('to') || ''
+    const page = searchParams.get('page') || '1'
+    const currentPage = parseInt(page)
 
-interface PageProps {
-    searchParams: Promise<{
-        status?: string
-        agent?: string
-        search?: string
-        from?: string
-        to?: string
-        page?: string
-    }>
-}
+    useEffect(() => {
+        async function fetchLoansData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
 
-export default async function AdminLoansPage({ searchParams }: PageProps) {
-    const params = await searchParams
-    const currentPage = parseInt(params.page || '1')
+                // Fetch agents list
+                const agentsPromise = supabase
+                    .from('app_users')
+                    .select('*')
+                    .eq('role', 'AGENT')
+                    .order('full_name')
+
+                // Build query for loans
+                const pageSize = 20
+                const rangeFrom = (currentPage - 1) * pageSize
+                const rangeTo = rangeFrom + pageSize - 1
+
+                let query = supabase
+                    .from('loan_applications')
+                    .select(`
+                        *,
+                        client:clients(*),
+                        onboarding_agent:clients(onboarding_agent:app_users(*))
+                    `, { count: 'exact' })
+
+                if (status && status !== 'all') {
+                    query = query.eq('process_stage', status)
+                }
+                if (fromDate) {
+                    query = query.gte('created_at', fromDate)
+                }
+                if (toDate) {
+                    query = query.lte('created_at', toDate)
+                }
+
+                const [agentsRes, loansRes] = await Promise.all([
+                    agentsPromise,
+                    query.order('created_at', { ascending: false }).range(rangeFrom, rangeTo)
+                ])
+
+                if (agentsRes.data) {
+                    setAgents(agentsRes.data)
+                }
+
+                if (loansRes.data) {
+                    // Process nested data
+                    let processedLoans = (loansRes.data as any[]).map(loan => ({
+                        ...loan,
+                        client: Array.isArray(loan.client) ? loan.client[0] : loan.client,
+                        onboarding_agent: Array.isArray(loan.onboarding_agent)
+                            ? loan.onboarding_agent[0]?.onboarding_agent || null
+                            : loan.onboarding_agent?.onboarding_agent || null
+                    })) as LoanWithRelations[]
+
+                    // Client-side filtering for agent and name search
+                    if (agent && agent !== 'all') {
+                        processedLoans = processedLoans.filter(loan => loan.onboarding_agent?.id === agent)
+                    }
+                    if (search) {
+                        const searchLower = search.toLowerCase()
+                        processedLoans = processedLoans.filter(loan =>
+                            loan.client?.full_name?.toLowerCase().includes(searchLower)
+                        )
+                    }
+
+                    setLoans(processedLoans)
+                    setTotal(loansRes.count || 0)
+                }
+            } catch (error) {
+                console.error('Error fetching loans data:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchLoansData()
+    }, [status, agent, search, fromDate, toDate, page])
+
+    if (loading) {
+        return <Loading />
+    }
+
+    const pageSize = 20
+    const totalPages = Math.ceil(total / pageSize)
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
@@ -55,15 +141,7 @@ export default async function AdminLoansPage({ searchParams }: PageProps) {
             {/* Filters */}
             <Card className="mb-6">
                 <CardContent className="pt-6">
-                    <Suspense fallback={
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {[...Array(4)].map((_, i) => (
-                                <div key={i} className="h-10 bg-gray-100 rounded-md animate-pulse"></div>
-                            ))}
-                        </div>
-                    }>
-                        <FiltersLoader />
-                    </Suspense>
+                    <LoansFilters agents={agents} />
                 </CardContent>
             </Card>
 
@@ -73,38 +151,24 @@ export default async function AdminLoansPage({ searchParams }: PageProps) {
                     <CardTitle>All Loans</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Suspense fallback={
-                        <div className="space-y-4 py-4">
-                            <div className="h-8 bg-gray-100 rounded animate-pulse w-full"></div>
-                            {[...Array(5)].map((_, i) => (
-                                <div key={i} className="h-12 bg-gray-50 rounded animate-pulse w-full"></div>
-                            ))}
-                        </div>
-                    }>
-                        <LoansTableLoader params={params} currentPage={currentPage} />
-                    </Suspense>
+                    <LoansDataTable
+                        loans={loans}
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        total={total}
+                    />
                 </CardContent>
             </Card>
         </div>
     )
 }
 
-async function FiltersLoader() {
-    const agents = await getAgents()
-    return <LoansFilters agents={agents} />
-}
+import { Suspense } from 'react'
 
-async function LoansTableLoader({ params, currentPage }: { params: any; currentPage: number }) {
-    const { loans, total } = await getLoans(params)
-    const pageSize = 20
-    const totalPages = Math.ceil(total / pageSize)
-
+export default function AdminLoansPage() {
     return (
-        <LoansDataTable
-            loans={loans}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            total={total}
-        />
+        <Suspense fallback={<Loading />}>
+            <AdminLoansPageContent />
+        </Suspense>
     )
 }
