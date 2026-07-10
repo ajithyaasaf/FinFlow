@@ -22,16 +22,16 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { MoreVertical, Edit, Trash2, Loader2 } from 'lucide-react'
-import { AgentEditModal } from './agent-edit-modal'
+import { StaffEditModal } from './staff-edit-modal'
 
-interface AgentActionsProps {
-    agentId: string
-    agentName: string
+interface StaffActionsProps {
+    staffId: string
+    staffName: string
     currentName: string
     currentMobile: string
 }
 
-export function AgentActions({ agentId, agentName, currentName, currentMobile }: AgentActionsProps) {
+export function StaffActions({ staffId, staffName, currentName, currentMobile }: StaffActionsProps) {
     const router = useRouter()
     const [editOpen, setEditOpen] = useState(false)
     const [deleteOpen, setDeleteOpen] = useState(false)
@@ -41,7 +41,7 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
         setDeleting(true)
 
         try {
-            const response = await fetch(`/api/agents/${agentId}`, {
+            const response = await fetch(`/api/staff/${staffId}`, {
                 method: 'DELETE',
             })
 
@@ -53,7 +53,7 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
 
             toast.success('User deleted successfully')
             setDeleteOpen(false)  // Close immediately
-            router.refresh()      // Refresh agents list in background
+            router.refresh()      // Refresh staff list in background
         } catch (error) {
             console.error('Delete error:', error)
             toast.error(error instanceof Error ? error.message : 'Failed to delete user')
@@ -86,10 +86,10 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <AgentEditModal
+            <StaffEditModal
                 open={editOpen}
                 onOpenChange={setEditOpen}
-                agentId={agentId}
+                staffId={staffId}
                 currentName={currentName}
                 currentMobile={currentMobile}
             />
@@ -99,7 +99,7 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete User</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete <strong>{agentName}</strong>? This action cannot be undone.
+                            Are you sure you want to delete <strong>{staffName}</strong>? This action cannot be undone.
                             All their data (clients, quotations, attendance) will remain in the system but will be orphaned.
                         </AlertDialogDescription>
                     </AlertDialogHeader>

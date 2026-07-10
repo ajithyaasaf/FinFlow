@@ -11,12 +11,12 @@ import { Loader2, UserPlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { UserRole } from '@/types'
 
-interface AgentCreateModalProps {
+interface StaffCreateModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
 }
 
-export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) {
+export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null)
@@ -100,7 +100,7 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
                 ? formData.login_id
                 : `${formData.login_id.trim()}@finflow.com`
 
-            const response = await fetch('/api/agents/create', {
+            const response = await fetch('/api/staff/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

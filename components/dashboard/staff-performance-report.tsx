@@ -4,33 +4,33 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
 import { Users, Award } from 'lucide-react'
 
-interface AgentPerformanceReportProps {
+interface StaffPerformanceReportProps {
     from?: string
     to?: string
 }
 
-interface AgentStats {
-    agent_id: string
-    agent_name: string
+interface StaffStats {
+    staff_id: string
+    staff_name: string
     loans_disbursed: number
     total_amount: number
     payments_collected: number
     collection_rate: number
 }
 
-export async function AgentPerformanceReport({ from, to }: AgentPerformanceReportProps) {
+export async function StaffPerformanceReport({ from, to }: StaffPerformanceReportProps) {
     const supabase = await createClient()
 
     const fromDate = from || new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString()
     const toDate = to || new Date().toISOString()
 
     // Get all staff
-    const { data: agents } = await supabase
+    const { data: staffMembers } = await supabase
         .from('app_users')
         .select('id, full_name')
         .eq('role', 'STAFF')
 
-    if (!agents) {
+    if (!staffMembers) {
         return (
             <Card>
                 <CardHeader>
@@ -46,26 +46,26 @@ export async function AgentPerformanceReport({ from, to }: AgentPerformanceRepor
         )
     }
 
-    // Get performance stats for each agent
-    const agentStats: AgentStats[] = []
+    // Get performance stats for each staff member
+    const staffStats: StaffStats[] = []
 
-    for (const agent of agents) {
-        // Count loans disbursed by this agent's clients
+    for (const member of staffMembers) {
+        // Count loans disbursed by this staff's clients
         const { count: loansCount, data: loans } = await supabase
             .from('loan_applications')
             .select('amount, client_id, clients!inner(onboarding_agent_id)', { count: 'exact' })
-            .eq('clients.onboarding_agent_id', agent.id)
+            .eq('clients.onboarding_agent_id', member.id)
             .eq('process_stage', 'Disbursed')
             .gte('disbursement_date', fromDate)
             .lte('disbursement_date', toDate)
 
         const totalAmount = loans?.reduce((sum, loan) => sum + loan.amount, 0) || 0
 
-        // Get payments collected for this agent's clients
+        // Get payments collected for this staff's clients
         const { data: payments } = await supabase
             .from('payments')
             .select('amount, collected_by')
-            .eq('collected_by', agent.id)
+            .eq('collected_by', member.id)
             .gte('payment_date', fromDate)
             .lte('payment_date', toDate)
 
@@ -73,9 +73,9 @@ export async function AgentPerformanceReport({ from, to }: AgentPerformanceRepor
 
         const collectionRate = totalAmount > 0 ? (paymentsCollected / totalAmount) * 100 : 0
 
-        agentStats.push({
-            agent_id: agent.id,
-            agent_name: agent.full_name,
+        staffStats.push({
+            staff_id: member.id,
+            staff_name: member.full_name,
             loans_disbursed: loansCount || 0,
             total_amount: totalAmount,
             payments_collected: paymentsCollected,
@@ -84,7 +84,7 @@ export async function AgentPerformanceReport({ from, to }: AgentPerformanceRepor
     }
 
     // Sort by total amount descending
-    agentStats.sort((a, b) => b.total_amount - a.total_amount)
+    staffStats.sort((a, b) => b.total_amount - a.total_amount)
 
     return (
         <Card>
@@ -96,24 +96,24 @@ export async function AgentPerformanceReport({ from, to }: AgentPerformanceRepor
             </CardHeader>
             <CardContent>
                 <div className="space-y-3">
-                    {agentStats.length === 0 ? (
+                    {staffStats.length === 0 ? (
                         <p className="text-sm text-gray-500 text-center py-4">No staff activity in this period</p>
                     ) : (
-                        agentStats.slice(0, 5).map((agent, index) => (
-                            <div key={agent.agent_id} className="flex items-center justify-between p-3 border rounded-lg">
+                        staffStats.slice(0, 5).map((member, index) => (
+                            <div key={member.staff_id} className="flex items-center justify-between p-3 border rounded-lg">
                                 <div className="flex items-center gap-3">
                                     {index === 0 && <Award className="h-5 w-5 text-yellow-500" />}
                                     <div>
-                                        <p className="font-semibold text-sm">{agent.agent_name}</p>
+                                        <p className="font-semibold text-sm">{member.staff_name}</p>
                                         <p className="text-xs text-gray-500">
-                                            {agent.loans_disbursed} loan{agent.loans_disbursed !== 1 ? 's' : ''} • {formatCurrency(agent.total_amount)}
+                                            {member.loans_disbursed} loan{member.loans_disbursed !== 1 ? 's' : ''} • {formatCurrency(member.total_amount)}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-semibold">{formatCurrency(agent.payments_collected)}</p>
-                                    <Badge variant={agent.collection_rate >= 80 ? 'default' : 'secondary'} className="text-xs">
-                                        {agent.collection_rate.toFixed(0)}% collected
+                                    <p className="text-sm font-semibold">{formatCurrency(member.payments_collected)}</p>
+                                    <Badge variant={member.collection_rate >= 80 ? 'default' : 'secondary'} className="text-xs">
+                                        {member.collection_rate.toFixed(0)}% collected
                                     </Badge>
                                 </div>
                             </div>

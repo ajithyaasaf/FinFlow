@@ -6,36 +6,36 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, Calendar, CheckCircle, Phone } from 'lucide-react'
 import { formatDate, formatDateTime } from '@/lib/utils'
-import { AgentsPageHeader } from '@/components/dashboard/agents-page-header'
-import { AgentActions } from '@/components/dashboard/agent-actions'
+import { StaffPageHeader } from '@/components/dashboard/staff-page-header'
+import { StaffActions } from '@/components/dashboard/staff-actions'
 import { createClient } from '@/lib/supabase/client'
-import type { AgentWithStats } from '@/lib/services/agentService'
+import type { StaffWithStats } from '@/lib/services/staffService'
 import Loading from './loading'
 
-export default function AgentsPage() {
+export default function StaffPage() {
     const [loading, setLoading] = useState(true)
-    const [agents, setAgents] = useState<AgentWithStats[]>([])
+    const [staff, setStaff] = useState<StaffWithStats[]>([])
     const [stats, setStats] = useState({
-        totalAgents: 0,
+        totalStaff: 0,
         totalClients: 0,
         totalQuotations: 0,
         todayAttendance: 0,
     })
 
     useEffect(() => {
-        async function fetchAgentsData() {
+        async function fetchStaffData() {
             try {
                 const supabase = createClient()
 
-                // Fetch all agents
-                const { data: agentsData, error: agentsError } = await supabase
+                // Fetch all staff
+                const { data: staffData, error: staffError } = await supabase
                     .from('app_users')
                     .select('*')
                     .eq('role', 'STAFF')
                     .order('created_at', { ascending: false })
 
-                if (agentsError || !agentsData) {
-                    console.error('Error fetching agents:', agentsError)
+                if (staffError || !staffData) {
+                    console.error('Error fetching staff:', staffError)
                     return
                 }
 
@@ -44,7 +44,7 @@ export default function AgentsPage() {
                 today.setHours(0, 0, 0, 0)
                 const todayStr = today.toISOString()
 
-                const [clientsRes, quotationsRes, attendanceRes, totalAgentsRes, totalClientsRes, totalQuotationsRes, todayAttendanceRes] = await Promise.all([
+                const [clientsRes, quotationsRes, attendanceRes, totalStaffRes, totalClientsRes, totalQuotationsRes, todayAttendanceRes] = await Promise.all([
                     supabase.from('clients').select('onboarding_agent_id'),
                     supabase.from('quotations').select('created_by, converted_to_loan_id'),
                     supabase.from('attendance_logs').select('*').order('check_in_time', { ascending: false }),
@@ -78,7 +78,7 @@ export default function AgentsPage() {
                     }
                 })
 
-                // Group latest attendance per agent
+                // Group latest attendance per staff member
                 const latestAttendance: Record<string, any> = {}
                 attendanceList.forEach(a => {
                     if (a.agent_id && !latestAttendance[a.agent_id]) {
@@ -86,29 +86,29 @@ export default function AgentsPage() {
                     }
                 })
 
-                const processedAgents = agentsData.map(agent => ({
-                    ...agent,
-                    client_count: clientCounts[agent.id] || 0,
-                    quotation_count: quotationCounts[agent.id] || 0,
-                    converted_count: convertedCounts[agent.id] || 0,
-                    latest_attendance: latestAttendance[agent.id]
-                })) as AgentWithStats[]
+                const processedStaff = staffData.map(member => ({
+                    ...member,
+                    client_count: clientCounts[member.id] || 0,
+                    quotation_count: quotationCounts[member.id] || 0,
+                    converted_count: convertedCounts[member.id] || 0,
+                    latest_attendance: latestAttendance[member.id]
+                })) as StaffWithStats[]
 
-                setAgents(processedAgents)
+                setStaff(processedStaff)
                 setStats({
-                    totalAgents: totalAgentsRes.count || 0,
+                    totalStaff: totalStaffRes.count || 0,
                     totalClients: totalClientsRes.count || 0,
                     totalQuotations: totalQuotationsRes.count || 0,
                     todayAttendance: todayAttendanceRes.count || 0,
                 })
             } catch (error) {
-                console.error('Error fetching agents data:', error)
+                console.error('Error fetching staff data:', error)
             } finally {
                 setLoading(false)
             }
         }
 
-        fetchAgentsData()
+        fetchStaffData()
     }, [])
 
     if (loading) {
@@ -117,7 +117,7 @@ export default function AgentsPage() {
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
-            <AgentsPageHeader />
+            <StaffPageHeader />
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -126,7 +126,7 @@ export default function AgentsPage() {
                         <CardTitle className="text-sm font-medium text-gray-600">Total Staff</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-2xl font-bold">{stats.totalAgents}</p>
+                        <p className="text-2xl font-bold">{stats.totalStaff}</p>
                     </CardContent>
                 </Card>
 
@@ -156,7 +156,7 @@ export default function AgentsPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-2xl font-bold text-green-600">{stats.todayAttendance}</p>
-                        <p className="text-xs text-gray-500 mt-1">Out of {stats.totalAgents} staff</p>
+                        <p className="text-xs text-gray-500 mt-1">Out of {stats.totalStaff} staff</p>
                     </CardContent>
                 </Card>
             </div>
@@ -169,11 +169,11 @@ export default function AgentsPage() {
                         All Staff
                     </CardTitle>
                     <CardDescription>
-                        {agents.length} staff members
+                        {staff.length} staff members
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {agents.length === 0 ? (
+                    {staff.length === 0 ? (
                         <div className="py-12 text-center">
                             <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                             <p className="text-sm text-gray-600">No staff yet</p>
@@ -183,7 +183,7 @@ export default function AgentsPage() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {agents.map((agent) => (
+                            {staff.map((agent) => (
                                 <div
                                     key={agent.id}
                                     className="border rounded-lg p-3 md:p-4 hover:shadow-md transition-shadow"
@@ -246,9 +246,9 @@ export default function AgentsPage() {
                                         </div>
 
                                         <div className="sm:ml-auto w-full sm:w-auto mt-3 sm:mt-0">
-                                            <AgentActions
-                                                agentId={agent.id}
-                                                agentName={agent.full_name}
+                                            <StaffActions
+                                                staffId={agent.id}
+                                                staffName={agent.full_name}
                                                 currentName={agent.full_name}
                                                 currentMobile={agent.mobile_number}
                                             />
@@ -269,7 +269,7 @@ export default function AgentsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {agents
+                            {staff
                                 .sort((a, b) => b.quotation_count - a.quotation_count)
                                 .slice(0, 5)
                                 .map((agent, index) => (

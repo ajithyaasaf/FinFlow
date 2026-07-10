@@ -9,15 +9,15 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Loader2, Edit } from 'lucide-react'
 
-interface AgentEditModalProps {
+interface StaffEditModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    agentId: string
+    staffId: string
     currentName: string
     currentMobile: string
 }
 
-export function AgentEditModal({ open, onOpenChange, agentId, currentName, currentMobile }: AgentEditModalProps) {
+export function StaffEditModal({ open, onOpenChange, staffId, currentName, currentMobile }: StaffEditModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
@@ -54,7 +54,7 @@ export function AgentEditModal({ open, onOpenChange, agentId, currentName, curre
         setLoading(true)
 
         try {
-            const response = await fetch(`/api/agents/${agentId}`, {
+            const response = await fetch(`/api/staff/${staffId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

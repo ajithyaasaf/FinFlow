@@ -41,7 +41,7 @@ function ReportsPageContent() {
                 const endOfLastPeriod = new Date(startOfMonth.getTime())
 
                 // Fetch current period stats
-                const [thisMonthClientsRes, thisMonthQuotationsRes, thisMonthHighValueRes, lastMonthClientsRes, lastMonthQuotationsRes, quotationsRes, agentsRes, recentQuotationsRes] = await Promise.all([
+                const [thisMonthClientsRes, thisMonthQuotationsRes, thisMonthHighValueRes, lastMonthClientsRes, lastMonthQuotationsRes, quotationsRes, staffRes, recentQuotationsRes] = await Promise.all([
                     supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
                     supabase.from('quotations').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
                     supabase.from('quotations').select('*', { count: 'exact', head: true }).eq('is_high_value', true).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
@@ -61,18 +61,18 @@ function ReportsPageContent() {
                 const totalQuotationValue = quotationsRes.data?.reduce((sum, q) => sum + Number(q.amount), 0) || 0
                 const avgQuoteSize = thisMonthQuotations > 0 ? totalQuotationValue / thisMonthQuotations : 0
 
-                // Fetch agent stats in parallel
-                const agentsList = agentsRes.data || []
-                const agentStats = await Promise.all(
-                    agentsList.map(async (agent) => {
-                        const [agentQuotesRes, agentClientsRes] = await Promise.all([
-                            supabase.from('quotations').select('*', { count: 'exact', head: true }).eq('created_by', agent.id).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
-                            supabase.from('clients').select('*', { count: 'exact', head: true }).eq('onboarding_agent_id', agent.id).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString())
+                // Fetch staff stats in parallel
+                const staffList = staffRes.data || []
+                const staffStats = await Promise.all(
+                    staffList.map(async (member) => {
+                        const [memberQuotesRes, memberClientsRes] = await Promise.all([
+                            supabase.from('quotations').select('*', { count: 'exact', head: true }).eq('created_by', member.id).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
+                            supabase.from('clients').select('*', { count: 'exact', head: true }).eq('onboarding_agent_id', member.id).gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString())
                         ])
                         return {
-                            ...agent,
-                            quotations: agentQuotesRes.count || 0,
-                            clients: agentClientsRes.count || 0,
+                            ...member,
+                            quotations: memberQuotesRes.count || 0,
+                            clients: memberClientsRes.count || 0,
                         }
                     })
                 )
@@ -89,7 +89,7 @@ function ReportsPageContent() {
                         clients: lastMonthClients,
                         quotations: lastMonthQuotations,
                     },
-                    agentStats: agentStats.sort((a, b) => b.quotations - a.quotations),
+                    staffStats: staffStats.sort((a, b) => b.quotations - a.quotations),
                     recentQuotations: recentQuotationsRes.data || [],
                 })
             } catch (error) {
@@ -208,13 +208,13 @@ function ReportsPageContent() {
                             <CardDescription>Staff ranked by quotations created</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {reportData.agentStats.length === 0 ? (
+                            {reportData.staffStats.length === 0 ? (
                                 <p className="text-sm text-gray-550 text-center py-8">No data available</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {reportData.agentStats.slice(0, 5).map((agent: any, index: number) => (
+                                    {reportData.staffStats.slice(0, 5).map((member: any, index: number) => (
                                         <div
-                                            key={agent.id}
+                                            key={member.id}
                                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                                         >
                                             <div className="flex items-center gap-3">
@@ -225,9 +225,9 @@ function ReportsPageContent() {
                                                     }`}>
                                                     {index + 1}
                                                 </div>
-                                                <span className="font-medium text-sm md:text-base truncate">{agent.full_name}</span>
+                                                <span className="font-medium text-sm md:text-base truncate">{member.full_name}</span>
                                             </div>
-                                            <Badge variant="outline" className="text-xs">{agent.quotations} quotes</Badge>
+                                            <Badge variant="outline" className="text-xs">{member.quotations} quotes</Badge>
                                         </div>
                                     ))}
                                 </div>
@@ -241,17 +241,17 @@ function ReportsPageContent() {
                             <CardDescription>Staff ranked by clients onboarded</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {reportData.agentStats.length === 0 ? (
+                            {reportData.staffStats.length === 0 ? (
                                 <p className="text-sm text-gray-550 text-center py-8">No data available</p>
                             ) : (
                                 <div className="space-y-3">
-                                    {reportData.agentStats
+                                    {reportData.staffStats
                                         .slice()
                                         .sort((a: any, b: any) => b.clients - a.clients)
                                         .slice(0, 5)
-                                        .map((agent: any, index: number) => (
+                                        .map((member: any, index: number) => (
                                             <div
-                                                key={agent.id}
+                                                key={member.id}
                                                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                                             >
                                                 <div className="flex items-center gap-3">
@@ -262,9 +262,9 @@ function ReportsPageContent() {
                                                         }`}>
                                                         {index + 1}
                                                     </div>
-                                                    <span className="font-medium text-sm md:text-base truncate">{agent.full_name}</span>
+                                                    <span className="font-medium text-sm md:text-base truncate">{member.full_name}</span>
                                                 </div>
-                                                <Badge variant="outline" className="text-xs">{agent.clients} clients</Badge>
+                                                <Badge variant="outline" className="text-xs">{member.clients} clients</Badge>
                                             </div>
                                         ))}
                                 </div>

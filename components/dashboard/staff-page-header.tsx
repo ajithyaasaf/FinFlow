@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { AgentCreateModal } from './agent-create-modal'
+import { StaffCreateModal } from './staff-create-modal'
 import { Button } from '@/components/ui/button'
 import { UserPlus } from 'lucide-react'
 
-export function AgentsPageHeader() {
+export function StaffPageHeader() {
     const [createOpen, setCreateOpen] = useState(false)
 
     return (
@@ -21,7 +21,7 @@ export function AgentsPageHeader() {
                 </Button>
             </div>
 
-            <AgentCreateModal open={createOpen} onOpenChange={setCreateOpen} />
+            <StaffCreateModal open={createOpen} onOpenChange={setCreateOpen} />
         </>
     )
 }

@@ -82,12 +82,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            agent: appUser,
+            staff: appUser,
             message: 'Staff created successfully'
         }, { status: 201 })
 
     } catch (error) {
-        console.error('Create agent error:', error)
+        console.error('Create staff error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

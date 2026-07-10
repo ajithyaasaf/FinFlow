@@ -40,7 +40,7 @@ export async function PATCH(
         if (full_name) updateData.full_name = full_name
         if (mobile_number) updateData.mobile_number = mobile_number
 
-        const { data: updatedAgent, error } = await supabase
+        const { data: updatedStaff, error } = await supabase
             .from('app_users')
             .update(updateData)
             .eq('id', params.id)
@@ -50,11 +50,11 @@ export async function PATCH(
 
         if (error) {
             console.error('Update error:', error)
-            return NextResponse.json({ error: 'Failed to update agent' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to update staff' }, { status: 500 })
         }
 
-        if (!updatedAgent) {
-            return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+        if (!updatedStaff) {
+            return NextResponse.json({ error: 'Staff not found' }, { status: 404 })
         }
 
         // Revalidate the staff page to show the updated staff immediately
@@ -62,12 +62,12 @@ export async function PATCH(
 
         return NextResponse.json({
             success: true,
-            agent: updatedAgent,
-            message: 'Agent updated successfully'
+            staff: updatedStaff,
+            message: 'Staff updated successfully'
         })
 
     } catch (error) {
-        console.error('Update agent error:', error)
+        console.error('Update staff error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
@@ -101,7 +101,7 @@ export async function DELETE(
 
         if (authError) {
             console.error('Auth delete error:', authError)
-            return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to delete staff' }, { status: 500 })
         }
 
         // Revalidate the staff page to remove the deleted staff immediately
@@ -109,11 +109,11 @@ export async function DELETE(
 
         return NextResponse.json({
             success: true,
-            message: 'Agent deleted successfully'
+            message: 'Staff deleted successfully'
         })
 
     } catch (error) {
-        console.error('Delete agent error:', error)
+        console.error('Delete staff error:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
