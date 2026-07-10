@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import type { LoanWithRelations } from '@/app/dashboard/loans/page'
+import type { LoanWithRelations } from '@/lib/services/loanService'
 
 interface LoansDataTableProps {
     loans: LoanWithRelations[]

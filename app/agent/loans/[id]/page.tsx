@@ -1,58 +1,18 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { DocumentReupload } from '@/components/agent/document-reupload'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
     ChevronLeft, AlertCircle, CheckCircle, Clock,
-    Calendar, CreditCard, TrendingUp
+    Calendar, CreditCard, TrendingUp, Loader2
 } from 'lucide-react'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import type { EMISchedule } from '@/types'
-
-interface PageProps {
-    params: Promise<{
-        id: string
-    }>
-}
-
-// Separate data fetching function for clean architecture
-async function getLoanWithEMI(supabase: any, loanId: string) {
-    // Fetch loan with documents
-    const { data: loan, error: loanError } = await supabase
-        .from('loan_applications')
-        .select(`
-            *,
-            documents:loan_documents(*)
-        `)
-        .eq('loan_id', loanId)
-        .single()
-
-    if (loanError || !loan) return { loan: null, client: null, emiSchedule: [] }
-
-    // Fetch client and EMI schedule in parallel
-    const [clientRes, emiRes] = await Promise.all([
-        supabase
-            .from('clients')
-            .select('client_id, full_name, onboarding_agent_id')
-            .eq('client_id', loan.client_id)
-            .single(),
-        loan.process_stage === 'Disbursed'
-            ? supabase
-                .from('emi_schedule')
-                .select('*')
-                .eq('loan_id', loanId)
-                .order('emi_number', { ascending: true })
-            : Promise.resolve({ data: [] })
-    ])
-
-    return {
-        loan,
-        client: clientRes.data || null,
-        emiSchedule: emiRes.data || []
-    }
-}
 
 // EMI Status Badge Component
 function EMIStatusBadge({ status }: { status: string }) {
@@ -78,7 +38,6 @@ function EMISummaryCard({ schedule }: { schedule: EMISchedule[] }) {
     const paid = schedule.filter(e => e.status === 'PAID').length
     const overdue = schedule.filter(e => e.status === 'OVERDUE').length
     const pending = schedule.filter(e => e.status === 'PENDING').length
-    const nextDue = schedule.find(e => e.status === 'PENDING' || e.status === 'OVERDUE')
 
     return (
         <div className="grid grid-cols-3 gap-3 mb-4">
@@ -98,15 +57,84 @@ function EMISummaryCard({ schedule }: { schedule: EMISchedule[] }) {
     )
 }
 
-export default async function AgentLoanDetailsPage({ params }: PageProps) {
-    const { id } = await params
-    const supabase = await createClient()
+export default function AgentLoanDetailsPage() {
+    const params = useParams()
+    const router = useRouter()
+    const id = params.id as string
 
-    // Auth check
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
+    const [loading, setLoading] = useState(true)
+    const [loan, setLoan] = useState<any>(null)
+    const [client, setClient] = useState<any>(null)
+    const [emiSchedule, setEmiSchedule] = useState<EMISchedule[]>([])
 
-    const { loan, client, emiSchedule } = await getLoanWithEMI(supabase, id)
+    useEffect(() => {
+        if (!id) return
+
+        async function loadData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
+
+                // Check auth
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) {
+                    router.push('/login')
+                    return
+                }
+
+                // Fetch loan with documents
+                const { data: loanData, error: loanError } = await supabase
+                    .from('loan_applications')
+                    .select(`
+                        *,
+                        documents:loan_documents(*)
+                    `)
+                    .eq('loan_id', id)
+                    .single()
+
+                if (loanError || !loanData) {
+                    setLoan(null)
+                    setLoading(false)
+                    return
+                }
+
+                // Fetch client and EMI schedule in parallel
+                const [clientRes, emiRes] = await Promise.all([
+                    supabase
+                        .from('clients')
+                        .select('client_id, full_name, onboarding_agent_id')
+                        .eq('client_id', loanData.client_id)
+                        .single(),
+                    loanData.process_stage === 'Disbursed'
+                        ? supabase
+                            .from('emi_schedule')
+                            .select('*')
+                            .eq('loan_id', id)
+                            .order('emi_number', { ascending: true })
+                        : Promise.resolve({ data: [] })
+                ])
+
+                setLoan(loanData)
+                setClient(clientRes.data || null)
+                setEmiSchedule(emiRes.data || [])
+            } catch (err) {
+                console.error('Failed to load agent loan details:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadData()
+    }, [id, router])
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Loading loan details...</p>
+            </div>
+        )
+    }
 
     // Error: Loan not found
     if (!loan) {
@@ -264,4 +292,3 @@ export default async function AgentLoanDetailsPage({ params }: PageProps) {
         </div>
     )
 }
-

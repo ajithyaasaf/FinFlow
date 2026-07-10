@@ -1,25 +1,22 @@
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
     ArrowLeft, User, Phone, Mail, CreditCard, FileText,
-    Calendar, MapPin, Building, ChevronRight, Plus, Edit, Download
+    Calendar, MapPin, ChevronRight, Plus, Download, Loader2, AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
 import { ClientEditModal } from '@/components/dashboard/client-edit-modal'
 import { ClientDeleteDialog } from '@/components/dashboard/client-delete-dialog'
 import { ConvertToLoan } from '@/components/dashboard/convert-to-loan'
 import { RejectQuotationDialog } from '@/components/dashboard/reject-quotation-dialog'
-import type { Client, LoanApplication, Quotation } from '@/types'
-import { getClientDetails } from '@/lib/services/clientService'
-
-export const dynamic = 'force-dynamic'
-
-interface PageProps {
-    params: Promise<{ id: string }>
-}
+import { createClient } from '@/lib/supabase/client'
+import type { LoanApplication, Quotation } from '@/types'
 
 // Stage color mapping
 const STAGE_COLORS: Record<string, string> = {
@@ -121,7 +118,6 @@ function QuotationsSection({ quotations, clientName }: { quotations: Quotation[]
             <CardContent className="space-y-3">
                 {quotations.slice(0, 5).map((quote) => {
                     const currentStatus = quote.status || (quote.converted_to_loan_id ? 'CONVERTED' : 'PENDING')
-                    const isPending = currentStatus === 'PENDING'
 
                     return (
                         <div
@@ -189,15 +185,87 @@ function QuotationsSection({ quotations, clientName }: { quotations: Quotation[]
     )
 }
 
-export default async function ClientDetailPage({ params }: PageProps) {
-    const { id } = await params
-    const data = await getClientDetails(id)
+export default function ClientDetailPage() {
+    const params = useParams()
+    const router = useRouter()
+    const id = params.id as string
 
-    if (!data) {
-        notFound()
+    const [loading, setLoading] = useState(true)
+    const [client, setClient] = useState<any>(null)
+    const [loans, setLoans] = useState<any[]>([])
+    const [quotations, setQuotations] = useState<any[]>([])
+
+    useEffect(() => {
+        if (!id) return
+
+        async function loadData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
+
+                const { data: clientData, error: clientError } = await supabase
+                    .from('clients')
+                    .select(`
+                        *,
+                        onboarding_agent:app_users!clients_onboarding_agent_id_fkey(id, full_name, email)
+                    `)
+                    .eq('client_id', id)
+                    .single()
+
+                if (clientError || !clientData) {
+                    setClient(null)
+                    setLoading(false)
+                    return
+                }
+
+                const [loansRes, quotesRes] = await Promise.all([
+                    supabase
+                        .from('loan_applications')
+                        .select('*')
+                        .eq('client_id', id)
+                        .order('created_at', { ascending: false }),
+                    supabase
+                        .from('quotations')
+                        .select('*')
+                        .eq('client_id', id)
+                        .order('created_at', { ascending: false })
+                ])
+
+                setClient(clientData)
+                setLoans(loansRes.data || [])
+                setQuotations(quotesRes.data || [])
+            } catch (err) {
+                console.error('Failed to load client details:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadData()
+    }, [id])
+
+    if (loading) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Loading client profile...</p>
+            </div>
+        )
     }
 
-    const { client, loans, quotations } = data
+    if (!client) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+                <AlertCircle className="h-12 w-12 text-red-500" />
+                <h2 className="text-xl font-bold text-gray-900">Client Not Found</h2>
+                <p className="text-sm text-gray-600">The client profile does not exist or was deleted.</p>
+                <Link href="/dashboard/clients">
+                    <Button>Back to Clients</Button>
+                </Link>
+            </div>
+        )
+    }
+
     const agent = Array.isArray(client.onboarding_agent)
         ? client.onboarding_agent[0]
         : client.onboarding_agent

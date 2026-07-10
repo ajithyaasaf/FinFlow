@@ -1,48 +1,82 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
-    ArrowLeft, CheckCircle, Clock, MessageCircle,
-    TrendingUp, User, DollarSign
+    ArrowLeft, Clock, MessageCircle, User, DollarSign, Loader2, AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
-import type { TopUpOffer, Client, LoanApplication } from '@/types'
 import { generateWhatsAppLink } from '@/lib/topup-notifications'
 import { TopUpActions } from '@/components/dashboard/topup-actions'
+import { createClient } from '@/lib/supabase/client'
 
-export const dynamic = 'force-dynamic'
+export default function TopUpOfferPage() {
+    const params = useParams()
+    const router = useRouter()
+    const id = params.id as string
 
-interface PageProps {
-    params: Promise<{
-        id: string
-    }>
-}
+    const [loading, setLoading] = useState(true)
+    const [offer, setOffer] = useState<any>(null)
 
-async function getTopUpOffer(offerId: string) {
-    const supabase = await createClient()
+    useEffect(() => {
+        if (!id) return
 
-    const { data: offer, error } = await supabase
-        .from('topup_offers')
-        .select(`
-      *,
-      client:clients(*),
-      loan:loan_applications(*)
-    `)
-        .eq('offer_id', offerId)
-        .single()
+        async function loadData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
 
-    return offer as (TopUpOffer & { client: Client; loan: LoanApplication }) | null
-}
+                const { data, error } = await supabase
+                    .from('topup_offers')
+                    .select(`
+                        *,
+                        client:clients(*),
+                        loan:loan_applications(*)
+                    `)
+                    .eq('offer_id', id)
+                    .single()
 
-export default async function TopUpOfferPage({ params }: PageProps) {
-    const { id } = await params
-    const offer = await getTopUpOffer(id)
+                if (error || !data) {
+                    setOffer(null)
+                    setLoading(false)
+                    return
+                }
+
+                setOffer(data)
+            } catch (err) {
+                console.error('Failed to load topup offer details:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadData()
+    }, [id])
+
+    if (loading) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Loading offer details...</p>
+            </div>
+        )
+    }
 
     if (!offer) {
-        notFound()
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+                <AlertCircle className="h-12 w-12 text-red-500" />
+                <h2 className="text-xl font-bold text-gray-900">Offer Not Found</h2>
+                <p className="text-sm text-gray-600">The top-up offer ID does not exist or was deleted.</p>
+                <Link href="/dashboard">
+                    <Button>Back to Dashboard</Button>
+                </Link>
+            </div>
+        )
     }
 
     const client = Array.isArray(offer.client) ? offer.client[0] : offer.client
@@ -179,25 +213,25 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-600">EMIs Paid</span>
                                 <Badge variant="outline">
-                                    {offer.eligibility_details.emisPaid}
+                                    {offer.eligibility_details?.emisPaid}
                                 </Badge>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-600">Principal Repaid</span>
                                 <Badge variant="outline">
-                                    {offer.eligibility_details.repaidPercentage.toFixed(1)}%
+                                    {offer.eligibility_details?.repaidPercentage?.toFixed(1)}%
                                 </Badge>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-600">Missed Payments</span>
-                                <Badge variant={offer.eligibility_details.missedPayments > 0 ? 'destructive' : 'default'}>
-                                    {offer.eligibility_details.missedPayments}
+                                <Badge variant={offer.eligibility_details?.missedPayments > 0 ? 'destructive' : 'default'}>
+                                    {offer.eligibility_details?.missedPayments}
                                 </Badge>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-600">Amount Repaid</span>
                                 <span className="font-semibold text-sm">
-                                    {formatCurrency(offer.eligibility_details.principalRepaid)}
+                                    {formatCurrency(offer.eligibility_details?.principalRepaid || 0)}
                                 </span>
                             </div>
                         </CardContent>

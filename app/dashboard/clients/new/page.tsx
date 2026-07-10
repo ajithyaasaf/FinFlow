@@ -1,26 +1,51 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AdminClientForm } from '@/components/dashboard/admin-client-form'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import type { AppUser } from '@/types'
 
-export const dynamic = 'force-dynamic'
+export default function NewClientPage() {
+    const router = useRouter()
 
-async function getAgents(): Promise<AppUser[]> {
-    const supabase = await createClient()
+    const [loading, setLoading] = useState(true)
+    const [agents, setAgents] = useState<AppUser[]>([])
 
-    const { data } = await supabase
-        .from('app_users')
-        .select('id, full_name, email, role')
-        .eq('role', 'AGENT')
-        .order('full_name')
+    useEffect(() => {
+        async function loadAgents() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
 
-    return (data || []) as AppUser[]
-}
+                const { data } = await supabase
+                    .from('app_users')
+                    .select('id, full_name, email, role')
+                    .eq('role', 'AGENT')
+                    .order('full_name')
 
-export default async function NewClientPage() {
-    const agents = await getAgents()
+                setAgents((data || []) as AppUser[])
+            } catch (err) {
+                console.error('Failed to load agents list:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadAgents()
+    }, [])
+
+    if (loading) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Loading creation form...</p>
+            </div>
+        )
+    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">

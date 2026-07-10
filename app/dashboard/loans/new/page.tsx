@@ -1,30 +1,60 @@
-import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, FileText } from 'lucide-react'
+import { ArrowLeft, FileText, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { CreateLoanForm } from '@/components/dashboard/create-loan-form'
-import { getBankPartners } from '@/lib/services/bankService'
+import { createClient } from '@/lib/supabase/client'
 import type { Client } from '@/types'
 
-export const dynamic = 'force-dynamic'
+export default function NewLoanPage() {
+    const router = useRouter()
 
-async function getClients(): Promise<Client[]> {
-    const supabase = await createClient()
+    const [loading, setLoading] = useState(true)
+    const [clients, setClients] = useState<Client[]>([])
+    const [partners, setPartners] = useState<any[]>([])
 
-    const { data } = await supabase
-        .from('clients')
-        .select('*')
-        .order('full_name')
+    useEffect(() => {
+        async function loadData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
 
-    return (data || []) as Client[]
-}
+                const [clientsRes, partnersRes] = await Promise.all([
+                    supabase
+                        .from('clients')
+                        .select('*')
+                        .order('full_name'),
+                    supabase
+                        .from('bank_partners')
+                        .select('*')
+                        .eq('is_active', true)
+                        .order('name')
+                ])
 
-export default async function NewLoanPage() {
-    const [clients, partners] = await Promise.all([
-        getClients(),
-        getBankPartners()
-    ])
+                setClients((clientsRes.data || []) as Client[])
+                setPartners(partnersRes.data || [])
+            } catch (err) {
+                console.error('Failed to load new loan metadata:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadData()
+    }, [])
+
+    if (loading) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Loading page details...</p>
+            </div>
+        )
+    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">

@@ -1,69 +1,103 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
     ArrowLeft, Calendar, CheckCircle, Clock, AlertCircle,
-    DollarSign, TrendingUp, Receipt
+    TrendingUp, Receipt, Loader2
 } from 'lucide-react'
 import Link from 'next/link'
-import type { EMISchedule, Payment, LoanApplication, Client } from '@/types'
 import { EMIScheduleList } from '@/components/dashboard/emi-schedule-list'
+import { createClient } from '@/lib/supabase/client'
+import type { EMISchedule, Payment } from '@/types'
 
-export const dynamic = 'force-dynamic'
+export default function LoanPaymentsPage() {
+    const params = useParams()
+    const router = useRouter()
+    const id = params.id as string
 
-interface PageProps {
-    params: Promise<{
-        id: string
-    }>
-}
+    const [loading, setLoading] = useState(true)
+    const [loan, setLoan] = useState<any>(null)
+    const [schedule, setSchedule] = useState<EMISchedule[]>([])
+    const [payments, setPayments] = useState<Payment[]>([])
 
-async function getLoanPaymentData(loanId: string) {
-    const supabase = await createClient()
+    useEffect(() => {
+        if (!id) return
 
-    // Get loan details
-    const { data: loan, error: loanError } = await supabase
-        .from('loan_applications')
-        .select(`
-      *,
-      client:clients(*)
-    `)
-        .eq('loan_id', loanId)
-        .single()
+        async function loadData() {
+            setLoading(true)
+            try {
+                const supabase = createClient()
 
-    if (loanError || !loan) return null
+                // Get loan details
+                const { data: loanData, error: loanError } = await supabase
+                    .from('loan_applications')
+                    .select(`
+                        *,
+                        client:clients(*)
+                    `)
+                    .eq('loan_id', id)
+                    .single()
 
-    // Get EMI schedule
-    const { data: schedule } = await supabase
-        .from('emi_schedule')
-        .select('*')
-        .eq('loan_id', loanId)
-        .order('emi_number', { ascending: true })
+                if (loanError || !loanData) {
+                    setLoan(null)
+                    setLoading(false)
+                    return
+                }
 
-    // Get payment history
-    const { data: payments } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('loan_id', loanId)
-        .order('payment_date', { ascending: false })
+                // Get EMI schedule and payment history in parallel
+                const [scheduleRes, paymentsRes] = await Promise.all([
+                    supabase
+                        .from('emi_schedule')
+                        .select('*')
+                        .eq('loan_id', id)
+                        .order('emi_number', { ascending: true }),
+                    supabase
+                        .from('payments')
+                        .select('*')
+                        .eq('loan_id', id)
+                        .order('payment_date', { ascending: false })
+                ])
 
-    return {
-        loan: loan as LoanApplication & { client: Client },
-        schedule: (schedule as EMISchedule[]) || [],
-        payments: (payments as Payment[]) || []
+                setLoan(loanData)
+                setSchedule(scheduleRes.data || [])
+                setPayments(paymentsRes.data || [])
+            } catch (err) {
+                console.error('Failed to load payments details:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadData()
+    }, [id])
+
+    if (loading) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-sm text-gray-500 font-medium font-sans">Loading payment schedule...</p>
+            </div>
+        )
     }
-}
 
-export default async function LoanPaymentsPage({ params }: PageProps) {
-    const { id } = await params
-    const data = await getLoanPaymentData(id)
-
-    if (!data) {
-        notFound()
+    if (!loan) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+                <AlertCircle className="h-12 w-12 text-red-500" />
+                <h2 className="text-xl font-bold text-gray-900">Loan Not Found</h2>
+                <p className="text-sm text-gray-600">The loan ID does not exist or was deleted.</p>
+                <Link href="/dashboard/loans">
+                    <Button>Back to Loans</Button>
+                </Link>
+            </div>
+        )
     }
 
-    const { loan, schedule, payments } = data
     const client = Array.isArray(loan.client) ? loan.client[0] : loan.client
 
     // Calculate summary
