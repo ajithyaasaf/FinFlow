@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BottomNavigation } from '@/components/agent/bottom-navigation'
 import { Loader2 } from 'lucide-react'
 
-export default function AgentLayout({
+export default function StaffLayout({
     children,
 }: {
     children: React.ReactNode
@@ -25,21 +25,21 @@ export default function AgentLayout({
                     return
                 }
 
-                // Verify user is an agent
+                // Verify user is a staff
                 const { data: userData } = await supabase
                     .from('app_users')
                     .select('role')
                     .eq('id', user.id)
                     .single()
 
-                if (!userData || userData.role !== 'AGENT') {
+                if (!userData || userData.role !== 'STAFF') {
                     router.push('/dashboard')
                     return
                 }
 
                 setLoading(false)
             } catch (error) {
-                console.error('Agent auth check error:', error)
+                console.error('Staff auth check error:', error)
                 router.push('/login')
             }
         }

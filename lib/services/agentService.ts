@@ -15,7 +15,7 @@ export async function getAgents(): Promise<AgentWithStats[]> {
     const { data: agents, error: agentsError } = await supabase
         .from('app_users')
         .select('*')
-        .eq('role', 'AGENT')
+        .eq('role', 'STAFF')
         .order('created_at', { ascending: false })
 
     if (agentsError || !agents) {
@@ -81,7 +81,7 @@ export async function getAgentStats() {
 
     // Execute aggregate queries in parallel
     const [totalAgentsRes, totalClientsRes, totalQuotationsRes, todayAttendanceRes] = await Promise.all([
-        supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'AGENT'),
+        supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'STAFF'),
         supabase.from('clients').select('*', { count: 'exact', head: true }),
         supabase.from('quotations').select('*', { count: 'exact', head: true }),
         supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', today.toISOString())

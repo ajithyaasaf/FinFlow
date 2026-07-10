@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react'
 
 function NewClientPageContent() {
     const searchParams = useSearchParams()
-    const returnUrl = searchParams.get('return') || '/agent/clients'
+    const returnUrl = searchParams.get('return') || '/staff/clients'
 
     return (
         <div className="min-h-screen bg-gray-50">

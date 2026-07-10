@@ -16,12 +16,12 @@ export function BottomNavigation() {
     }, [pathname])
 
     const navItems = [
-        { href: '/agent', label: 'Home', icon: Home },
-        { href: '/agent/clients', label: 'Clients', icon: Users },
-        { href: '/agent/quotation', label: 'Quote', icon: Calculator },
-        { href: '/agent/attendance', label: 'Attend', icon: Camera },
-        { href: '/agent/wiki', label: 'Handbook', icon: BookOpen },
-        { href: '/agent/profile', label: 'Profile', icon: User },
+        { href: '/staff', label: 'Home', icon: Home },
+        { href: '/staff/clients', label: 'Clients', icon: Users },
+        { href: '/staff/quotation', label: 'Quote', icon: Calculator },
+        { href: '/staff/attendance', label: 'Attend', icon: Camera },
+        { href: '/staff/wiki', label: 'Handbook', icon: BookOpen },
+        { href: '/staff/profile', label: 'Profile', icon: User },
     ]
 
     return (

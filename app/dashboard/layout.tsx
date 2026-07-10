@@ -7,6 +7,8 @@ import { Sidebar } from '@/components/dashboard/sidebar'
 import { DashboardTopBar } from '@/components/dashboard/top-bar'
 import { MobileMenuProvider } from '@/components/dashboard/mobile-menu-context'
 import { Loader2 } from 'lucide-react'
+import { canAccessDashboard } from '@/lib/roles'
+import { UserRole } from '@/types'
 
 export default function DashboardLayout({
     children,
@@ -33,8 +35,8 @@ export default function DashboardLayout({
                     .eq('id', user.id)
                     .single()
 
-                if (!userData || userData.role !== 'ADMIN') {
-                    router.push('/agent')
+                if (!userData || !canAccessDashboard(userData.role as UserRole)) {
+                    router.push('/staff')
                     return
                 }
 

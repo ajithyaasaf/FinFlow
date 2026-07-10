@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/login') {
         if (user) {
             // User is authenticated, redirect to /dashboard.
-            // If they are an AGENT, dashboard's layout.tsx will intercept and redirect to /agent.
+            // If they are a STAFF, dashboard's layout.tsx will intercept and redirect to /staff.
             return NextResponse.redirect(new URL('/dashboard', request.url))
         }
         return supabaseResponse

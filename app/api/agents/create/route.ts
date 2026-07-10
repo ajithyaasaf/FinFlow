@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createAuditLog } from '@/lib/audit-logger'
 import { revalidatePath } from 'next/cache'
+import { canManageStaff } from '@/lib/roles'
+import { UserRole } from '@/types'
 
 export async function POST(request: NextRequest) {
     try {
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
             .eq('id', user.id)
             .single()
 
-        if (!adminUser || adminUser.role !== 'ADMIN') {
+        if (!adminUser || !canManageStaff(adminUser.role as UserRole)) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
             .from('app_users')
             .insert({
                 id: authUser.user.id,
-                role: 'AGENT',
+                role: body.role || 'STAFF',
                 full_name,
                 mobile_number,
                 email,
@@ -68,16 +69,16 @@ export async function POST(request: NextRequest) {
             // Rollback: Delete auth user if db insert fails
             await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
             console.error('Database error:', dbError)
-            return NextResponse.json({ error: 'Failed to create agent profile' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to create staff profile' }, { status: 500 })
         }
 
-        // Revalidate the agents page to show the new agent immediately
-        revalidatePath('/dashboard/agents')
+        // Revalidate the staff page to show the new staff immediately
+        revalidatePath('/dashboard/staff')
 
         return NextResponse.json({
             success: true,
             agent: appUser,
-            message: 'Agent created successfully'
+            message: 'Staff created successfully'
         }, { status: 201 })
 
     } catch (error) {

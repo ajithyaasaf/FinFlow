@@ -19,9 +19,10 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         full_name: '',
-        email: '',
+        login_id: '',
         mobile_number: '',
         password: '',
+        role: 'STAFF',
     })
 
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -33,10 +34,10 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
             newErrors.full_name = 'Full name is required'
         }
 
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email is required'
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Invalid email format'
+        if (!formData.login_id.trim()) {
+            newErrors.login_id = 'Login ID is required'
+        } else if (/\s/.test(formData.login_id)) {
+            newErrors.login_id = 'Login ID cannot contain spaces'
         }
 
         if (!formData.mobile_number.trim()) {
@@ -65,27 +66,38 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
         setLoading(true)
 
         try {
+            // Construct email from login ID
+            const email = formData.login_id.includes('@')
+                ? formData.login_id
+                : `${formData.login_id.trim()}@finflow.com`
+
             const response = await fetch('/api/agents/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    full_name: formData.full_name,
+                    email,
+                    mobile_number: formData.mobile_number,
+                    password: formData.password,
+                    role: formData.role,
+                }),
             })
 
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to create agent')
+                throw new Error(data.error || 'Failed to create user')
             }
 
-            toast.success('Agent created successfully!')
+            toast.success(`${formData.role} created successfully!`)
             // Close and reset form immediately — list refresh happens in background
             onOpenChange(false)
-            setFormData({ full_name: '', email: '', mobile_number: '', password: '' })
+            setFormData({ full_name: '', login_id: '', mobile_number: '', password: '', role: 'STAFF' })
             setErrors({})
             router.refresh()
         } catch (error) {
-            console.error('Create agent error:', error)
-            toast.error(error instanceof Error ? error.message : 'Failed to create agent')
+            console.error('Create user error:', error)
+            toast.error(error instanceof Error ? error.message : 'Failed to create user')
         } finally {
             setLoading(false)
         }
@@ -97,10 +109,10 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <UserPlus className="h-5 w-5" />
-                        Create New Agent
+                        Create New User
                     </DialogTitle>
                     <DialogDescription>
-                        Add a new field agent to the system. They will receive login credentials via email.
+                        Create a user profile. A simple Login ID (e.g. staff01) is enough to log in.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -121,18 +133,34 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email *</Label>
+                            <Label htmlFor="login_id">Login ID *</Label>
                             <Input
-                                id="email"
-                                type="email"
-                                placeholder="john.doe@example.com"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className={errors.email ? 'border-red-500' : ''}
+                                id="login_id"
+                                placeholder="e.g. staff01"
+                                value={formData.login_id}
+                                onChange={(e) => setFormData({ ...formData, login_id: e.target.value })}
+                                className={errors.login_id ? 'border-red-500' : ''}
                             />
-                            {errors.email && (
-                                <p className="text-sm text-red-500">{errors.email}</p>
+                            {errors.login_id && (
+                                <p className="text-sm text-red-500">{errors.login_id}</p>
                             )}
+                            <p className="text-[11px] text-gray-400">
+                                This will act as the login credentials ID.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="role">User Role *</Label>
+                            <select
+                                id="role"
+                                value={formData.role}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <option value="STAFF">Staff (Field Agent)</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="MD">Managing Director (MD)</option>
+                            </select>
                         </div>
 
                         <div className="space-y-2">
@@ -164,7 +192,7 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
                                 <p className="text-sm text-red-500">{errors.password}</p>
                             )}
                             <p className="text-xs text-gray-500">
-                                The agent can change this after first login
+                                The user can change this after first login
                             </p>
                         </div>
                     </div>
@@ -180,7 +208,7 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
                         </Button>
                         <Button type="submit" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? 'Creating...' : 'Create Agent'}
+                            {loading ? 'Creating...' : 'Create User'}
                         </Button>
                     </DialogFooter>
                 </form>

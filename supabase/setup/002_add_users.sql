@@ -24,14 +24,24 @@ VALUES (
   'admin@finflow.com'
 );
 
--- Agent User
+-- MD User
 INSERT INTO public.app_users (id, role, full_name, mobile_number, email)
 VALUES (
-  'REPLACE-WITH-AGENT-UUID-FROM-AUTH-USERS',  -- 👈 PASTE AGENT UUID HERE
-  'AGENT',
-  'Field Agent',
+  'REPLACE-WITH-MD-UUID-FROM-AUTH-USERS',  -- 👈 PASTE MD UUID HERE
+  'MD',
+  'Managing Director',
+  '9876543212',
+  'md@finflow.com'
+);
+
+-- Staff User
+INSERT INTO public.app_users (id, role, full_name, mobile_number, email)
+VALUES (
+  'REPLACE-WITH-STAFF-UUID-FROM-AUTH-USERS',  -- 👈 PASTE STAFF UUID HERE
+  'STAFF',
+  'Field Staff',
   '9876543211',
-  'agent@finflow.com'
+  'staff01@finflow.com'
 );
 
 -- ============================================================================

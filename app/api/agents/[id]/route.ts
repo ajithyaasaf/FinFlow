@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { canManageStaff, canDeleteUser } from '@/lib/roles'
+import { UserRole } from '@/types'
 
 export async function PATCH(
     request: NextRequest,
@@ -22,7 +24,7 @@ export async function PATCH(
             .eq('id', user.id)
             .single()
 
-        if (!adminUser || adminUser.role !== 'ADMIN') {
+        if (!adminUser || !canManageStaff(adminUser.role as UserRole)) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
@@ -42,7 +44,7 @@ export async function PATCH(
             .from('app_users')
             .update(updateData)
             .eq('id', params.id)
-            .eq('role', 'AGENT') // Only allow updating agents
+            .eq('role', 'STAFF') // Only allow updating staff
             .select()
             .single()
 
@@ -55,8 +57,8 @@ export async function PATCH(
             return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
         }
 
-        // Revalidate the agents page to show the updated agent immediately
-        revalidatePath('/dashboard/agents')
+        // Revalidate the staff page to show the updated staff immediately
+        revalidatePath('/dashboard/staff')
 
         return NextResponse.json({
             success: true,
@@ -89,7 +91,7 @@ export async function DELETE(
             .eq('id', user.id)
             .single()
 
-        if (!adminUser || adminUser.role !== 'ADMIN') {
+        if (!adminUser || !canDeleteUser(adminUser.role as UserRole)) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
@@ -102,8 +104,8 @@ export async function DELETE(
             return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 })
         }
 
-        // Revalidate the agents page to remove the deleted agent immediately
-        revalidatePath('/dashboard/agents')
+        // Revalidate the staff page to remove the deleted staff immediately
+        revalidatePath('/dashboard/staff')
 
         return NextResponse.json({
             success: true,

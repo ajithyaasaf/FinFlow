@@ -7,7 +7,7 @@
 -- 1. app_users table
 CREATE TABLE IF NOT EXISTS public.app_users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('ADMIN', 'AGENT')),
+  role TEXT NOT NULL CHECK (role IN ('ADMIN', 'MD', 'STAFF')),
   full_name TEXT NOT NULL,
   mobile_number TEXT NOT NULL,
   email TEXT NOT NULL,

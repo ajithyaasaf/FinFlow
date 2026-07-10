@@ -50,8 +50,8 @@ const navItems = [
         icon: Building,
     },
     {
-        href: '/dashboard/agents',
-        label: 'Agents',
+        href: '/dashboard/staff',
+        label: 'Staffs',
         icon: Users,
     },
     {
@@ -85,6 +85,30 @@ export function Sidebar() {
     const pathname = usePathname()
     const { isOpen, closeMenu } = useMobileMenu()
     const [clickedHref, setClickedHref] = useState<string | null>(null)
+    const [userProfile, setUserProfile] = useState<{ full_name: string; role: string } | null>(null)
+
+    useEffect(() => {
+        async function fetchProfile() {
+            try {
+                const { createClient } = await import('@/lib/supabase/client')
+                const supabase = createClient()
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    const { data } = await supabase
+                        .from('app_users')
+                        .select('full_name, role')
+                        .eq('id', user.id)
+                        .single()
+                    if (data) {
+                        setUserProfile(data)
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching sidebar profile:', error)
+            }
+        }
+        fetchProfile()
+    }, [])
 
     // Close menu when route changes and reset clicked state
     useEffect(() => {
@@ -119,7 +143,9 @@ export function Sidebar() {
                         </div>
                         <div>
                             <span className="text-lg font-bold text-gray-900">FinFlow</span>
-                            <p className="text-[10px] text-gray-400 -mt-0.5">Admin Portal</p>
+                            <p className="text-[10px] text-gray-400 -mt-0.5">
+                                {userProfile ? `${userProfile.role} Portal` : 'Portal'}
+                            </p>
                         </div>
                     </div>
 
@@ -182,8 +208,12 @@ export function Sidebar() {
                             <User className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">Admin</p>
-                            <p className="text-xs text-gray-400">Super Admin</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                                {userProfile?.full_name || 'Loading...'}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                                {userProfile?.role || '...'}
+                            </p>
                         </div>
                     </div>
 

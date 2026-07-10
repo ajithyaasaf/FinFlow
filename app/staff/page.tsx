@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { LogOut, Users, Calculator, Camera, TrendingUp, FileText, Flame } from 'lucide-react'
 
-export default function AgentDashboard() {
+export default function StaffDashboard() {
     const supabase = createClient()
     const router = useRouter()
     const [userData, setUserData] = useState<any>(null)
@@ -85,7 +85,7 @@ export default function AgentDashboard() {
     }
 
     const handleLogout = async () => {
-        console.log('[FinFlow] Agent logout initiated')
+        console.log('[FinFlow] Staff logout initiated')
         await supabase.auth.signOut()
         // Use window.location to ensure cookies are fully cleared
         window.location.href = '/login'
@@ -103,7 +103,7 @@ export default function AgentDashboard() {
         <div className="min-h-screen bg-gray-50">
             <PageHeader
                 title="FinFlow"
-                subtitle={userData?.full_name || 'Agent Dashboard'}
+                subtitle={userData?.full_name || 'Staff Dashboard'}
                 showNotifications={true}
                 actions={
                     <Button
@@ -127,7 +127,7 @@ export default function AgentDashboard() {
 
                 {/* Quick Action Cards */}
                 <div className="space-y-3 mb-6">
-                    <Link href="/agent/leads">
+                    <Link href="/staff/leads">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
@@ -146,7 +146,7 @@ export default function AgentDashboard() {
                         </Card>
                     </Link>
 
-                    <Link href="/agent/clients">
+                    <Link href="/staff/clients">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
@@ -165,7 +165,7 @@ export default function AgentDashboard() {
                         </Card>
                     </Link>
 
-                    <Link href="/agent/quotation">
+                    <Link href="/staff/quotation">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
@@ -184,7 +184,7 @@ export default function AgentDashboard() {
                         </Card>
                     </Link>
 
-                    <Link href="/agent/quotations">
+                    <Link href="/staff/quotations">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
@@ -203,7 +203,7 @@ export default function AgentDashboard() {
                         </Card>
                     </Link>
 
-                    <Link href="/agent/attendance">
+                    <Link href="/staff/attendance">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
@@ -225,7 +225,7 @@ export default function AgentDashboard() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-3 gap-3">
-                    <Link href="/agent/loans">
+                    <Link href="/staff/loans">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
                             <CardContent className="p-4 text-center">
                                 <TrendingUp className="h-6 w-6 mx-auto mb-2 text-blue-600" />
@@ -235,7 +235,7 @@ export default function AgentDashboard() {
                         </Card>
                     </Link>
 
-                    <Link href="/agent/quotations">
+                    <Link href="/staff/quotations">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
                             <CardContent className="p-4 text-center">
                                 <FileText className="h-6 w-6 mx-auto mb-2 text-blue-600" />
@@ -245,7 +245,7 @@ export default function AgentDashboard() {
                         </Card>
                     </Link>
 
-                    <Link href="/agent/leads">
+                    <Link href="/staff/leads">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
                             <CardContent className="p-4 text-center">
                                 <Flame className="h-6 w-6 mx-auto mb-2 text-rose-600" />

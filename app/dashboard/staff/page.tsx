@@ -31,7 +31,7 @@ export default function AgentsPage() {
                 const { data: agentsData, error: agentsError } = await supabase
                     .from('app_users')
                     .select('*')
-                    .eq('role', 'AGENT')
+                    .eq('role', 'STAFF')
                     .order('created_at', { ascending: false })
 
                 if (agentsError || !agentsData) {
@@ -48,7 +48,7 @@ export default function AgentsPage() {
                     supabase.from('clients').select('onboarding_agent_id'),
                     supabase.from('quotations').select('created_by, converted_to_loan_id'),
                     supabase.from('attendance_logs').select('*').order('check_in_time', { ascending: false }),
-                    supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'AGENT'),
+                    supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'STAFF'),
                     supabase.from('clients').select('*', { count: 'exact', head: true }),
                     supabase.from('quotations').select('*', { count: 'exact', head: true }),
                     supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', todayStr)

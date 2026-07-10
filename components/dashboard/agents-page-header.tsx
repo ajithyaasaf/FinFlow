@@ -12,12 +12,12 @@ export function AgentsPageHeader() {
         <>
             <div className="mb-6 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Agent Management</h1>
-                    <p className="text-gray-600 mt-2">Monitor agent performance and activity</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
+                    <p className="text-gray-600 mt-2">Monitor staff performance and activity</p>
                 </div>
                 <Button onClick={() => setCreateOpen(true)}>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Create Agent
+                    Create User / Staff
                 </Button>
             </div>
 

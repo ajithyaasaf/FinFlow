@@ -28,8 +28,10 @@ export default function LoginPage() {
         setLoading(true)
 
         try {
+            const loginEmail = email.includes('@') ? email : `${email}@finflow.com`
+
             const { data, error } = await supabase.auth.signInWithPassword({
-                email,
+                email: loginEmail,
                 password,
             })
 
@@ -52,10 +54,10 @@ export default function LoginPage() {
                 toast.success(`Welcome back, ${userData.full_name}!`)
 
                 // Redirect based on role
-                if (userData.role === 'ADMIN') {
+                if (userData.role === 'ADMIN' || userData.role === 'MD') {
                     window.location.href = '/dashboard'
                 } else {
-                    window.location.href = '/agent'
+                    window.location.href = '/staff'
                 }
             }
         } catch (error) {
@@ -63,7 +65,7 @@ export default function LoginPage() {
             if (error instanceof Error) {
                 toast.error(error.message)
             } else {
-                toast.error('Invalid email or password')
+                toast.error('Invalid login credentials')
             }
         } finally {
             setLoading(false)
@@ -125,11 +127,11 @@ export default function LoginPage() {
                     {/* Form */}
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-1.5">
-                            <Label htmlFor="email" className="text-sm font-semibold text-[#222222]">Email Address</Label>
+                            <Label htmlFor="email" className="text-sm font-semibold text-[#222222]">Login ID / Email</Label>
                             <Input
                                 id="email"
-                                type="email"
-                                placeholder="agent@example.com"
+                                type="text"
+                                placeholder="e.g. staff01 or admin@finflow.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 disabled={loading}
@@ -169,8 +171,9 @@ export default function LoginPage() {
                             Demo Credentials
                         </p>
                         <div className="text-[11px] text-[#6a6a6a] leading-relaxed">
+                            <p><span className="font-semibold text-gray-700">MD:</span> md@finflow.com / password123</p>
                             <p><span className="font-semibold text-gray-700">Admin:</span> admin@finflow.com / password123</p>
-                            <p><span className="font-semibold text-gray-700">Agent:</span> agent@finflow.com / password123</p>
+                            <p><span className="font-semibold text-gray-700">Staff:</span> staff01 / password123</p>
                         </div>
                     </div>
                 </div>

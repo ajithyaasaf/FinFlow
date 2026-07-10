@@ -1,6 +1,6 @@
 // Database Types matching Supabase Schema
 
-export type UserRole = 'ADMIN' | 'AGENT';
+export type UserRole = 'MD' | 'ADMIN' | 'STAFF';
 
 export type LoanProcessStage =
     | 'Application Submitted'
