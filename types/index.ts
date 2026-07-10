@@ -43,6 +43,10 @@ export interface LoanApplication {
     rejection_reason?: string | null;
     disbursement_date?: string | null;
     disbursement_reference?: string | null;
+    bank_partner_id?: string | null;
+    product_name?: string | null;
+    login_reference_number?: string | null;
+    original_request_date?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -196,4 +200,75 @@ export interface LoanPaymentSummary {
     principal_paid: number
     outstanding_principal: number
     next_due_date: string | null
+}
+
+// ============================================================================
+// LEADS, PARTNERS, ACTIVITIES & KNOWLEDGE BASE TYPES
+// ============================================================================
+
+export type LeadStatus = 'NEW' | 'CONTACTED' | 'FOLLOW_UP' | 'INTERESTED' | 'NOT_INTERESTED' | 'CONVERTED';
+export type LeadHeatLevel = 'HOT' | 'WARM' | 'COLD';
+export type LeadSource = 'DIGITAL_MARKETING' | 'COLD_CALLING' | 'REFERRAL' | 'WALK_IN' | 'OTHER';
+
+export interface Lead {
+    lead_id: string;
+    full_name: string;
+    company_name: string | null;
+    phone_number: string;
+    email: string | null;
+    status: LeadStatus;
+    source: LeadSource;
+    heat_level: LeadHeatLevel;
+    assigned_agent_id: string | null;
+    assigned_agent?: { id: string; full_name: string; email: string } | null;
+    constitution: string | null;
+    industry_type: string | null;
+    nature_of_business: string | null;
+    property_details: string | null;
+    ownership_type: string | null;
+    regular_it: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface BankPartner {
+    partner_id: string;
+    bank_name: string;
+    branch_name: string | null;
+    manager_name: string | null;
+    manager_phone: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export type ActivityType = 'TASK' | 'REMINDER' | 'CALL_LOG';
+export type ActivityStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
+
+export interface Activity {
+    activity_id: string;
+    title: string;
+    description: string | null;
+    type: ActivityType;
+    status: ActivityStatus;
+    due_date: string | null;
+    related_lead_id: string | null;
+    related_client_id: string | null;
+    assigned_agent_id: string | null;
+    assigned_agent?: { id: string; full_name: string; email: string } | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface KnowledgeArticle {
+    article_id: string;
+    title: string;
+    content: string;
+    category: string;
+    is_internal: boolean;
+    created_at: string;
+    updated_at: string;
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Users, Calculator, Camera, User } from 'lucide-react'
+import { Home, Users, Calculator, Camera, User, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function BottomNavigation() {
@@ -20,6 +20,7 @@ export function BottomNavigation() {
         { href: '/agent/clients', label: 'Clients', icon: Users },
         { href: '/agent/quotation', label: 'Quote', icon: Calculator },
         { href: '/agent/attendance', label: 'Attend', icon: Camera },
+        { href: '/agent/wiki', label: 'Handbook', icon: BookOpen },
         { href: '/agent/profile', label: 'Profile', icon: User },
     ]
 
@@ -31,7 +32,7 @@ export function BottomNavigation() {
                 paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))'
             }}
         >
-            <div className="grid grid-cols-5">
+            <div className="grid grid-cols-6">
                 {navItems.map((item) => {
                     const isActive = clickedHref ? clickedHref === item.href : pathname === item.href
                     const Icon = item.icon

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { CreateLoanForm } from '@/components/dashboard/create-loan-form'
+import { getBankPartners } from '@/lib/services/bankService'
 import type { Client } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -20,7 +21,10 @@ async function getClients(): Promise<Client[]> {
 }
 
 export default async function NewLoanPage() {
-    const clients = await getClients()
+    const [clients, partners] = await Promise.all([
+        getClients(),
+        getBankPartners()
+    ])
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
@@ -32,7 +36,7 @@ export default async function NewLoanPage() {
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Create New Loan</h1>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Create Loan</h1>
                     <p className="text-xs md:text-sm text-gray-500">Create a loan application for an existing client</p>
                 </div>
             </div>
@@ -45,8 +49,7 @@ export default async function NewLoanPage() {
                         <div className="text-sm">
                             <p className="font-medium text-blue-800">Loan Application Process</p>
                             <p className="text-blue-600 mt-1">
-                                Select a client and enter loan terms. The loan will start in "Application Submitted"
-                                stage and proceed through verification stages before disbursement.
+                                Select a client and enter loan terms. Choose between Direct Lending or Brokerage Submission models.
                             </p>
                         </div>
                     </div>
@@ -54,7 +57,7 @@ export default async function NewLoanPage() {
             </Card>
 
             {/* Form */}
-            <CreateLoanForm clients={clients} />
+            <CreateLoanForm clients={clients} partners={partners} />
         </div>
     )
 }

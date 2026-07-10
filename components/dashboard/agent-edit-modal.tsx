@@ -67,8 +67,8 @@ export function AgentEditModal({ open, onOpenChange, agentId, currentName, curre
             }
 
             toast.success('Agent updated successfully!')
-            onOpenChange(false)
-            router.refresh()
+            onOpenChange(false)   // Close immediately
+            router.refresh()      // Refresh list in background
         } catch (error) {
             console.error('Update agent error:', error)
             toast.error(error instanceof Error ? error.message : 'Failed to update agent')

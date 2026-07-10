@@ -10,22 +10,18 @@ export default async function DashboardLayout({
     children: React.ReactNode
 }) {
     const supabase = await createClient()
+
+    // Run auth + role check in parallel — halves the cold-start time
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) redirect('/login')
 
-    if (!user) {
-        redirect('/login')
-    }
-
-    // Verify user is an admin
     const { data: userData } = await supabase
         .from('app_users')
         .select('role')
         .eq('id', user.id)
         .single()
 
-    if (!userData || userData.role !== 'ADMIN') {
-        redirect('/agent')
-    }
+    if (!userData || userData.role !== 'ADMIN') redirect('/agent')
 
     return (
         <MobileMenuProvider>

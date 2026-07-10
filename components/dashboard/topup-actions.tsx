@@ -76,8 +76,8 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
             }
 
             toast.success('Top-up offer approved! New loan application created.')
-            setShowApproveDialog(false)
-            router.refresh()
+            setShowApproveDialog(false)  // Close immediately
+            router.refresh()             // Refresh in background
             router.push('/dashboard/loans')
         } catch (error) {
             console.error('Approve error:', error)
@@ -109,8 +109,8 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
             if (error) throw error
 
             toast.success('Top-up offer rejected')
-            setShowRejectDialog(false)
-            router.refresh()
+            setShowRejectDialog(false)   // Close immediately
+            router.refresh()             // Refresh in background
         } catch (error) {
             console.error('Reject error:', error)
             toast.error('Failed to reject top-up offer')

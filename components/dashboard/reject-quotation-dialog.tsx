@@ -43,9 +43,9 @@ export function RejectQuotationDialog({ quotationId, clientName }: RejectQuotati
 
             if (res.success) {
                 toast.success('Quotation rejected successfully')
-                setOpen(false)
-                setReason('')
-                router.refresh()
+                setOpen(false)   // Close immediately
+                setReason('')    // Reset immediately
+                router.refresh() // Refresh list in background
             } else {
                 toast.error(res.error || 'Failed to reject quotation')
             }

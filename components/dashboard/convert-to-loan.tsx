@@ -42,13 +42,10 @@ export function ConvertToLoan({ quotationId, clientId, amount, interestRate, ten
             }
 
             toast.success('Quotation converted to loan application successfully!')
-            setOpen(false)
-            router.refresh()
-
-            // Redirect to loan details
-            setTimeout(() => {
-                router.push('/dashboard/loans')
-            }, 1000)
+            setOpen(false)       // Close immediately
+            router.refresh()     // Refresh list in background
+            // Redirect to loan details after a short delay
+            setTimeout(() => { router.push('/dashboard/loans') }, 800)
         } catch (error) {
             console.error('Conversion error:', error)
             toast.error('Failed to convert quotation to loan')

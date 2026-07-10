@@ -50,8 +50,8 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
             if (error) throw error
 
             toast.success('Client updated successfully')
-            setOpen(false)
-            router.refresh()
+            setOpen(false)       // Close modal immediately
+            router.refresh()     // Refresh in background
         } catch (error) {
             console.error('Update client error:', error)
             toast.error('Failed to update client')

@@ -11,24 +11,31 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ClientSearchSelect } from '@/components/ui/client-search-select'
 import { Loader2, Calculator, Search } from 'lucide-react'
 import Link from 'next/link'
-import type { Client } from '@/types'
+import type { Client, BankPartner } from '@/types'
 import { calculateEMI } from '@/lib/utils'
 import { formatCurrency } from '@/lib/utils'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface CreateLoanFormProps {
     clients: Client[]
+    partners: BankPartner[]
 }
 
-export function CreateLoanForm({ clients }: CreateLoanFormProps) {
+export function CreateLoanForm({ clients, partners }: CreateLoanFormProps) {
     const router = useRouter()
     const supabase = createClient()
 
     const [loading, setLoading] = useState(false)
+    const [lenderModel, setLenderModel] = useState<'DIRECT' | 'BROKERAGE'>('DIRECT')
     const [formData, setFormData] = useState({
         client_id: '',
         amount: '',
         interest_rate: '12',
         tenure: '12',
+        bank_partner_id: '',
+        product_name: '',
+        login_reference_number: '',
+        original_request_date: '',
     })
 
     // Calculate EMI preview
@@ -72,16 +79,25 @@ export function CreateLoanForm({ clients }: CreateLoanFormProps) {
         setLoading(true)
 
         try {
-            // Create loan application
+            // Create loan application payload
+            const payload: any = {
+                client_id: formData.client_id,
+                amount: amount,
+                interest_rate: rate,
+                tenure: tenure,
+                process_stage: 'Application Submitted',
+            }
+
+            if (lenderModel === 'BROKERAGE') {
+                payload.bank_partner_id = formData.bank_partner_id || null
+                payload.product_name = formData.product_name || null
+                payload.login_reference_number = formData.login_reference_number || null
+                payload.original_request_date = formData.original_request_date || null
+            }
+
             const { data: loan, error } = await supabase
                 .from('loan_applications')
-                .insert({
-                    client_id: formData.client_id,
-                    amount: amount,
-                    interest_rate: rate,
-                    tenure: tenure,
-                    process_stage: 'Application Submitted',
-                })
+                .insert(payload)
                 .select()
                 .single()
 
@@ -132,6 +148,85 @@ export function CreateLoanForm({ clients }: CreateLoanFormProps) {
                             Add new client
                         </Link>
                     </p>
+                </CardContent>
+            </Card>
+
+            {/* Lender Model Selection */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-lg">Lender Model</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="lender_model">Business Archetype</Label>
+                            <Select
+                                value={lenderModel}
+                                onValueChange={(val: 'DIRECT' | 'BROKERAGE') => setLenderModel(val)}
+                            >
+                                <SelectTrigger id="lender_model">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="DIRECT">Direct Lending (FinFlow In-House)</SelectItem>
+                                    <SelectItem value="BROKERAGE">Brokerage Submission (External Bank)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    {lenderModel === 'BROKERAGE' && (
+                        <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-gray-100 animate-in fade-in duration-200">
+                            <div className="space-y-2">
+                                <Label htmlFor="bank_partner_id">Select Partner Bank</Label>
+                                <Select
+                                    value={formData.bank_partner_id}
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, bank_partner_id: val }))}
+                                >
+                                    <SelectTrigger id="bank_partner_id">
+                                        <SelectValue placeholder="Select lender partner" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {partners.map((p) => (
+                                            <SelectItem key={p.partner_id} value={p.partner_id}>
+                                                {p.bank_name} ({p.branch_name || 'Main'})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="product_name">Product / Program Name</Label>
+                                <Input
+                                    id="product_name"
+                                    placeholder="e.g. Home Loan Plus, LAP"
+                                    value={formData.product_name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, product_name: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="login_reference_number">Login Reference Number</Label>
+                                <Input
+                                    id="login_reference_number"
+                                    placeholder="e.g. REF-2026-9043"
+                                    value={formData.login_reference_number}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, login_reference_number: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="original_request_date">Original Request Date</Label>
+                                <Input
+                                    id="original_request_date"
+                                    type="date"
+                                    value={formData.original_request_date}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, original_request_date: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

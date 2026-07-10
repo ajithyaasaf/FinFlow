@@ -118,8 +118,8 @@ export function RecordPaymentModal({
             if (scheduleError) throw scheduleError
 
             toast.success(`Payment of ₹${totalAmount.toLocaleString()} recorded successfully`)
-            onOpenChange(false)
-            router.refresh()
+            onOpenChange(false)  // Close immediately
+            router.refresh()     // Refresh EMI schedule in background
         } catch (error) {
             console.error('Payment recording error:', error)
             toast.error('Failed to record payment. Please try again.')

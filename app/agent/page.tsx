@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/agent/page-header'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { LogOut, Users, Calculator, Camera, TrendingUp, FileText } from 'lucide-react'
+import { LogOut, Users, Calculator, Camera, TrendingUp, FileText, Flame } from 'lucide-react'
 
 export default function AgentDashboard() {
     const supabase = createClient()
@@ -15,7 +15,8 @@ export default function AgentDashboard() {
     const [userData, setUserData] = useState<any>(null)
     const [stats, setStats] = useState({
         activeLoans: 0,
-        quotations: 0
+        quotations: 0,
+        leads: 0
     })
     const [loading, setLoading] = useState(true)
 
@@ -67,9 +68,16 @@ export default function AgentDashboard() {
                 .select('*', { count: 'exact', head: true })
                 .eq('created_by', user.id)
 
+            // Get leads count
+            const { count: leadsCount } = await supabase
+                .from('leads')
+                .select('*', { count: 'exact', head: true })
+                .eq('assigned_agent_id', user.id)
+
             setStats({
                 activeLoans: loansCount || 0,
-                quotations: quotationsCount || 0
+                quotations: quotationsCount || 0,
+                leads: leadsCount || 0
             })
         } catch (error) {
             console.error('Error fetching stats:', error)
@@ -119,6 +127,25 @@ export default function AgentDashboard() {
 
                 {/* Quick Action Cards */}
                 <div className="space-y-3 mb-6">
+                    <Link href="/agent/leads">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
+                            <CardContent className="p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-lg bg-rose-50 flex items-center justify-center flex-shrink-0">
+                                        <Flame className="h-6 w-6 text-rose-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-gray-900">Leads Hub</h3>
+                                        <p className="text-sm text-gray-600">Track raw inquiries and convert to clients</p>
+                                    </div>
+                                    <div className="text-gray-400">
+                                        <span>→</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
                     <Link href="/agent/clients">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
@@ -197,23 +224,33 @@ export default function AgentDashboard() {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                     <Link href="/agent/loans">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
-                            <CardContent className="p-4">
-                                <TrendingUp className="h-8 w-8 mb-2 text-blue-600" />
-                                <p className="text-2xl font-bold text-gray-900">{stats.activeLoans}</p>
-                                <p className="text-sm text-gray-600">Active Loans</p>
+                            <CardContent className="p-4 text-center">
+                                <TrendingUp className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                                <p className="text-xl font-bold text-gray-900">{stats.activeLoans}</p>
+                                <p className="text-xs text-gray-600">Active Loans</p>
                             </CardContent>
                         </Card>
                     </Link>
 
                     <Link href="/agent/quotations">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
-                            <CardContent className="p-4">
-                                <FileText className="h-8 w-8 mb-2 text-blue-600" />
-                                <p className="text-2xl font-bold text-gray-900">{stats.quotations}</p>
-                                <p className="text-sm text-gray-600">Quotations</p>
+                            <CardContent className="p-4 text-center">
+                                <FileText className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                                <p className="text-xl font-bold text-gray-900">{stats.quotations}</p>
+                                <p className="text-xs text-gray-600">Quotations</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
+
+                    <Link href="/agent/leads">
+                        <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
+                            <CardContent className="p-4 text-center">
+                                <Flame className="h-6 w-6 mx-auto mb-2 text-rose-600" />
+                                <p className="text-xl font-bold text-gray-900">{stats.leads}</p>
+                                <p className="text-xs text-gray-600">My Leads</p>
                             </CardContent>
                         </Card>
                     </Link>

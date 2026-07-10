@@ -52,8 +52,8 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
             }
 
             toast.success('Agent deleted successfully')
-            setDeleteOpen(false)
-            router.refresh()
+            setDeleteOpen(false)  // Close immediately
+            router.refresh()      // Refresh agents list in background
         } catch (error) {
             console.error('Delete error:', error)
             toast.error(error instanceof Error ? error.message : 'Failed to delete agent')

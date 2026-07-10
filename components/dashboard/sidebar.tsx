@@ -14,7 +14,10 @@ import {
     TrendingUp,
     Clock,
     X,
-    FileText
+    FileText,
+    Flame,
+    Building,
+    BookOpen
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -27,6 +30,11 @@ const navItems = [
         icon: LayoutDashboard,
     },
     {
+        href: '/dashboard/leads',
+        label: 'Leads Hub',
+        icon: Flame,
+    },
+    {
         href: '/dashboard/loans',
         label: 'Loan Applications',
         icon: CreditCard,
@@ -35,6 +43,11 @@ const navItems = [
         href: '/dashboard/quotations',
         label: 'Quotations',
         icon: FileText,
+    },
+    {
+        href: '/dashboard/partners',
+        label: 'Bank Partners',
+        icon: Building,
     },
     {
         href: '/dashboard/agents',
@@ -55,6 +68,11 @@ const navItems = [
         href: '/dashboard/topup',
         label: 'Top-Up Offers',
         icon: TrendingUp,
+    },
+    {
+        href: '/dashboard/wiki',
+        label: 'Policy Wiki',
+        icon: BookOpen,
     },
     {
         href: '/dashboard/reports',

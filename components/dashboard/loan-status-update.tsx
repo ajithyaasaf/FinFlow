@@ -177,8 +177,8 @@ export function LoanStatusUpdate({
             }
 
             toast.success(`Loan status updated to: ${newStage}`)
-            setOpen(false)
-            router.refresh()
+            setOpen(false)       // Close immediately — user can navigate while list updates
+            router.refresh()     // Refresh loan list in background
         } catch (error) {
             console.error('Update error:', error)
             toast.error('Failed to update loan status')

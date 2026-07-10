@@ -130,8 +130,8 @@ export function EditLoanTerms({
             }
 
             toast.success('Loan terms updated successfully!')
-            setOpen(false)
-            router.refresh()
+            setOpen(false)       // Close immediately
+            router.refresh()     // Refresh loan details in background
         } catch (error) {
             console.error('Update error:', error)
             toast.error('Failed to update loan terms')

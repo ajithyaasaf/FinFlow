@@ -78,17 +78,10 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
             }
 
             toast.success('Agent created successfully!')
+            // Close and reset form immediately — list refresh happens in background
             onOpenChange(false)
-
-            // Reset form
-            setFormData({
-                full_name: '',
-                email: '',
-                mobile_number: '',
-                password: '',
-            })
+            setFormData({ full_name: '', email: '', mobile_number: '', password: '' })
             setErrors({})
-
             router.refresh()
         } catch (error) {
             console.error('Create agent error:', error)
