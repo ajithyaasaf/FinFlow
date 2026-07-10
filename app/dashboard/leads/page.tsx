@@ -32,14 +32,14 @@ export default function LeadsPage() {
                     assigned_agent:app_users(id, full_name, email)
                 `)
 
-                if (profile.role === 'AGENT') {
+                if (profile.role === 'STAFF') {
                     query = query.eq('assigned_agent_id', user.id)
                 }
 
                 // Fetch leads and agents in parallel
                 const [leadsRes, agentsRes] = await Promise.all([
                     query.order('created_at', { ascending: false }),
-                    supabase.from('app_users').select('id, full_name').eq('role', 'AGENT')
+                    supabase.from('app_users').select('id, full_name').eq('role', 'STAFF')
                 ])
 
                 if (leadsRes.data) {

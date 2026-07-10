@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Loader2, UserPlus } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { UserRole } from '@/types'
 
 interface AgentCreateModalProps {
     open: boolean
@@ -17,6 +19,7 @@ interface AgentCreateModalProps {
 export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null)
     const [formData, setFormData] = useState({
         full_name: '',
         login_id: '',
@@ -24,6 +27,32 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
         password: '',
         role: 'STAFF',
     })
+
+    useEffect(() => {
+        if (!open) return
+        async function fetchCurrentUserRole() {
+            try {
+                const supabase = createClient()
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    const { data } = await supabase
+                        .from('app_users')
+                        .select('role')
+                        .eq('id', user.id)
+                        .single()
+                    if (data) {
+                        setCurrentUserRole(data.role as UserRole)
+                        if (data.role === 'ADMIN') {
+                            setFormData(prev => ({ ...prev, role: 'STAFF' }))
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching current user role:', error)
+            }
+        }
+        fetchCurrentUserRole()
+    }, [open])
 
     const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -149,19 +178,29 @@ export function AgentCreateModal({ open, onOpenChange }: AgentCreateModalProps) 
                             </p>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="role">User Role *</Label>
-                            <select
-                                id="role"
-                                value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option value="STAFF">Staff (Field Agent)</option>
-                                <option value="ADMIN">Admin</option>
-                                <option value="MD">Managing Director (MD)</option>
-                            </select>
-                        </div>
+                        {currentUserRole === 'MD' ? (
+                            <div className="space-y-2">
+                                <Label htmlFor="role">User Role *</Label>
+                                <select
+                                    id="role"
+                                    value={formData.role}
+                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="STAFF">Staff</option>
+                                    <option value="ADMIN">Admin</option>
+                                    <option value="MD">Managing Director (MD)</option>
+                                </select>
+                            </div>
+                        ) : (
+                            currentUserRole === 'ADMIN' && (
+                                <div className="space-y-2 bg-gray-50 p-3 rounded-md border border-gray-100">
+                                    <Label className="text-gray-500 text-xs">Role Assigned</Label>
+                                    <p className="text-sm font-semibold text-gray-800">Staff</p>
+                                    <p className="text-[11px] text-gray-400">Admins are only allowed to create Staff accounts.</p>
+                                </div>
+                            )
+                        )}
 
                         <div className="space-y-2">
                             <Label htmlFor="mobile_number">Mobile Number *</Label>

@@ -319,10 +319,9 @@ export default function ClientDetailPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Agent Info */}
-                    <Card>
+                    <Card animate-duration-fast>
                         <CardHeader>
-                            <CardTitle className="text-base">Onboarding Agent</CardTitle>
+                            <CardTitle className="text-base">Onboarding Staff</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-3">

@@ -38,7 +38,7 @@ function AdminLoansPageContent() {
                 const agentsPromise = supabase
                     .from('app_users')
                     .select('*')
-                    .eq('role', 'AGENT')
+                    .eq('role', 'STAFF')
                     .order('full_name')
 
                 // Build query for loans

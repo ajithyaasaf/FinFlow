@@ -24,7 +24,7 @@ export default function NewClientPage() {
                 const { data } = await supabase
                     .from('app_users')
                     .select('id, full_name, email, role')
-                    .eq('role', 'AGENT')
+                    .eq('role', 'STAFF')
                     .order('full_name')
 
                 setAgents((data || []) as AppUser[])

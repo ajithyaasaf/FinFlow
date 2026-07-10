@@ -79,15 +79,15 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                     </Select>
                 </div>
 
-                {/* Agent Filter */}
+                {/* Staff Filter */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Agent</label>
+                    <label className="text-sm font-medium text-gray-700">Staff</label>
                     <Select value={agent} onValueChange={setAgent}>
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">All Agents</SelectItem>
+                            <SelectItem value="all">All Staff</SelectItem>
                             {agents.map((a) => (
                                 <SelectItem key={a.id} value={a.id}>
                                     {a.full_name}

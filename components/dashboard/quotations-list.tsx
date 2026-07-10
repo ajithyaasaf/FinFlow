@@ -60,7 +60,7 @@ export function QuotationsList({ quotations }: QuotationsListProps) {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                        placeholder="Search by client, mobile, or agent..."
+                        placeholder="Search by client, mobile, or staff..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 h-10"
@@ -193,7 +193,7 @@ export function QuotationsList({ quotations }: QuotationsListProps) {
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <User className="h-3.5 w-3.5 text-gray-400" />
-                                            <span>Agent: {quote.created_by_user?.full_name || 'Field Agent'}</span>
+                                            <span>Staff: {quote.created_by_user?.full_name || 'Staff'}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Calendar className="h-3.5 w-3.5 text-gray-400" />

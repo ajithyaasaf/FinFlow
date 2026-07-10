@@ -71,8 +71,7 @@ export function DocumentVerificationCard({ doc, onUpdate }: DocumentCardProps) {
 
             if (error) throw error
 
-            // Notify agent
-            // Notify agent
+            // Notify staff
             const { data: loanData } = await supabase
                 .from('loan_applications')
                 .select(`
@@ -85,7 +84,6 @@ export function DocumentVerificationCard({ doc, onUpdate }: DocumentCardProps) {
                 .single()
 
             if (loanData?.client) {
-                // Supabase might return array or object depending on relation type
                 const client = Array.isArray(loanData.client) ? loanData.client[0] : loanData.client
 
                 if (client?.onboarding_agent_id) {
@@ -96,7 +94,7 @@ export function DocumentVerificationCard({ doc, onUpdate }: DocumentCardProps) {
                         type: 'ERROR',
                         entityType: 'LOAN',
                         entityId: doc.loan_id,
-                        linkUrl: `/agent/loans/${doc.loan_id}`,
+                        linkUrl: `/dashboard/loans/${doc.loan_id}`,
                     })
                 }
             }
@@ -173,7 +171,7 @@ export function DocumentVerificationCard({ doc, onUpdate }: DocumentCardProps) {
                                 <DialogHeader>
                                     <DialogTitle>Reject Document</DialogTitle>
                                     <DialogDescription>
-                                        Please specify why this document is being rejected. The agent will be notified to re-upload.
+                                        Please specify why this document is being rejected. The staff member will be notified to re-upload.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="py-4">

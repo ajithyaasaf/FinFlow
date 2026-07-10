@@ -10,7 +10,7 @@ import { Loader2, User, Lock, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
-export default function AgentProfilePage() {
+export default function StaffProfilePage() {
     const [loading, setLoading] = useState(false)
     const [password, setPassword] = useState('')
     const router = useRouter()
@@ -65,7 +65,7 @@ export default function AgentProfilePage() {
                                 <User className="h-8 w-8 text-gray-500" />
                             </div>
                             <div>
-                                <p className="font-medium text-gray-900">Agent Account</p>
+                                <p className="font-medium text-gray-900">Staff Account</p>
                                 <p className="text-sm text-gray-500">Managed by Admin</p>
                             </div>
                         </div>

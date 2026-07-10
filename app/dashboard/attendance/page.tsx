@@ -36,7 +36,7 @@ function AttendancePageContent() {
                     supabase
                         .from('app_users')
                         .select('*')
-                        .eq('role', 'AGENT')
+                        .eq('role', 'STAFF')
                 ])
 
                 const fetchedLogs = logsRes.data || []

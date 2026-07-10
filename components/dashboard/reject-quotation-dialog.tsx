@@ -69,7 +69,7 @@ export function RejectQuotationDialog({ quotationId, clientName }: RejectQuotati
                 <DialogHeader>
                     <DialogTitle className="text-gray-900 font-bold">Reject Quotation</DialogTitle>
                     <DialogDescription className="text-gray-500">
-                        Provide a clear reason for rejecting the quotation for <strong>{clientName}</strong>. This feedback will be shown directly to the agent.
+                        Provide a clear reason for rejecting the quotation for <strong>{clientName}</strong>. This feedback will be shown directly to the staff.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleReject} className="space-y-4 py-3">

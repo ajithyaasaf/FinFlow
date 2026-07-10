@@ -72,7 +72,7 @@ export function LoansDataTable({ loans, currentPage, totalPages, total }: LoansD
                         <TableRow>
                             <TableHead>Loan ID</TableHead>
                             <TableHead>Client</TableHead>
-                            <TableHead>Agent</TableHead>
+                            <TableHead>Staff</TableHead>
                             <TableHead className="text-right">Amount</TableHead>
                             <TableHead>Rate/Tenure</TableHead>
                             <TableHead>Status</TableHead>

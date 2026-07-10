@@ -63,15 +63,15 @@ export function AgentEditModal({ open, onOpenChange, agentId, currentName, curre
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to update agent')
+                throw new Error(data.error || 'Failed to update user')
             }
 
-            toast.success('Agent updated successfully!')
+            toast.success('User updated successfully!')
             onOpenChange(false)   // Close immediately
             router.refresh()      // Refresh list in background
         } catch (error) {
-            console.error('Update agent error:', error)
-            toast.error(error instanceof Error ? error.message : 'Failed to update agent')
+            console.error('Update user error:', error)
+            toast.error(error instanceof Error ? error.message : 'Failed to update user')
         } finally {
             setLoading(false)
         }
@@ -83,10 +83,10 @@ export function AgentEditModal({ open, onOpenChange, agentId, currentName, curre
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Edit className="h-5 w-5" />
-                        Edit Agent Details
+                        Edit User Details
                     </DialogTitle>
                     <DialogDescription>
-                        Update agent information. Email cannot be changed.
+                        Update user information. Email cannot be changed.
                     </DialogDescription>
                 </DialogHeader>
 

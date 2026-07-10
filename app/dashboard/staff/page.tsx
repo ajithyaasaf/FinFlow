@@ -123,7 +123,7 @@ export default function AgentsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <Card>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600">Total Agents</CardTitle>
+                        <CardTitle className="text-sm font-medium text-gray-600">Total Staff</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-2xl font-bold">{stats.totalAgents}</p>
@@ -136,7 +136,7 @@ export default function AgentsPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-2xl font-bold">{stats.totalClients}</p>
-                        <p className="text-xs text-gray-500 mt-1">Across all agents</p>
+                        <p className="text-xs text-gray-500 mt-1">Across all staff</p>
                     </CardContent>
                 </Card>
 
@@ -156,7 +156,7 @@ export default function AgentsPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-2xl font-bold text-green-600">{stats.todayAttendance}</p>
-                        <p className="text-xs text-gray-500 mt-1">Out of {stats.totalAgents} agents</p>
+                        <p className="text-xs text-gray-500 mt-1">Out of {stats.totalAgents} staff</p>
                     </CardContent>
                 </Card>
             </div>
@@ -166,19 +166,19 @@ export default function AgentsPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
-                        All Agents
+                        All Staff
                     </CardTitle>
                     <CardDescription>
-                        {agents.length} field agents
+                        {agents.length} staff members
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {agents.length === 0 ? (
                         <div className="py-12 text-center">
                             <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-sm text-gray-600">No agents yet</p>
+                            <p className="text-sm text-gray-600">No staff yet</p>
                             <p className="text-xs text-gray-400 mt-1">
-                                Create agent users in Supabase Auth
+                                Create staff users
                             </p>
                         </div>
                     ) : (
@@ -192,7 +192,7 @@ export default function AgentsPage() {
                                         <div className="flex-1">
                                             <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
                                                 <h3 className="font-semibold text-base md:text-lg">{agent.full_name}</h3>
-                                                <Badge variant="outline" className="text-xs">Agent</Badge>
+                                                <Badge variant="outline" className="text-xs">Staff</Badge>
                                             </div>
 
                                             <div className="grid sm:grid-cols-2 gap-2 text-sm mb-3">

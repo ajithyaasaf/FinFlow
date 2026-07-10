@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: "FinFlow - Loan Management System",
-    description: "Micro-finance loan management system for field agents and administrators",
+    description: "Micro-finance loan management system for field staff and administrators",
     manifest: "/manifest.json",
     appleWebApp: {
         capable: true,

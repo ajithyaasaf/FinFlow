@@ -24,11 +24,11 @@ export async function AgentPerformanceReport({ from, to }: AgentPerformanceRepor
     const fromDate = from || new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString()
     const toDate = to || new Date().toISOString()
 
-    // Get all agents
+    // Get all staff
     const { data: agents } = await supabase
         .from('app_users')
         .select('id, full_name')
-        .eq('role', 'AGENT')
+        .eq('role', 'STAFF')
 
     if (!agents) {
         return (
@@ -36,7 +36,7 @@ export async function AgentPerformanceReport({ from, to }: AgentPerformanceRepor
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5 text-blue-600" />
-                        Agent Performance
+                        Staff Performance
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -91,13 +91,13 @@ export async function AgentPerformanceReport({ from, to }: AgentPerformanceRepor
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-blue-600" />
-                    Agent Performance
+                    Staff Performance
                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="space-y-3">
                     {agentStats.length === 0 ? (
-                        <p className="text-sm text-gray-500 text-center py-4">No agent activity in this period</p>
+                        <p className="text-sm text-gray-500 text-center py-4">No staff activity in this period</p>
                     ) : (
                         agentStats.slice(0, 5).map((agent, index) => (
                             <div key={agent.agent_id} className="flex items-center justify-between p-3 border rounded-lg">

@@ -269,7 +269,7 @@ export function WikiHub({ initialArticles, categories, isAdmin }: WikiHubProps) 
                             {selectedArticle ? 'Edit Wiki Article' : 'Create Wiki Article'}
                         </DialogTitle>
                         <DialogDescription>
-                            Write guides, documents, and rules that your field agents can access in the app.
+                            Write guides, documents, and rules that your staff members can access in the app.
                         </DialogDescription>
                     </DialogHeader>
 

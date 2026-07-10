@@ -48,15 +48,15 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to delete agent')
+                throw new Error(data.error || 'Failed to delete user')
             }
 
-            toast.success('Agent deleted successfully')
+            toast.success('User deleted successfully')
             setDeleteOpen(false)  // Close immediately
             router.refresh()      // Refresh agents list in background
         } catch (error) {
             console.error('Delete error:', error)
-            toast.error(error instanceof Error ? error.message : 'Failed to delete agent')
+            toast.error(error instanceof Error ? error.message : 'Failed to delete user')
         } finally {
             setDeleting(false)
         }
@@ -81,7 +81,7 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
                         className="text-red-600 focus:text-red-600"
                     >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Agent
+                        Delete User
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -97,7 +97,7 @@ export function AgentActions({ agentId, agentName, currentName, currentMobile }:
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Agent</AlertDialogTitle>
+                        <AlertDialogTitle>Delete User</AlertDialogTitle>
                         <AlertDialogDescription>
                             Are you sure you want to delete <strong>{agentName}</strong>? This action cannot be undone.
                             All their data (clients, quotations, attendance) will remain in the system but will be orphaned.

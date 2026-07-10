@@ -335,7 +335,7 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                                                 {lead.assigned_agent_id && (
                                                     <span className="flex items-center gap-1">
                                                         <User className="h-3 w-3" />
-                                                        Agent
+                                                        Staff
                                                     </span>
                                                 )}
                                             </div>
@@ -485,7 +485,7 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                                     <span className="capitalize">{selectedLead.source.replace('_', ' ').toLowerCase()}</span>
                                 </div>
                                 <div>
-                                    <span className="text-xs text-gray-400 block font-medium">Assigned Agent</span>
+                                    <span className="text-xs text-gray-400 block font-medium">Assigned Staff</span>
                                     <span className="font-semibold text-gray-700">{selectedLead.assigned_agent?.full_name || 'Unassigned'}</span>
                                 </div>
                                 {selectedLead.constitution && (

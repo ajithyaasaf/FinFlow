@@ -48,7 +48,7 @@ function ReportsPageContent() {
                     supabase.from('clients').select('*', { count: 'exact', head: true }).gte('created_at', startOfLastPeriod.toISOString()).lte('created_at', endOfLastPeriod.toISOString()),
                     supabase.from('quotations').select('*', { count: 'exact', head: true }).gte('created_at', startOfLastPeriod.toISOString()).lte('created_at', endOfLastPeriod.toISOString()),
                     supabase.from('quotations').select('amount').gte('created_at', startOfMonth.toISOString()).lte('created_at', endOfMonth.toISOString()),
-                    supabase.from('app_users').select('id, full_name').eq('role', 'AGENT'),
+                    supabase.from('app_users').select('id, full_name').eq('role', 'STAFF'),
                     supabase.from('quotations').select(`*, client:clients(full_name)`).order('created_at', { ascending: false }).limit(10)
                 ])
 
@@ -194,18 +194,18 @@ function ReportsPageContent() {
                 </Card>
             )}
 
-            {/* Agent Performance */}
+            {/* Staff Performance */}
             <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    Agent Performance
+                    Staff Performance
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Top Performers - Quotations</CardTitle>
-                            <CardDescription>Agents ranked by quotations created</CardDescription>
+                            <CardDescription>Staff ranked by quotations created</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {reportData.agentStats.length === 0 ? (
@@ -238,7 +238,7 @@ function ReportsPageContent() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">Top Performers - Client Onboarding</CardTitle>
-                            <CardDescription>Agents ranked by clients onboarded</CardDescription>
+                            <CardDescription>Staff ranked by clients onboarded</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {reportData.agentStats.length === 0 ? (

@@ -91,7 +91,7 @@ export default function LoginPage() {
                         Streamlined loans, built for modern growth.
                     </h1>
                     <p className="text-lg text-slate-200 font-medium leading-relaxed">
-                        FinFlow connects agents and clients to deliver fast, secure microfinance solutions directly to local markets.
+                        FinFlow connects staff and clients to deliver fast, secure microfinance solutions directly to local markets.
                     </p>
                 </div>
             </div>

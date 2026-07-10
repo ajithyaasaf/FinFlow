@@ -199,7 +199,7 @@ export function AdminClientForm({
         const { data } = await supabase
             .from('app_users')
             .select('id, full_name, email')
-            .eq('role', 'AGENT')
+            .eq('role', 'STAFF')
             .order('full_name')
 
         if (data) setAvailableAgents(data as AppUser[])
@@ -231,7 +231,7 @@ export function AdminClientForm({
             return 'Please enter a valid 12-digit Aadhaar number'
         }
         if (mode === 'create' && !formData.onboarding_agent_id) {
-            return 'Please select an onboarding agent'
+            return 'Please select an onboarding staff member'
         }
         return null
     }
@@ -416,22 +416,22 @@ export function AdminClientForm({
                 </CardContent>
             </Card>
 
-            {/* Agent Assignment */}
+            {/* Staff Assignment */}
             {(mode === 'create' || availableAgents.length > 0) && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg">Agent Assignment</CardTitle>
+                        <CardTitle className="text-lg">Staff Assignment</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
-                            <Label htmlFor="agent">Onboarding Agent *</Label>
+                            <Label htmlFor="agent">Onboarding Staff *</Label>
                             <Select
                                 value={formData.onboarding_agent_id}
                                 onValueChange={(value) => updateField('onboarding_agent_id', value)}
                                 disabled={loading || mode === 'edit'}
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select an agent" />
+                                    <SelectValue placeholder="Select a staff member" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {availableAgents.map((agent) => (
@@ -442,7 +442,7 @@ export function AdminClientForm({
                                 </SelectContent>
                             </Select>
                             {mode === 'edit' && (
-                                <p className="text-xs text-gray-500">Agent cannot be changed after creation</p>
+                                <p className="text-xs text-gray-500">Staff cannot be changed after creation</p>
                             )}
                         </div>
                     </CardContent>

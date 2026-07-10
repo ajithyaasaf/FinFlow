@@ -27,11 +27,16 @@ export async function POST(request: NextRequest) {
 
         // Get request body
         const body = await request.json()
-        const { email, password, full_name, mobile_number } = body
+        const { email, password, full_name, mobile_number, role = 'STAFF' } = body
 
         // Validate inputs
         if (!email || !password || !full_name || !mobile_number) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+        }
+
+        // Restrict role assignment: Admins can ONLY create STAFF accounts
+        if (adminUser.role === 'ADMIN' && role !== 'STAFF') {
+            return NextResponse.json({ error: 'Admins are only allowed to create Staff accounts' }, { status: 403 })
         }
 
         // Create admin client with service role key

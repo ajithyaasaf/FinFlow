@@ -152,7 +152,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                         Attendance & Field Tracking
                     </h1>
                     <p className="text-xs md:text-sm text-gray-500 mt-1">
-                        Monitor agent check-ins, verify locations on Google Maps, and manage manual logs
+                        Monitor staff check-ins, verify locations on Google Maps, and manage manual logs
                     </p>
                 </div>
                 <Button onClick={openAddDialog} className="gap-2 self-start md:self-auto rounded-full px-5">
@@ -185,7 +185,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg">Check-Ins for {selectedDate}</CardTitle>
                     <CardDescription>
-                        {initialLogs.length} active agent check-in{initialLogs.length !== 1 ? 's' : ''} logged today
+                        {initialLogs.length} active staff check-in{initialLogs.length !== 1 ? 's' : ''} logged today
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -194,7 +194,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                             <Clock className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                             <p className="text-gray-600 font-medium">No check-in logs found</p>
                             <p className="text-xs text-gray-400 mt-1 mb-4">
-                                No agents have checked in yet on this date
+                                No staff have checked in yet on this date
                             </p>
                             <Button variant="outline" onClick={openAddDialog} className="gap-2 rounded-full px-5">
                                 <Plus className="h-4 w-4" />
@@ -240,7 +240,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                                                     <div className="overflow-hidden rounded-xl w-16 h-16 border border-gray-200/60 bg-white shrink-0">
                                                         <img
                                                             src={selfie}
-                                                            alt="Agent Selfie"
+                                                            alt="Staff Selfie"
                                                             onClick={() => setLightboxImage(selfie)}
                                                             className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-300"
                                                         />
@@ -312,12 +312,12 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                             {editLogId ? 'Edit Attendance Log' : 'Add Manual Attendance'}
                         </DialogTitle>
                         <DialogDescription className="text-sm text-[#6a6a6a]">
-                            Create or override attendance check-ins for field agents.
+                            Create or override attendance check-ins for field staff.
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSave} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="agent" className="text-sm font-semibold text-[#222222]">Select Agent</Label>
+                            <Label htmlFor="agent" className="text-sm font-semibold text-[#222222]">Select Staff</Label>
                             {editLogId ? (
                                 <Input
                                     value={agents.find(a => a.id === selectedAgentId)?.full_name || ''}
@@ -327,7 +327,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                             ) : (
                                 <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
                                     <SelectTrigger id="agent" className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 hover:bg-[#f7f7f7]/50 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all">
-                                        <SelectValue placeholder="Select an agent" />
+                                        <SelectValue placeholder="Select a staff member" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl shadow-airbnb-lg border-gray-150">
                                         {agents.map((agent) => (

@@ -225,13 +225,13 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="assigned_agent_id">Assign Agent</Label>
+                                <Label htmlFor="assigned_agent_id">Assign Staff</Label>
                                 <Select
                                     value={formData.assigned_agent_id}
                                     onValueChange={(val) => setFormData({ ...formData, assigned_agent_id: val })}
                                 >
                                     <SelectTrigger id="assigned_agent_id">
-                                        <SelectValue placeholder="Select field agent" />
+                                        <SelectValue placeholder="Select staff member" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {agents.map((agent) => (

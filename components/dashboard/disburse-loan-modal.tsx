@@ -121,7 +121,7 @@ export function DisburseLoanModal({
                 })
             }
 
-            // 5. Notify agent
+            // 5. Notify staff
             if (agentId) {
                 await createNotificationAction({
                     userId: agentId,
@@ -130,7 +130,7 @@ export function DisburseLoanModal({
                     type: 'SUCCESS',
                     entityType: 'LOAN',
                     entityId: loanId,
-                    linkUrl: `/agent/loans/${loanId}`
+                    linkUrl: `/dashboard/loans/${loanId}`
                 })
             }
 
@@ -227,7 +227,7 @@ export function DisburseLoanModal({
                                 <li>Mark loan as "Disbursed"</li>
                                 <li>Generate {tenure} EMI payments</li>
                                 <li>Start repayment tracking</li>
-                                <li>Notify the agent</li>
+                                <li>Notify the staff member</li>
                             </ul>
                         </div>
                     </div>

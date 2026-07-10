@@ -198,7 +198,7 @@ export default function LoanDetailsPage() {
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500 uppercase font-semibold">Onboarded By</label>
-                                    <p className="text-sm">{loan.client?.onboarding_agent?.full_name || 'Unknown Agent'}</p>
+                                    <p className="text-sm">{loan.client?.onboarding_agent?.full_name || 'Unknown Staff'}</p>
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500 uppercase font-semibold">Client Since</label>
