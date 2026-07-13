@@ -69,10 +69,10 @@ export default function AgentClientsPage() {
             <PageHeader
                 title="My Clients"
                 subtitle={`${clients.length} client${clients.length !== 1 ? 's' : ''}`}
-                backHref="/agent"
+                backHref="/staff"
                 actions={
                     <Button asChild size="sm" className="h-9">
-                        <Link href="/agent/clients/new">
+                        <Link href="/staff/clients/new">
                             <Plus className="h-4 w-4 mr-1" />
                             Add
                         </Link>
@@ -112,7 +112,7 @@ export default function AgentClientsPage() {
                         </p>
                         {!search && (
                             <Button asChild size="lg">
-                                <Link href="/agent/clients/new">
+                                <Link href="/staff/clients/new">
                                     <Plus className="h-5 w-5 mr-2" />
                                     Add Client
                                 </Link>
@@ -172,14 +172,14 @@ export default function AgentClientsPage() {
                                         <div className="mt-4 flex gap-2">
                                             {activeLoan ? (
                                                 <Button asChild variant="default" size="sm" className="flex-1 h-10">
-                                                    <Link href={`/agent/loans/${activeLoan.loan_id}`}>
+                                                    <Link href={`/staff/loans/${activeLoan.loan_id}`}>
                                                         <FileText className="h-4 w-4 mr-2" />
                                                         View Loan
                                                     </Link>
                                                 </Button>
                                             ) : (
                                                 <Button asChild variant="default" size="sm" className="flex-1 h-10">
-                                                    <Link href="/agent/quotation">
+                                                    <Link href="/staff/quotation">
                                                         <Plus className="h-4 w-4 mr-2" />
                                                         New Quote
                                                     </Link>
@@ -190,7 +190,7 @@ export default function AgentClientsPage() {
                                                 size="sm"
                                                 className="h-10 w-10 p-0 border-gray-300 hover:bg-blue-50 hover:border-blue-600"
                                             >
-                                                <Link href={`/agent/clients/${client.client_id}`}>
+                                                <Link href={`/staff/clients/${client.client_id}`}>
                                                     <Eye className="h-4 w-4 text-blue-600" />
                                                 </Link>
                                             </Button>

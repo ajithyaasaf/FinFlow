@@ -96,7 +96,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50">
-                <PageHeader title="Client Details" backHref="/agent/clients" />
+                <PageHeader title="Client Details" backHref="/staff/clients" />
                 <div className="p-4 text-center">Loading...</div>
             </div>
         )
@@ -105,7 +105,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
     if (!client) {
         return (
             <div className="min-h-screen bg-gray-50">
-                <PageHeader title="Client Details" backHref="/agent/clients" />
+                <PageHeader title="Client Details" backHref="/staff/clients" />
                 <div className="p-4 text-center">Client not found</div>
             </div>
         )
@@ -115,10 +115,10 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
         <div className="min-h-screen bg-gray-50">
             <PageHeader
                 title="Client Details"
-                backHref="/agent/clients"
+                backHref="/staff/clients"
                 actions={
                     <Button asChild size="sm" className="h-9">
-                        <Link href={`/agent/quotation?client=${client.client_id}`}>
+                        <Link href={`/staff/quotation?client=${client.client_id}`}>
                             <Plus className="h-4 w-4 mr-1" />
                             Quote
                         </Link>
@@ -202,7 +202,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                             <div className="text-center py-8">
                                 <p className="text-sm text-gray-600 mb-4">No loans yet</p>
                                 <Button asChild size="sm">
-                                    <Link href={`/agent/quotation?client=${client.client_id}`}>
+                                    <Link href={`/staff/quotation?client=${client.client_id}`}>
                                         <Plus className="h-4 w-4 mr-1" />
                                         Create Quotation
                                     </Link>
@@ -227,7 +227,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                                                 {formatDateTime(loan.created_at)}
                                             </p>
                                             <Button asChild variant="outline" size="sm" className="h-8">
-                                                <Link href={`/agent/loans/${loan.loan_id}`}>
+                                                <Link href={`/staff/loans/${loan.loan_id}`}>
                                                     View
                                                 </Link>
                                             </Button>
@@ -252,7 +252,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                             <div className="text-center py-8">
                                 <p className="text-sm text-gray-600 mb-4">No quotations generated yet</p>
                                 <Button asChild size="sm">
-                                    <Link href={`/agent/quotation?client=${client.client_id}`}>
+                                    <Link href={`/staff/quotation?client=${client.client_id}`}>
                                         <Plus className="h-4 w-4 mr-1" />
                                         Create Quotation
                                     </Link>

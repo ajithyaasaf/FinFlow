@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
     ChevronLeft, AlertCircle, CheckCircle, Clock,
-    Calendar, CreditCard, TrendingUp, Loader2
+    Calendar, CreditCard, TrendingUp
 } from 'lucide-react'
 import Link from 'next/link'
+import { Skeleton } from '@/components/ui/skeleton'
 import { createClient } from '@/lib/supabase/client'
 import type { EMISchedule } from '@/types'
 
@@ -129,9 +130,43 @@ export default function AgentLoanDetailsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-gray-500 font-medium font-sans">Loading loan details...</p>
+            <div className="min-h-screen bg-gray-50 pb-20">
+                <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <div>
+                        <Skeleton className="h-5 w-32 rounded-lg" />
+                        <Skeleton className="h-3 w-20 rounded-lg mt-1" />
+                    </div>
+                </header>
+                <main className="p-4 space-y-4">
+                    {/* Status & Amount Card Skeleton */}
+                    <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
+                        <div className="flex justify-between items-center">
+                            <Skeleton className="h-4 w-12 rounded-lg" />
+                            <Skeleton className="h-5 w-20 rounded-lg" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div key={i} className="space-y-2">
+                                    <Skeleton className="h-3 w-16 rounded-lg" />
+                                    <Skeleton className="h-5 w-24 rounded-lg" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    {/* Documents Skeleton */}
+                    <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3">
+                        <Skeleton className="h-5 w-24 rounded-lg" />
+                        <div className="space-y-2 pt-2">
+                            {[1, 2].map((i) => (
+                                <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                                    <Skeleton className="h-4 w-32 rounded-lg" />
+                                    <Skeleton className="h-8 w-20 rounded-xl" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </main>
             </div>
         )
     }
@@ -141,7 +176,7 @@ export default function AgentLoanDetailsPage() {
         return (
             <div className="min-h-screen bg-gray-50 pb-20">
                 <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-                    <Link href="/agent/clients">
+                    <Link href="/staff/clients">
                         <ChevronLeft className="h-6 w-6 text-gray-600" />
                     </Link>
                     <h1 className="text-lg font-bold text-gray-900">Loan Details</h1>
@@ -154,7 +189,7 @@ export default function AgentLoanDetailsPage() {
                             <p className="text-sm text-red-600 mt-1">
                                 This loan may not exist or you may not have permission to view it.
                             </p>
-                            <Link href="/agent/clients" className="text-sm text-red-700 underline mt-2 inline-block">
+                            <Link href="/staff/clients" className="text-sm text-red-700 underline mt-2 inline-block">
                                 Back to Clients
                             </Link>
                         </div>
@@ -169,7 +204,7 @@ export default function AgentLoanDetailsPage() {
         return (
             <div className="min-h-screen bg-gray-50 pb-20">
                 <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-                    <Link href="/agent/clients">
+                    <Link href="/staff/clients">
                         <ChevronLeft className="h-6 w-6 text-gray-600" />
                     </Link>
                     <h1 className="text-lg font-bold text-gray-900">Loan Details</h1>
@@ -182,7 +217,7 @@ export default function AgentLoanDetailsPage() {
                             <p className="text-sm text-yellow-600 mt-1">
                                 You can only view loans for clients you onboarded.
                             </p>
-                            <Link href="/agent/clients" className="text-sm text-yellow-700 underline mt-2 inline-block">
+                            <Link href="/staff/clients" className="text-sm text-yellow-700 underline mt-2 inline-block">
                                 Back to Clients
                             </Link>
                         </div>
@@ -197,7 +232,7 @@ export default function AgentLoanDetailsPage() {
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-                <Link href="/agent/clients">
+                <Link href="/staff/clients">
                     <ChevronLeft className="h-6 w-6 text-gray-600" />
                 </Link>
                 <div>

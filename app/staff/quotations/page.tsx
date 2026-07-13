@@ -75,7 +75,7 @@ export default function AgentQuotationsPage() {
             <PageHeader
                 title="Quotations"
                 subtitle="View and manage generated quotations"
-                backHref="/agent"
+                backHref="/staff"
             />
 
             <main className="p-4 pb-24 space-y-4">
@@ -90,7 +90,7 @@ export default function AgentQuotationsPage() {
                             className="pl-9 h-11 bg-white border-gray-200 rounded-xl"
                         />
                     </div>
-                    <Link href="/agent/quotation">
+                    <Link href="/staff/quotation">
                         <Button className="h-11 px-4 rounded-xl flex items-center gap-1.5">
                             <Plus className="h-5 w-5" />
                             <span>Create</span>
@@ -113,7 +113,7 @@ export default function AgentQuotationsPage() {
                             {search ? 'Try adjusting your search criteria.' : 'Start by creating your first client quotation.'}
                         </p>
                         {!search && (
-                            <Link href="/agent/quotation">
+                            <Link href="/staff/quotation">
                                 <Button className="rounded-xl">
                                     Create Quotation
                                 </Button>

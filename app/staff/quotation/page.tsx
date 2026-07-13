@@ -18,6 +18,7 @@ import { Loader2, Calculator, Download, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { QuotationPDF } from '@/lib/pdf/quotation-template'
 import type { Client } from '@/types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 function QuotationPageContent() {
     const router = useRouter()
@@ -185,7 +186,7 @@ function QuotationPageContent() {
             <PageHeader
                 title="Quotation Calculator"
                 subtitle="Generate instant loan quotes"
-                backHref="/agent"
+                backHref="/staff"
             />
 
             {/* Main Content */}
@@ -200,7 +201,7 @@ function QuotationPageContent() {
                             <Label className="text-gray-700 font-medium">Select Client *</Label>
                             {clients.length === 0 ? (
                                 <div className="text-sm text-gray-600 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                    No clients found. <Link href="/agent/clients/new" className="text-blue-600 underline font-semibold">Add a client first</Link>
+                                    No clients found. <Link href="/staff/clients/new" className="text-blue-600 underline font-semibold">Add a client first</Link>
                                 </div>
                             ) : (
                                 <>
@@ -210,7 +211,7 @@ function QuotationPageContent() {
                                         onSelect={setSelectedClientId}
                                     />
                                     <p className="text-xs text-gray-600 mt-2">
-                                        Client not in list? <Link href="/agent/clients/new?return=/agent/quotation" className="text-blue-600 underline font-semibold">Add new client</Link>
+                                        Client not in list? <Link href="/staff/clients/new?return=/staff/quotation" className="text-blue-600 underline font-semibold">Add new client</Link>
                                     </p>
                                 </>
                             )}
@@ -340,24 +341,42 @@ import dynamic from 'next/dynamic'
 
 import { Suspense } from 'react'
 
+const CalculatorSkeleton = () => (
+    <div className="min-h-screen bg-gray-50 pb-20">
+        <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-5 w-40 rounded-lg" />
+        </header>
+        <main className="p-4 space-y-4">
+            {/* Client Details Card Skeleton */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3">
+                <Skeleton className="h-4 w-28 rounded-lg" />
+                <Skeleton className="h-11 w-full rounded-xl" />
+            </div>
+            {/* Loan Parameters Card Skeleton */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
+                <Skeleton className="h-4 w-32 rounded-lg" />
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="space-y-2">
+                        <Skeleton className="h-3 w-20 rounded-lg" />
+                        <Skeleton className="h-11 w-full rounded-xl" />
+                    </div>
+                ))}
+            </div>
+            {/* Button Skeleton */}
+            <Skeleton className="h-12 w-full rounded-xl" />
+        </main>
+    </div>
+)
+
 const QuotationPageDynamic = dynamic(() => Promise.resolve(QuotationPageContent), {
     ssr: false,
-    loading: () => (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <p className="text-sm text-gray-500 font-medium font-sans">Loading calculator...</p>
-        </div>
-    )
+    loading: () => <CalculatorSkeleton />
 })
 
 export default function QuotationPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-gray-500 font-medium font-sans">Loading calculator...</p>
-            </div>
-        }>
+        <Suspense fallback={<CalculatorSkeleton />}>
             <QuotationPageDynamic />
         </Suspense>
     )
