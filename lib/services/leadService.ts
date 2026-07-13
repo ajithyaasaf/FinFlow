@@ -144,7 +144,6 @@ export async function promoteLeadToClient(leadId: string): Promise<Client | null
         onboarding_agent_id: lead.assigned_agent_id || user.id, // Fallback if no agent is assigned
         pan_number: null,
         kyc_document_url: null,
-        status: 'PENDING_VERIFICATION'
     }
 
     const { data: client, error: clientError } = await supabase

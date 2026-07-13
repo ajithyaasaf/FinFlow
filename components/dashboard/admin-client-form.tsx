@@ -16,21 +16,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Upload, FileText, X, ArrowLeft } from 'lucide-react'
+import { Loader2, Upload, FileText, X } from 'lucide-react'
 import Link from 'next/link'
 import type { Client, AppUser } from '@/types'
-
-// ============================================================================
-// TYPES
-// ============================================================================
 
 interface ClientFormData {
     full_name: string
     mobile_number: string
-    email: string
     pan_number: string
-    aadhaar_number: string
-    address: string
     onboarding_agent_id: string
 }
 
@@ -41,10 +34,6 @@ interface AdminClientFormProps {
     onSuccess?: (client: Client) => void
     onCancel?: () => void
 }
-
-// ============================================================================
-// KYC UPLOAD COMPONENT
-// ============================================================================
 
 function KYCUploadField({
     onFileSelect,
@@ -68,13 +57,11 @@ function KYCUploadField({
             return
         }
 
-        // Validate file size (5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error('File size must be less than 5MB')
             return
         }
 
-        // Validate file type
         const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
         if (!validTypes.includes(file.type)) {
             toast.error('File must be PDF, JPEG, or PNG')
@@ -84,7 +71,6 @@ function KYCUploadField({
         setSelectedFile(file)
         onFileSelect(file)
 
-        // Create preview for images
         if (file.type.startsWith('image/')) {
             const reader = new FileReader()
             reader.onload = (e) => setPreviewUrl(e.target?.result as string)
@@ -161,10 +147,6 @@ function KYCUploadField({
     )
 }
 
-// ============================================================================
-// MAIN FORM COMPONENT
-// ============================================================================
-
 export function AdminClientForm({
     mode,
     initialData,
@@ -179,16 +161,12 @@ export function AdminClientForm({
     const [formData, setFormData] = useState<ClientFormData>({
         full_name: initialData?.full_name || '',
         mobile_number: initialData?.mobile_number || '',
-        email: '',
         pan_number: initialData?.pan_number || '',
-        aadhaar_number: '',
-        address: '',
         onboarding_agent_id: initialData?.onboarding_agent_id || '',
     })
     const [kycFile, setKycFile] = useState<File | null>(null)
     const [availableAgents, setAvailableAgents] = useState<AppUser[]>(agents)
 
-    // Fetch agents if not provided
     useEffect(() => {
         if (agents.length === 0) {
             fetchAgents()
@@ -205,12 +183,10 @@ export function AdminClientForm({
         if (data) setAvailableAgents(data as AppUser[])
     }
 
-    // Form field update handler
     const updateField = (field: keyof ClientFormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
-    // Validation
     const validateForm = (): string | null => {
         if (!formData.full_name.trim()) {
             return 'Please enter client name'
@@ -221,16 +197,10 @@ export function AdminClientForm({
         if (!/^[6-9]\d{9}$/.test(formData.mobile_number)) {
             return 'Please enter a valid 10-digit Indian mobile number'
         }
-        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            return 'Please enter a valid email address'
-        }
         if (formData.pan_number && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan_number.toUpperCase())) {
             return 'Please enter a valid PAN number (e.g., ABCDE1234F)'
         }
-        if (formData.aadhaar_number && !/^\d{12}$/.test(formData.aadhaar_number)) {
-            return 'Please enter a valid 12-digit Aadhaar number'
-        }
-        if (mode === 'create' && !formData.onboarding_agent_id) {
+        if (!formData.onboarding_agent_id) {
             return 'Please select an onboarding staff member'
         }
         return null
@@ -248,11 +218,9 @@ export function AdminClientForm({
         setLoading(true)
 
         try {
-            // Get current user for storage RLS prefix
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error('Not authenticated')
 
-            // Upload KYC if provided
             let kycUrl = initialData?.kyc_document_url || null
             if (kycFile) {
                 toast.loading('Uploading KYC document...', { id: 'kyc-upload' })
@@ -260,7 +228,6 @@ export function AdminClientForm({
                 toast.dismiss('kyc-upload')
             }
 
-            // Prepare data
             const clientData = {
                 full_name: formData.full_name.trim(),
                 mobile_number: formData.mobile_number.trim(),
@@ -310,7 +277,6 @@ export function AdminClientForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">Basic Information</CardTitle>
@@ -346,66 +312,24 @@ export function AdminClientForm({
                             <p className="text-xs text-gray-500">10-digit Indian mobile number</p>
                         </div>
                     </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email Address</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="client@example.com"
-                                value={formData.email}
-                                onChange={(e) => updateField('email', e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="address">Address</Label>
-                            <Input
-                                id="address"
-                                placeholder="Enter address"
-                                value={formData.address}
-                                onChange={(e) => updateField('address', e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
-                    </div>
                 </CardContent>
             </Card>
 
-            {/* Identity Documents */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-lg">Identity Documents</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="pan_number">PAN Number</Label>
-                            <Input
-                                id="pan_number"
-                                placeholder="ABCDE1234F"
-                                value={formData.pan_number}
-                                onChange={(e) => updateField('pan_number', e.target.value.toUpperCase().slice(0, 10))}
-                                disabled={loading}
-                                className="uppercase"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="aadhaar_number">Aadhaar Number</Label>
-                            <Input
-                                id="aadhaar_number"
-                                placeholder="XXXX XXXX XXXX"
-                                value={formData.aadhaar_number}
-                                onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, '').slice(0, 12)
-                                    updateField('aadhaar_number', value)
-                                }}
-                                disabled={loading}
-                            />
-                        </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="pan_number">PAN Number</Label>
+                        <Input
+                            id="pan_number"
+                            placeholder="ABCDE1234F"
+                            value={formData.pan_number}
+                            onChange={(e) => updateField('pan_number', e.target.value.toUpperCase().slice(0, 10))}
+                            disabled={loading}
+                            className="uppercase"
+                        />
                     </div>
 
                     <KYCUploadField
@@ -416,7 +340,6 @@ export function AdminClientForm({
                 </CardContent>
             </Card>
 
-            {/* Staff Assignment */}
             {(mode === 'create' || availableAgents.length > 0) && (
                 <Card>
                     <CardHeader>
@@ -428,7 +351,7 @@ export function AdminClientForm({
                             <Select
                                 value={formData.onboarding_agent_id}
                                 onValueChange={(value) => updateField('onboarding_agent_id', value)}
-                                disabled={loading || mode === 'edit'}
+                                disabled={loading}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a staff member" />
@@ -441,15 +364,11 @@ export function AdminClientForm({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {mode === 'edit' && (
-                                <p className="text-xs text-gray-500">Staff cannot be changed after creation</p>
-                            )}
                         </div>
                     </CardContent>
                 </Card>
             )}
 
-            {/* Actions */}
             <div className="flex items-center gap-4">
                 <Button type="submit" disabled={loading} className="min-w-32">
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

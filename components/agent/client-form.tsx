@@ -152,6 +152,7 @@ export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
     const [formData, setFormData] = useState({
         full_name: '',
         mobile_number: '',
+        pan_number: '',
     })
     const [kycFile, setKycFile] = useState<File | null>(null)
 
@@ -167,6 +168,10 @@ export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
 
             if (!/^[6-9]\d{9}$/.test(formData.mobile_number)) {
                 throw new Error('Please enter a valid 10-digit mobile number')
+            }
+
+            if (formData.pan_number && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan_number.toUpperCase().trim())) {
+                throw new Error('Please enter a valid PAN number (e.g. ABCDE1234F)')
             }
 
             // Get current user
@@ -187,6 +192,7 @@ export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
                 .insert({
                     full_name: formData.full_name.trim(),
                     mobile_number: formData.mobile_number.trim(),
+                    pan_number: formData.pan_number.toUpperCase().trim() || null,
                     kyc_document_url: kycUrl,
                     onboarding_agent_id: user.id,
                 })
@@ -198,7 +204,7 @@ export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
             toast.success('Client added successfully!')
 
             // Reset form
-            setFormData({ full_name: '', mobile_number: '' })
+            setFormData({ full_name: '', mobile_number: '', pan_number: '' })
             setKycFile(null)
 
             // Call success callback or navigate back
@@ -251,6 +257,18 @@ export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
                     required
                 />
                 <p className="text-xs text-gray-500">Enter 10-digit mobile number</p>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="pan_number">PAN Number</Label>
+                <Input
+                    id="pan_number"
+                    type="text"
+                    placeholder="ABCDE1234F"
+                    value={formData.pan_number}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pan_number: e.target.value.toUpperCase() }))}
+                    disabled={loading}
+                />
             </div>
 
             <KYCUpload

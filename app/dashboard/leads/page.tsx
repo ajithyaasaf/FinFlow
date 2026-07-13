@@ -1,67 +1,53 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import { LeadsBoard } from '@/components/dashboard/leads-board'
-import { createClient } from '@/lib/supabase/client'
-import Loading from './loading'
+import { createClient } from '@/lib/supabase/server'
 
-export default function LeadsPage() {
-    const [loading, setLoading] = useState(true)
-    const [leads, setLeads] = useState<any[]>([])
-    const [agents, setAgents] = useState<any[]>([])
+export const dynamic = 'force-dynamic'
 
-    useEffect(() => {
-        async function fetchLeadsData() {
-            try {
-                const supabase = createClient()
-                const { data: { user } } = await supabase.auth.getUser()
-                if (!user) return
+export default async function LeadsPage() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-                // Fetch role
-                const { data: profile } = await supabase
-                    .from('app_users')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single()
-
-                if (!profile) return
-
-                // Build query
-                let query = supabase.from('leads').select(`
-                    *,
-                    assigned_agent:app_users(id, full_name, email)
-                `)
-
-                if (profile.role === 'STAFF') {
-                    query = query.eq('assigned_agent_id', user.id)
-                }
-
-                // Fetch leads and agents in parallel
-                const [leadsRes, agentsRes] = await Promise.all([
-                    query.order('created_at', { ascending: false }),
-                    supabase.from('app_users').select('id, full_name').eq('role', 'STAFF')
-                ])
-
-                if (leadsRes.data) {
-                    setLeads(leadsRes.data)
-                }
-
-                if (agentsRes.data) {
-                    setAgents(agentsRes.data)
-                }
-            } catch (error) {
-                console.error('Error fetching leads:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchLeadsData()
-    }, [])
-
-    if (loading) {
-        return <Loading />
+    if (!user) {
+        return (
+            <div className="p-4 sm:p-6 lg:p-8">
+                <p className="text-red-500">Not authenticated</p>
+            </div>
+        )
     }
+
+    // Fetch role
+    const { data: profile } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile) {
+        return (
+            <div className="p-4 sm:p-6 lg:p-8">
+                <p className="text-red-500">Profile not found</p>
+            </div>
+        )
+    }
+
+    // Build query
+    let query = supabase.from('leads').select(`
+        *,
+        assigned_agent:app_users(id, full_name, email)
+    `)
+
+    if (profile.role === 'STAFF') {
+        query = query.eq('assigned_agent_id', user.id)
+    }
+
+    // Fetch leads and agents in parallel
+    const [leadsRes, agentsRes] = await Promise.all([
+        query.order('created_at', { ascending: false }),
+        supabase.from('app_users').select('id, full_name').eq('role', 'STAFF')
+    ])
+
+    const leads = leadsRes.data || []
+    const agents = agentsRes.data || []
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">

@@ -1,6 +1,3 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,111 +5,91 @@ import { Users, Calendar, CheckCircle, Phone } from 'lucide-react'
 import { formatDate, formatDateTime } from '@/lib/utils'
 import { StaffPageHeader } from '@/components/dashboard/staff-page-header'
 import { StaffActions } from '@/components/dashboard/staff-actions'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 import type { StaffWithStats } from '@/lib/services/staffService'
-import Loading from './loading'
 
-export default function StaffPage() {
-    const [loading, setLoading] = useState(true)
-    const [staff, setStaff] = useState<StaffWithStats[]>([])
-    const [stats, setStats] = useState({
-        totalStaff: 0,
-        totalClients: 0,
-        totalQuotations: 0,
-        todayAttendance: 0,
+export const dynamic = 'force-dynamic'
+
+export default async function StaffPage() {
+    const supabase = await createClient()
+
+    // Fetch all staff
+    const { data: staffData, error: staffError } = await supabase
+        .from('app_users')
+        .select('*')
+        .eq('role', 'STAFF')
+        .order('created_at', { ascending: false })
+
+    if (staffError || !staffData) {
+        console.error('Error fetching staff:', staffError)
+        return (
+            <div className="p-4 sm:p-6 lg:p-8">
+                <StaffPageHeader />
+                <p className="text-red-500">Failed to load staff members.</p>
+            </div>
+        )
+    }
+
+    // Fetch Stats
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayStr = today.toISOString()
+
+    const [clientsRes, quotationsRes, attendanceRes, totalStaffRes, totalClientsRes, totalQuotationsRes, todayAttendanceRes] = await Promise.all([
+        supabase.from('clients').select('onboarding_agent_id'),
+        supabase.from('quotations').select('created_by, converted_to_loan_id'),
+        supabase.from('attendance_logs').select('*').order('check_in_time', { ascending: false }),
+        supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'STAFF'),
+        supabase.from('clients').select('*', { count: 'exact', head: true }),
+        supabase.from('quotations').select('*', { count: 'exact', head: true }),
+        supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', todayStr)
+    ])
+
+    const clientsList = clientsRes.data || []
+    const quotationsList = quotationsRes.data || []
+    const attendanceList = attendanceRes.data || []
+
+    // Group client counts
+    const clientCounts: Record<string, number> = {}
+    clientsList.forEach(c => {
+        if (c.onboarding_agent_id) {
+            clientCounts[c.onboarding_agent_id] = (clientCounts[c.onboarding_agent_id] || 0) + 1
+        }
     })
 
-    useEffect(() => {
-        async function fetchStaffData() {
-            try {
-                const supabase = createClient()
-
-                // Fetch all staff
-                const { data: staffData, error: staffError } = await supabase
-                    .from('app_users')
-                    .select('*')
-                    .eq('role', 'STAFF')
-                    .order('created_at', { ascending: false })
-
-                if (staffError || !staffData) {
-                    console.error('Error fetching staff:', staffError)
-                    return
-                }
-
-                // Fetch Stats
-                const today = new Date()
-                today.setHours(0, 0, 0, 0)
-                const todayStr = today.toISOString()
-
-                const [clientsRes, quotationsRes, attendanceRes, totalStaffRes, totalClientsRes, totalQuotationsRes, todayAttendanceRes] = await Promise.all([
-                    supabase.from('clients').select('onboarding_agent_id'),
-                    supabase.from('quotations').select('created_by, converted_to_loan_id'),
-                    supabase.from('attendance_logs').select('*').order('check_in_time', { ascending: false }),
-                    supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'STAFF'),
-                    supabase.from('clients').select('*', { count: 'exact', head: true }),
-                    supabase.from('quotations').select('*', { count: 'exact', head: true }),
-                    supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', todayStr)
-                ])
-
-                const clientsList = clientsRes.data || []
-                const quotationsList = quotationsRes.data || []
-                const attendanceList = attendanceRes.data || []
-
-                // Group client counts
-                const clientCounts: Record<string, number> = {}
-                clientsList.forEach(c => {
-                    if (c.onboarding_agent_id) {
-                        clientCounts[c.onboarding_agent_id] = (clientCounts[c.onboarding_agent_id] || 0) + 1
-                    }
-                })
-
-                // Group quotation and converted counts
-                const quotationCounts: Record<string, number> = {}
-                const convertedCounts: Record<string, number> = {}
-                quotationsList.forEach(q => {
-                    if (q.created_by) {
-                        quotationCounts[q.created_by] = (quotationCounts[q.created_by] || 0) + 1
-                        if (q.converted_to_loan_id) {
-                            convertedCounts[q.created_by] = (convertedCounts[q.created_by] || 0) + 1
-                        }
-                    }
-                })
-
-                // Group latest attendance per staff member
-                const latestAttendance: Record<string, any> = {}
-                attendanceList.forEach(a => {
-                    if (a.agent_id && !latestAttendance[a.agent_id]) {
-                        latestAttendance[a.agent_id] = a
-                    }
-                })
-
-                const processedStaff = staffData.map(member => ({
-                    ...member,
-                    client_count: clientCounts[member.id] || 0,
-                    quotation_count: quotationCounts[member.id] || 0,
-                    converted_count: convertedCounts[member.id] || 0,
-                    latest_attendance: latestAttendance[member.id]
-                })) as StaffWithStats[]
-
-                setStaff(processedStaff)
-                setStats({
-                    totalStaff: totalStaffRes.count || 0,
-                    totalClients: totalClientsRes.count || 0,
-                    totalQuotations: totalQuotationsRes.count || 0,
-                    todayAttendance: todayAttendanceRes.count || 0,
-                })
-            } catch (error) {
-                console.error('Error fetching staff data:', error)
-            } finally {
-                setLoading(false)
+    // Group quotation and converted counts
+    const quotationCounts: Record<string, number> = {}
+    const convertedCounts: Record<string, number> = {}
+    quotationsList.forEach(q => {
+        if (q.created_by) {
+            quotationCounts[q.created_by] = (quotationCounts[q.created_by] || 0) + 1
+            if (q.converted_to_loan_id) {
+                convertedCounts[q.created_by] = (convertedCounts[q.created_by] || 0) + 1
             }
         }
+    })
 
-        fetchStaffData()
-    }, [])
+    // Group latest attendance per staff member
+    const latestAttendance: Record<string, any> = {}
+    attendanceList.forEach(a => {
+        if (a.agent_id && !latestAttendance[a.agent_id]) {
+            latestAttendance[a.agent_id] = a
+        }
+    })
 
-    if (loading) {
-        return <Loading />
+    const processedStaff = staffData.map(member => ({
+        ...member,
+        client_count: clientCounts[member.id] || 0,
+        quotation_count: quotationCounts[member.id] || 0,
+        converted_count: convertedCounts[member.id] || 0,
+        latest_attendance: latestAttendance[member.id]
+    })) as StaffWithStats[]
+
+    const stats = {
+        totalStaff: totalStaffRes.count || 0,
+        totalClients: totalClientsRes.count || 0,
+        totalQuotations: totalQuotationsRes.count || 0,
+        todayAttendance: todayAttendanceRes.count || 0,
     }
 
     return (
@@ -169,11 +146,11 @@ export default function StaffPage() {
                         All Staff
                     </CardTitle>
                     <CardDescription>
-                        {staff.length} staff members
+                        {processedStaff.length} staff members
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {staff.length === 0 ? (
+                    {processedStaff.length === 0 ? (
                         <div className="py-12 text-center">
                             <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                             <p className="text-sm text-gray-600">No staff yet</p>
@@ -183,7 +160,7 @@ export default function StaffPage() {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {staff.map((agent) => (
+                            {processedStaff.map((agent) => (
                                 <div
                                     key={agent.id}
                                     className="border rounded-lg p-3 md:p-4 hover:shadow-md transition-shadow"
@@ -269,7 +246,7 @@ export default function StaffPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {staff
+                            {[...processedStaff]
                                 .sort((a, b) => b.quotation_count - a.quotation_count)
                                 .slice(0, 5)
                                 .map((agent, index) => (

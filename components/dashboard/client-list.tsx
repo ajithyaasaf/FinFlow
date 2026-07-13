@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,6 +23,10 @@ interface ClientListProps {
 export function ClientList({ initialClients }: ClientListProps) {
     const [search, setSearch] = useState('')
     const [clients, setClients] = useState(initialClients)
+
+    useEffect(() => {
+        setClients(initialClients)
+    }, [initialClients])
 
     const filteredClients = clients.filter(client =>
         client.full_name.toLowerCase().includes(search.toLowerCase()) ||

@@ -1,46 +1,23 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import { ClientList } from '@/components/dashboard/client-list'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import Loading from './loading'
+import { createClient } from '@/lib/supabase/server'
 
-export default function ClientsPage() {
-    const [loading, setLoading] = useState(true)
-    const [clients, setClients] = useState<any[]>([])
+export const dynamic = 'force-dynamic'
 
-    useEffect(() => {
-        async function fetchClients() {
-            try {
-                const supabase = createClient()
-                const { data, error } = await supabase
-                    .from('clients')
-                    .select(`
-                        *,
-                        onboarding_agent:app_users!clients_onboarding_agent_id_fkey(full_name)
-                    `)
-                    .order('created_at', { ascending: false })
+export default async function ClientsPage() {
+    const supabase = await createClient()
+    const { data: clients, error } = await supabase
+        .from('clients')
+        .select(`
+            *,
+            onboarding_agent:app_users!clients_onboarding_agent_id_fkey(full_name)
+        `)
+        .order('created_at', { ascending: false })
 
-                if (error) {
-                    console.error('Error fetching clients:', error)
-                } else {
-                    setClients(data || [])
-                }
-            } catch (error) {
-                console.error('Failed to load clients:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchClients()
-    }, [])
-
-    if (loading) {
-        return <Loading />
+    if (error) {
+        console.error('Error fetching clients:', error)
     }
 
     return (
@@ -58,7 +35,7 @@ export default function ClientsPage() {
                 </Link>
             </div>
 
-            <ClientList initialClients={clients} />
+            <ClientList initialClients={clients || []} />
         </div>
     )
 }

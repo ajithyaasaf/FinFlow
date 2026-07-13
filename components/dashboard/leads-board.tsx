@@ -59,10 +59,9 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
     const [dueDate, setDueDate] = useState('')
     const [actionLoading, setActionLoading] = useState(false)
 
-    // Sync state with props
-    if (JSON.stringify(initialLeads) !== JSON.stringify(leads)) {
+    useEffect(() => {
         setLeads(initialLeads)
-    }
+    }, [initialLeads])
 
     const filteredLeads = leads.filter(lead => {
         const matchesSearch = 

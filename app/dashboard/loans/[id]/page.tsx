@@ -1,7 +1,3 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,98 +5,36 @@ import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
 import { EditLoanTerms } from '@/components/dashboard/edit-loan-terms'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
-    User, Phone, Calendar, FileText, ArrowLeft, CheckCircle, AlertCircle, CreditCard, Loader2
+    User, Phone, Calendar, FileText, ArrowLeft, CheckCircle, AlertCircle, CreditCard
 } from 'lucide-react'
 import Link from 'next/link'
 import { ActivityTimeline } from '@/components/dashboard/activity-timeline'
 import { DocumentList } from '@/components/dashboard/document-list'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 
-export default function LoanDetailsPage() {
-    const params = useParams()
-    const router = useRouter()
-    const id = params.id as string
+export const dynamic = 'force-dynamic'
 
-    const [loading, setLoading] = useState(true)
-    const [loan, setLoan] = useState<any>(null)
-    const [auditLogs, setAuditLogs] = useState<any[]>([])
-
-    useEffect(() => {
-        if (!id) return
-
-        async function loadData() {
-            setLoading(true)
-            try {
-                const supabase = createClient()
-
-                // Fetch loan details
-                const { data: loanData, error: loanError } = await supabase
-                    .from('loan_applications')
-                    .select(`
-                        *,
-                        client:clients(*, onboarding_agent:app_users!clients_onboarding_agent_id_fkey(full_name))
-                    `)
-                    .eq('loan_id', id)
-                    .single()
-
-                if (loanError || !loanData) {
-                    setLoan(null)
-                    setLoading(false)
-                    return
-                }
-
-                // Fetch related quotation if exists (matching client and amount approx)
-                const { data: quotation } = await supabase
-                    .from('quotations')
-                    .select('*')
-                    .eq('client_id', loanData.client_id)
-                    .eq('amount', loanData.amount)
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-
-                // Fetch documents
-                const { data: documents } = await supabase
-                    .from('loan_documents')
-                    .select('*')
-                    .eq('loan_id', id)
-
-                // Fetch audit logs
-                const { data: logs } = await supabase
-                    .from('system_logs')
-                    .select(`
-                        *,
-                        user:app_users(full_name, email)
-                    `)
-                    .eq('entity_type', 'LOAN')
-                    .eq('entity_id', id)
-                    .order('created_at', { ascending: false })
-
-                setLoan({
-                    ...loanData,
-                    quotation: (quotation && quotation.length > 0) ? quotation[0] : null,
-                    documents: documents || []
-                })
-                setAuditLogs(logs || [])
-            } catch (err) {
-                console.error('Failed to load loan details:', err)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        loadData()
-    }, [id])
-
-    if (loading) {
-        return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-gray-500 font-medium font-sans">Loading application details...</p>
-            </div>
-        )
+interface PageProps {
+    params: {
+        id: string
     }
+}
 
-    if (!loan) {
+export default async function LoanDetailsPage({ params }: PageProps) {
+    const id = params.id
+    const supabase = await createClient()
+
+    // Fetch loan details
+    const { data: loanData, error: loanError } = await supabase
+        .from('loan_applications')
+        .select(`
+            *,
+            client:clients(*, onboarding_agent:app_users!clients_onboarding_agent_id_fkey(full_name))
+        `)
+        .eq('loan_id', id)
+        .single()
+
+    if (loanError || !loanData) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
                 <AlertCircle className="h-12 w-12 text-red-500" />
@@ -112,6 +46,39 @@ export default function LoanDetailsPage() {
             </div>
         )
     }
+
+    // Fetch related quotation if exists
+    const { data: quotation } = await supabase
+        .from('quotations')
+        .select('*')
+        .eq('client_id', loanData.client_id)
+        .eq('amount', loanData.amount)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+    // Fetch documents
+    const { data: documents } = await supabase
+        .from('loan_documents')
+        .select('*')
+        .eq('loan_id', id)
+
+    // Fetch audit logs
+    const { data: logs } = await supabase
+        .from('system_logs')
+        .select(`
+            *,
+            user:app_users(full_name, email)
+        `)
+        .eq('entity_type', 'LOAN')
+        .eq('entity_id', id)
+        .order('created_at', { ascending: false })
+
+    const loan = {
+        ...loanData,
+        quotation: (quotation && quotation.length > 0) ? quotation[0] : null,
+        documents: documents || []
+    }
+    const auditLogs = logs || []
 
     const STAGE_COLORS: Record<string, string> = {
         'Application Submitted': 'bg-blue-100 text-blue-800',

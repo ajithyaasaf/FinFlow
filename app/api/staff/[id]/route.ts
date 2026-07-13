@@ -101,7 +101,17 @@ export async function DELETE(
 
         if (authError) {
             console.error('Auth delete error:', authError)
-            return NextResponse.json({ error: 'Failed to delete staff' }, { status: 500 })
+            
+            // Customize error message for foreign key constraint / active records
+            const isReferenceError = authError.message.toLowerCase().includes('foreign key') || 
+                                     authError.message.toLowerCase().includes('violates') ||
+                                     authError.status === 500;
+                                     
+            const errorMessage = isReferenceError
+                ? 'Cannot delete staff member because they have linked clients, quotations, or attendance logs. Please reassign their clients first.'
+                : authError.message;
+
+            return NextResponse.json({ error: errorMessage }, { status: 500 })
         }
 
         // Revalidate the staff page to remove the deleted staff immediately
@@ -112,8 +122,15 @@ export async function DELETE(
             message: 'Staff deleted successfully'
         })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Delete staff error:', error)
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+        const isReferenceError = error?.message?.toLowerCase().includes('foreign key') || 
+                                 error?.message?.toLowerCase().includes('violates');
+                                 
+        const errorMessage = isReferenceError
+            ? 'Cannot delete staff member because they have linked clients, quotations, or attendance logs. Please reassign their clients first.'
+            : 'Internal server error';
+
+        return NextResponse.json({ error: errorMessage }, { status: 500 })
     }
 }
