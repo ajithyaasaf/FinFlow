@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { WikiHub } from '@/components/dashboard/wiki-hub'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { PageHeader } from '@/components/agent/page-header'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AgentWikiPage() {
     const [loading, setLoading] = useState(true)
@@ -40,33 +41,41 @@ export default function AgentWikiPage() {
 
     if (loading) {
         return (
-            <div className="p-4 space-y-4 pb-20">
-                <div>
-                    <h1 className="text-xl font-bold text-gray-900">Policy Handbook</h1>
-                    <p className="text-xs text-gray-500">Quick guides on KYC, verification policies, and commission rules.</p>
-                </div>
-                <div className="space-y-4 py-4">
-                    <div className="h-10 bg-gray-100 rounded animate-pulse w-full"></div>
-                    <div className="h-32 bg-gray-50 rounded animate-pulse w-full flex items-center justify-center">
-                        <Loader2 className="h-6 w-6 text-primary animate-spin" />
+            <div className="min-h-screen bg-gray-50 pb-20">
+                <PageHeader
+                    title="Policy Handbook"
+                    subtitle="Quick guides on KYC, verification policies, and commission rules."
+                />
+                <main className="p-4 space-y-4">
+                    <Skeleton className="h-10 w-full rounded-xl" />
+                    <div className="space-y-3 pt-2">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3 shadow-airbnb-sm">
+                                <Skeleton className="h-4 w-1/3 rounded-lg" />
+                                <Skeleton className="h-3.5 w-full rounded-lg" />
+                                <Skeleton className="h-3.5 w-5/6 rounded-lg" />
+                            </div>
+                        ))}
                     </div>
-                </div>
+                </main>
             </div>
         )
     }
 
     return (
-        <div className="p-4 space-y-4 pb-20">
-            <div>
-                <h1 className="text-xl font-bold text-gray-900">Policy Handbook</h1>
-                <p className="text-xs text-gray-500">Quick guides on KYC, verification policies, and commission rules.</p>
-            </div>
-
-            <WikiHub
-                initialArticles={articles}
-                categories={categories}
-                isAdmin={false}
+        <div className="min-h-screen bg-gray-50 pb-20">
+            <PageHeader
+                title="Policy Handbook"
+                subtitle="Quick guides on KYC, verification policies, and commission rules."
             />
+
+            <main className="p-4">
+                <WikiHub
+                    initialArticles={articles}
+                    categories={categories}
+                    isAdmin={false}
+                />
+            </main>
         </div>
     )
 }

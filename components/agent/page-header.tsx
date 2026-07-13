@@ -1,9 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { NotificationBell } from '@/components/notifications/notification-bell'
+import { createClient } from '@/lib/supabase/client'
 
 interface PageHeaderProps {
     title: string
@@ -20,6 +21,13 @@ export function PageHeader({
     showNotifications = true,
     actions
 }: PageHeaderProps) {
+    const handleLogout = async () => {
+        const supabase = createClient()
+        console.log('[FinFlow] PageHeader logout initiated')
+        await supabase.auth.signOut()
+        window.location.href = '/login'
+    }
+
     return (
         <header
             className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 shadow-sm"
@@ -49,6 +57,15 @@ export function PageHeader({
                 <div className="flex items-center gap-2">
                     {actions}
                     {showNotifications && <NotificationBell />}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleLogout}
+                        className="h-10 w-10 text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        title="Sign Out"
+                    >
+                        <LogOut className="h-5 w-5" />
+                    </Button>
                 </div>
             </div>
         </header>

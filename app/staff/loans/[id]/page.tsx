@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { DocumentReupload } from '@/components/agent/document-reupload'
+import { PageHeader } from '@/components/agent/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -231,15 +232,11 @@ export default function AgentLoanDetailsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-                <Link href="/staff/clients">
-                    <ChevronLeft className="h-6 w-6 text-gray-600" />
-                </Link>
-                <div>
-                    <h1 className="text-lg font-bold text-gray-900">Loan Details</h1>
-                    <p className="text-xs text-gray-500">{client.full_name}</p>
-                </div>
-            </header>
+            <PageHeader
+                title="Loan Details"
+                subtitle={client.full_name}
+                backHref="/staff/clients"
+            />
 
             <main className="p-4 space-y-4">
                 {/* Status & Amount Card */}

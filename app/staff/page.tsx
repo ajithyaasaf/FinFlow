@@ -105,16 +105,6 @@ export default function StaffDashboard() {
                 title="FinFlow"
                 subtitle={userData?.full_name || 'Staff Dashboard'}
                 showNotifications={true}
-                actions={
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleLogout}
-                        className="h-10 w-10 hover:bg-red-50 hover:text-red-600 transition-colors"
-                    >
-                        <LogOut className="h-5 w-5" />
-                    </Button>
-                }
             />
 
             {/* Main Content */}
