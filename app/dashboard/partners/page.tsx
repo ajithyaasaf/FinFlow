@@ -1,40 +1,17 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import { PartnersList } from '@/components/dashboard/partners-list'
-import { createClient } from '@/lib/supabase/client'
-import Loading from './loading'
+import { createClient } from '@/lib/supabase/server'
 
-export default function PartnersPage() {
-    const [loading, setLoading] = useState(true)
-    const [partners, setPartners] = useState<any[]>([])
+export const dynamic = 'force-dynamic'
 
-    useEffect(() => {
-        async function fetchPartners() {
-            try {
-                const supabase = createClient()
-                const { data, error } = await supabase
-                    .from('bank_partners')
-                    .select('*')
-                    .order('created_at', { ascending: false })
+export default async function PartnersPage() {
+    const supabase = await createClient()
+    const { data: partners, error } = await supabase
+        .from('bank_partners')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-                if (error) {
-                    console.error('Error fetching bank partners:', error)
-                } else {
-                    setPartners(data || [])
-                }
-            } catch (error) {
-                console.error('Failed to load bank partners:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchPartners()
-    }, [])
-
-    if (loading) {
-        return <Loading />
+    if (error) {
+        console.error('Error fetching bank partners:', error)
     }
 
     return (
@@ -44,7 +21,7 @@ export default function PartnersPage() {
                 <p className="text-xs md:text-sm text-gray-500">Manage external banks, NBFCs, and lender branch manager relationships.</p>
             </div>
 
-            <PartnersList initialPartners={partners} />
+            <PartnersList initialPartners={partners || []} />
         </div>
     )
 }

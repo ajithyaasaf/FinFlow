@@ -123,6 +123,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
         if (res.success) {
             toast.success(editLogId ? 'Attendance log updated successfully' : 'Manual attendance logged successfully')
             setIsOpen(false)
+            router.refresh()
         } else {
             toast.error(res.error || 'Failed to save attendance')
         }
@@ -137,6 +138,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
 
         if (res.success) {
             toast.success('Attendance record deleted')
+            router.refresh()
         } else {
             toast.error(res.error || 'Failed to delete record')
         }

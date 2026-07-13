@@ -1,13 +1,11 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { TrendingUp, ChevronRight, Clock, CheckCircle, X, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import Loading from './loading'
+import { createClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
 
 interface TopUpOfferWithDetails {
     offer_id: string
@@ -37,53 +35,27 @@ function StatusBadge({ status }: { status: string }) {
     )
 }
 
-export default function TopUpListPage() {
-    const [loading, setLoading] = useState(true)
-    const [offers, setOffers] = useState<TopUpOfferWithDetails[]>([])
-    const [stats, setStats] = useState({
-        total: 0,
-        pending: 0,
-        accepted: 0,
-        rejected: 0,
-    })
+export default async function TopUpListPage() {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('topup_offers')
+        .select(`
+            *,
+            client:clients(*),
+            loan:loan_applications(*)
+        `)
+        .order('created_at', { ascending: false })
 
-    useEffect(() => {
-        async function fetchTopUpOffers() {
-            try {
-                const supabase = createClient()
-                const { data, error } = await supabase
-                    .from('topup_offers')
-                    .select(`
-                        *,
-                        client:clients(*),
-                        loan:loan_applications(*)
-                    `)
-                    .order('created_at', { ascending: false })
+    if (error) {
+        console.error('Error fetching top-up offers:', error)
+    }
 
-                if (error) {
-                    console.error('Error fetching top-up offers:', error)
-                } else {
-                    const fetchedOffers = (data || []) as TopUpOfferWithDetails[]
-                    setOffers(fetchedOffers)
-                    setStats({
-                        total: fetchedOffers.length,
-                        pending: fetchedOffers.filter(o => o.status === 'PENDING').length,
-                        accepted: fetchedOffers.filter(o => o.status === 'ACCEPTED').length,
-                        rejected: fetchedOffers.filter(o => o.status === 'REJECTED').length,
-                    })
-                }
-            } catch (error) {
-                console.error('Failed to load top-up offers:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchTopUpOffers()
-    }, [])
-
-    if (loading) {
-        return <Loading />
+    const offers = (data || []) as TopUpOfferWithDetails[]
+    const stats = {
+        total: offers.length,
+        pending: offers.filter(o => o.status === 'PENDING').length,
+        accepted: offers.filter(o => o.status === 'ACCEPTED').length,
+        rejected: offers.filter(o => o.status === 'REJECTED').length,
     }
 
     return (

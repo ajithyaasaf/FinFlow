@@ -1,72 +1,38 @@
-'use client'
-
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
-    ArrowLeft, Clock, MessageCircle, User, DollarSign, Loader2, AlertCircle
+    ArrowLeft, Clock, MessageCircle, User, DollarSign, AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
 import { generateWhatsAppLink } from '@/lib/topup-notifications'
 import { TopUpActions } from '@/components/dashboard/topup-actions'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/server'
 
-export default function TopUpOfferPage() {
-    const params = useParams()
-    const router = useRouter()
-    const id = params.id as string
+export const dynamic = 'force-dynamic'
 
-    const [loading, setLoading] = useState(true)
-    const [offer, setOffer] = useState<any>(null)
-
-    useEffect(() => {
-        if (!id) return
-
-        async function loadData() {
-            setLoading(true)
-            try {
-                const supabase = createClient()
-
-                const { data, error } = await supabase
-                    .from('topup_offers')
-                    .select(`
-                        *,
-                        client:clients(*),
-                        loan:loan_applications(*)
-                    `)
-                    .eq('offer_id', id)
-                    .single()
-
-                if (error || !data) {
-                    setOffer(null)
-                    setLoading(false)
-                    return
-                }
-
-                setOffer(data)
-            } catch (err) {
-                console.error('Failed to load topup offer details:', err)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        loadData()
-    }, [id])
-
-    if (loading) {
-        return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-gray-500 font-medium font-sans">Loading offer details...</p>
-            </div>
-        )
+interface PageProps {
+    params: {
+        id: string
     }
+}
 
-    if (!offer) {
+export default async function TopUpOfferPage({ params }: PageProps) {
+    const id = params.id
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('topup_offers')
+        .select(`
+            *,
+            client:clients(*),
+            loan:loan_applications(*)
+        `)
+        .eq('offer_id', id)
+        .single()
+
+    if (error || !data) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
                 <AlertCircle className="h-12 w-12 text-red-500" />
@@ -79,6 +45,7 @@ export default function TopUpOfferPage() {
         )
     }
 
+    const offer = data
     const client = Array.isArray(offer.client) ? offer.client[0] : offer.client
     const loan = Array.isArray(offer.loan) ? offer.loan[0] : offer.loan
 
@@ -105,9 +72,9 @@ export default function TopUpOfferPage() {
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <Link href="/dashboard">
-                        <button className="p-2 hover:bg-gray-100 rounded-lg">
+                        <Button variant="ghost" size="icon">
                             <ArrowLeft className="h-5 w-5" />
-                        </button>
+                        </Button>
                     </Link>
                     <div>
                         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Top-Up Loan Offer</h1>
