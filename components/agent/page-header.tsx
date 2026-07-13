@@ -23,7 +23,7 @@ export function PageHeader({
 }: PageHeaderProps) {
     const handleLogout = async () => {
         const supabase = createClient()
-        console.log('[FinFlow] PageHeader logout initiated')
+        console.log('[HealthyHome] PageHeader logout initiated')
         await supabase.auth.signOut()
         window.location.href = '/login'
     }

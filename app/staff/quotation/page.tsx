@@ -200,8 +200,8 @@ function QuotationPageContent() {
                         <div className="space-y-2">
                             <Label className="text-gray-700 font-medium">Select Client *</Label>
                             {clients.length === 0 ? (
-                                <div className="text-sm text-gray-600 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                    No clients found. <Link href="/staff/clients/new" className="text-blue-600 underline font-semibold">Add a client first</Link>
+                                <div className="text-sm text-gray-600 p-4 bg-primary/5 rounded-lg border border-primary/10">
+                                    No clients found. <Link href="/staff/clients/new" className="text-primary underline font-semibold">Add a client first</Link>
                                 </div>
                             ) : (
                                 <>
@@ -211,7 +211,7 @@ function QuotationPageContent() {
                                         onSelect={setSelectedClientId}
                                     />
                                     <p className="text-xs text-gray-600 mt-2">
-                                        Client not in list? <Link href="/staff/clients/new?return=/staff/quotation" className="text-blue-600 underline font-semibold">Add new client</Link>
+                                        Client not in list? <Link href="/staff/clients/new?return=/staff/quotation" className="text-primary underline font-semibold">Add new client</Link>
                                     </p>
                                 </>
                             )}
@@ -275,8 +275,8 @@ function QuotationPageContent() {
 
                 {/* EMI Calculation Result */}
                 {emi > 0 && (
-                    <Card className={`border-2 ${highValue ? 'border-orange-500' : 'border-blue-500'}`}>
-                        <CardHeader className={`${highValue ? 'bg-orange-50 border-b border-orange-200' : 'bg-blue-50 border-b border-blue-200'}`}>
+                    <Card className={`border-2 ${highValue ? 'border-orange-500' : 'border-primary'}`}>
+                        <CardHeader className={`${highValue ? 'bg-orange-50 border-b border-orange-200' : 'bg-primary/5 border-b border-primary/10'}`}>
                             <CardTitle className="text-base flex items-center justify-between text-gray-900">
                                 <span>Calculation Result</span>
                                 {highValue && (
@@ -293,9 +293,9 @@ function QuotationPageContent() {
                             )}
                         </CardHeader>
                         <CardContent className="space-y-3 pt-4">
-                            <div className={`p-4 rounded-lg ${highValue ? 'bg-orange-100 border border-orange-300' : 'bg-blue-100 border border-blue-300'}`}>
-                                <p className={`text-sm mb-1 font-medium ${highValue ? 'text-orange-900' : 'text-blue-900'}`}>Monthly EMI</p>
-                                <p className={`text-3xl font-bold ${highValue ? 'text-orange-600' : 'text-blue-600'}`}>{formatCurrency(emi)}</p>
+                            <div className={`p-4 rounded-lg ${highValue ? 'bg-orange-100 border border-orange-300' : 'bg-primary/10 border border-primary/20'}`}>
+                                <p className={`text-sm mb-1 font-medium ${highValue ? 'text-orange-900' : 'text-primary'}`}>Monthly EMI</p>
+                                <p className={`text-3xl font-bold ${highValue ? 'text-orange-600' : 'text-primary'}`}>{formatCurrency(emi)}</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">

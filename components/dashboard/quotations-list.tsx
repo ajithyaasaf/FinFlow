@@ -138,7 +138,7 @@ export function QuotationsList({ quotations }: QuotationsListProps) {
                                                 High Value (Needs Approval)
                                             </Badge>
                                         ) : (
-                                            <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
+                                            <Badge variant="secondary" className="bg-primary/5 text-primary border border-primary/10 hover:bg-primary/5">
                                                 Standard
                                             </Badge>
                                         )}

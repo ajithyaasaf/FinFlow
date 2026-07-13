@@ -44,9 +44,9 @@ export async function TopUpConversionReport({ from, to }: TopUpConversionReportP
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                        <p className="text-xs text-blue-600 uppercase mb-1">Total Offers</p>
-                        <p className="text-2xl font-bold text-blue-900">{totalOffers}</p>
+                    <div className="bg-primary/5 p-4 rounded-lg">
+                        <p className="text-xs text-primary uppercase mb-1">Total Offers</p>
+                        <p className="text-2xl font-bold text-gray-900">{totalOffers}</p>
                     </div>
                     <div className="bg-green-50 p-4 rounded-lg">
                         <div className="flex items-center gap-1 mb-1">

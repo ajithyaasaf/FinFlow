@@ -189,10 +189,10 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium text-gray-600">
                             Upcoming Payments (7 days)
                         </CardTitle>
-                        <CreditCard className="h-4 w-4 text-blue-400" />
+                        <CreditCard className="h-4 w-4 text-primary" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold text-blue-600">{stats.upcomingPayments}</p>
+                        <p className="text-3xl font-bold text-primary">{stats.upcomingPayments}</p>
                         <p className="text-xs text-gray-500 mt-1">EMIs due this week</p>
                     </CardContent>
                 </Card>
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <CardTitle className="flex items-center gap-2 text-lg md:text-xl text-gray-900">
-                                <FileText className="h-5 w-5 text-blue-600" />
+                                <FileText className="h-5 w-5 text-primary" />
                                 Recent Quotations
                             </CardTitle>
                             <CardDescription className="mt-1 md:mt-2 text-xs md:text-sm">
@@ -252,7 +252,7 @@ export default function DashboardPage() {
                                                         High Value (Needs Approval)
                                                     </Badge>
                                                 ) : (
-                                                    <Badge className="text-xs bg-blue-50 text-blue-700 border border-blue-150 hover:bg-blue-50">
+                                                    <Badge className="text-xs bg-primary/5 text-primary border border-primary/10 hover:bg-primary/5">
                                                         Standard
                                                     </Badge>
                                                 )}

@@ -93,9 +93,9 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                             <CardTitle className="text-lg">Offered Amount</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-6 rounded-lg">
+                            <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 p-4 md:p-6 rounded-lg">
                                 <p className="text-xs md:text-sm text-gray-600 mb-2">Top-Up Loan</p>
-                                <p className="text-2xl md:text-4xl font-bold text-blue-600">
+                                <p className="text-2xl md:text-4xl font-bold text-primary">
                                     {formatCurrency(offer.offered_amount)}
                                 </p>
                             </div>

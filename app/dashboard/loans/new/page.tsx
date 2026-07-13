@@ -65,13 +65,13 @@ export default function NewLoanPage() {
             </div>
 
             {/* Info Card */}
-            <Card className="mb-6 bg-blue-50 border-blue-200">
+            <Card className="mb-6 bg-primary/5 border-primary/10">
                 <CardContent className="pt-4">
                     <div className="flex items-start gap-3">
-                        <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+                        <FileText className="h-5 w-5 text-primary mt-0.5" />
                         <div className="text-sm">
-                            <p className="font-medium text-blue-800">Loan Application Process</p>
-                            <p className="text-blue-600 mt-1">
+                            <p className="font-medium text-primary">Loan Application Process</p>
+                            <p className="text-primary/80 mt-1">
                                 Select a client and enter loan terms. Choose between Direct Lending or Brokerage Submission models.
                                 For Brokerage, select the Bank/NBFC, Region, and optionally assign a Team Leader.
                             </p>

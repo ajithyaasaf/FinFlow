@@ -177,7 +177,7 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="DIRECT">Direct Lending (FinFlow In-House)</SelectItem>
+                                    <SelectItem value="DIRECT">Direct Lending (HealthyHome In-House)</SelectItem>
                                     <SelectItem value="BROKERAGE">Brokerage Submission (External Bank)</SelectItem>
                                 </SelectContent>
                             </Select>

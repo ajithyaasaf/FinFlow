@@ -66,7 +66,7 @@ export function ClientList({ initialClients }: ClientListProps) {
                                         href={`/dashboard/clients/${client.client_id}`}
                                         className="flex items-center gap-2 hover:text-primary transition-colors"
                                     >
-                                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
                                             {client.full_name.charAt(0)}
                                         </div>
                                         {client.full_name}

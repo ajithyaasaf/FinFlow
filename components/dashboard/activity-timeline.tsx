@@ -20,7 +20,7 @@ interface ActivityTimelineProps {
 }
 
 const ACTION_LABELS: Record<string, { label: string; color: string; icon: any }> = {
-    LOAN_CREATED: { label: 'Loan Created', color: 'bg-blue-100 text-blue-800', icon: FileText },
+    LOAN_CREATED: { label: 'Loan Created', color: 'bg-primary/10 text-primary', icon: FileText },
     LOAN_STATUS_CHANGE: { label: 'Status Updated', color: 'bg-purple-100 text-purple-800', icon: Edit },
     LOAN_TERMS_EDIT: { label: 'Terms Modified', color: 'bg-orange-100 text-orange-800', icon: Edit },
 }

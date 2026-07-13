@@ -316,7 +316,7 @@ export default function ClientDetailPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                                     {agent?.full_name?.charAt(0) || '?'}
                                 </div>
                                 <div>

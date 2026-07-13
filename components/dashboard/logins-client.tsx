@@ -141,14 +141,14 @@ export function LoginsClient({
                         <p className="text-[10px] text-teal-600">{stats.stageCounts['Sanctioned'] || 0} files sanctioned</p>
                     </div>
                 </div>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                        <Filter className="h-5 w-5 text-blue-700" />
+                <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                        <Filter className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <p className="text-xs text-blue-700 font-medium">Total Logins</p>
-                        <p className="text-lg font-bold text-blue-900">{total}</p>
-                        <p className="text-[10px] text-blue-600">Across all stages</p>
+                        <p className="text-xs text-primary font-medium">Total Logins</p>
+                        <p className="text-lg font-bold text-gray-900">{total}</p>
+                        <p className="text-[10px] text-primary/80">Across all stages</p>
                     </div>
                 </div>
             </div>

@@ -7,13 +7,13 @@ import { ServiceWorkerRegistration } from "@/components/sw-registration";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "FinFlow - Loan Management System",
+    title: "HealthyHome Loans - Loan Management System",
     description: "Micro-finance loan management system for staff and administrators",
     manifest: "/manifest.json",
     appleWebApp: {
         capable: true,
         statusBarStyle: "default",
-        title: "FinFlow",
+        title: "HealthyHome Loans",
     },
 };
 
@@ -22,7 +22,7 @@ export const viewport: Viewport = {
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
-    themeColor: "#3b82f6",
+    themeColor: "#b51c1c",
 };
 
 export default function RootLayout({

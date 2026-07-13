@@ -151,7 +151,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Users className="h-6 w-6 text-blue-600" />
+                        <Users className="h-6 w-6 text-primary" />
                         Attendance & Field Tracking
                     </h1>
                     <p className="text-xs md:text-sm text-gray-500 mt-1">

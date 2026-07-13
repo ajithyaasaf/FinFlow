@@ -221,7 +221,7 @@ function ReportsPageContent() {
                                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
                                                     index === 1 ? 'bg-gray-200 text-gray-700' :
                                                         index === 2 ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-blue-50 text-blue-600'
+                                                            'bg-primary/5 text-primary'
                                                     }`}>
                                                     {index + 1}
                                                 </div>
@@ -258,7 +258,7 @@ function ReportsPageContent() {
                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
                                                         index === 1 ? 'bg-gray-200 text-gray-700' :
                                                             index === 2 ? 'bg-orange-100 text-orange-700' :
-                                                                'bg-blue-50 text-blue-600'
+                                                                'bg-primary/5 text-primary'
                                                         }`}>
                                                         {index + 1}
                                                     </div>

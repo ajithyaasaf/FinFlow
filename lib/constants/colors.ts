@@ -14,7 +14,7 @@ export const COLORS = {
         primary: 'bg-white',
         secondary: 'bg-gray-50',
         tertiary: 'bg-gray-100',
-        accent: 'bg-blue-50',
+        accent: 'bg-red-50',
     },
 
     // State colors

@@ -32,7 +32,7 @@ import {
 import type { DashboardAnalytics } from '@/lib/services/analyticsService'
 
 // Premium color palettes
-const THEME_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e']
+const THEME_COLORS = ['#b51c1c', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e']
 
 // Helper to format currency in Indian numbering system
 function formatIndianCurrency(num: number): string {
@@ -119,13 +119,13 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
 
             {/* Metric KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="hover:shadow-md transition-all duration-300 border-l-4 border-l-blue-500 overflow-hidden relative group">
+                <Card className="hover:shadow-md transition-all duration-300 border-l-4 border-l-primary overflow-hidden relative group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                        <TrendingUp className="h-16 w-16 text-blue-600" />
+                        <TrendingUp className="h-16 w-16 text-primary" />
                     </div>
                     <CardHeader className="pb-2">
                         <CardDescription className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
-                            <Briefcase className="h-3.5 w-3.5 text-blue-500" />
+                            <Briefcase className="h-3.5 w-3.5 text-primary" />
                             Total Sourced Business
                         </CardDescription>
                         <CardTitle className="text-3xl font-extrabold text-gray-900 mt-1">
@@ -202,7 +202,7 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                 <Card className="lg:col-span-2 shadow-sm hover:shadow-md transition-all duration-300">
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
-                            <TrendingUp className="h-5 w-5 text-blue-600" />
+                            <TrendingUp className="h-5 w-5 text-primary" />
                             Sourced vs. Disbursed Trends
                         </CardTitle>
                         <CardDescription>Compare monthly value of new files logged vs successfully paid out.</CardDescription>
@@ -224,7 +224,7 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                                         contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                                     />
                                     <Legend verticalAlign="top" height={36} iconType="circle" />
-                                    <Bar name="Sourced Volume" dataKey="sourced" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                    <Bar name="Sourced Volume" dataKey="sourced" fill="#b51c1c" radius={[4, 4, 0, 0]} />
                                     <Bar name="Disbursed Volume" dataKey="disbursed" fill="#10b981" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
@@ -317,7 +317,7 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                                                 label={({ name }) => name}
                                             >
                                                 {data.regionBreakdown.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : '#f59e0b'} />
+                                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#b51c1c' : '#f59e0b'} />
                                                 ))}
                                             </Pie>
                                             <Tooltip formatter={(v: any) => formatIndianCurrency(Number(v))} />
@@ -328,7 +328,7 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                                     {data.regionBreakdown.map((r, idx) => (
                                         <div key={r.name} className="flex items-center justify-between text-xs py-1.5 border-b last:border-0 border-gray-100">
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-3 h-3 rounded-full ${idx === 0 ? 'bg-blue-500' : 'bg-amber-500'}`} />
+                                                <div className={`w-3 h-3 rounded-full ${idx === 0 ? 'bg-primary' : 'bg-amber-500'}`} />
                                                 <span className="font-semibold text-gray-700">{r.name}</span>
                                             </div>
                                             <div className="text-right">
@@ -366,7 +366,7 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${idx === 0 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
                                                 idx === 1 ? 'bg-gray-100 text-gray-700 border border-gray-200' :
                                                     idx === 2 ? 'bg-orange-100 text-orange-700 border border-orange-200' :
-                                                        'bg-blue-50 text-blue-600 border border-blue-100'
+                                                        'bg-primary/5 text-primary border border-primary/10'
                                                 }`}>
                                                 {idx + 1}
                                             </div>

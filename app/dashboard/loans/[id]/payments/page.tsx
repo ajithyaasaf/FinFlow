@@ -138,7 +138,7 @@ export default function LoanPaymentsPage() {
                                 <p className="text-xs text-gray-500 uppercase">Total EMIs</p>
                                 <p className="text-2xl font-bold">{totalEMIs}</p>
                             </div>
-                            <Calendar className="h-8 w-8 text-blue-500" />
+                            <Calendar className="h-8 w-8 text-primary" />
                         </div>
                     </CardContent>
                 </Card>

@@ -211,10 +211,10 @@ export default function AttendancePage() {
                         )}
 
                         {!location && !gpsLoading && (
-                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-3">
+                            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-3">
                                 <div className="flex gap-2">
-                                    <AlertCircle className="h-4.5 w-4.5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                    <p className="text-[11px] text-blue-900">
+                                    <AlertCircle className="h-4.5 w-4.5 text-primary mt-0.5 flex-shrink-0" />
+                                    <p className="text-[11px] text-primary/80">
                                         Make sure location services are enabled on your device. You may need to grant permission when prompted.
                                     </p>
                                 </div>

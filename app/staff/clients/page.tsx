@@ -130,7 +130,7 @@ export default function AgentClientsPage() {
                                     <CardContent className="p-4">
                                         <div className="flex justify-between items-start gap-3">
                                             <div className="flex gap-3 flex-1 min-w-0">
-                                                <div className="h-12 w-12 rounded-lg bg-blue-600 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
+                                                <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
                                                     {client.full_name.trim().charAt(0).toUpperCase() || 'U'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -158,7 +158,7 @@ export default function AgentClientsPage() {
                                                 </p>
                                             </div>
                                         </div>
-
+ 
                                         {activeLoan && (
                                             <div className="mt-3 pt-3 border-t border-gray-100">
                                                 <div className="flex justify-between items-center">
@@ -167,7 +167,7 @@ export default function AgentClientsPage() {
                                                 </div>
                                             </div>
                                         )}
-
+ 
                                         {/* Action Buttons */}
                                         <div className="mt-4 flex gap-2">
                                             {activeLoan ? (
@@ -188,19 +188,19 @@ export default function AgentClientsPage() {
                                             <Button asChild
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-10 w-10 p-0 border-gray-300 hover:bg-blue-50 hover:border-blue-600"
+                                                className="h-10 w-10 p-0 border-gray-300 hover:bg-red-50 hover:border-primary"
                                             >
                                                 <Link href={`/staff/clients/${client.client_id}`}>
-                                                    <Eye className="h-4 w-4 text-blue-600" />
+                                                    <Eye className="h-4 w-4 text-primary" />
                                                 </Link>
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-10 w-10 p-0 border-gray-300 hover:bg-blue-50 hover:border-blue-600"
+                                                className="h-10 w-10 p-0 border-gray-300 hover:bg-red-50 hover:border-primary"
                                                 onClick={() => window.location.href = `tel:${client.mobile_number}`}
                                             >
-                                                <Phone className="h-4 w-4 text-blue-600" />
+                                                <Phone className="h-4 w-4 text-primary" />
                                             </Button>
                                         </div>
                                     </CardContent>

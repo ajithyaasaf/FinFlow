@@ -101,12 +101,12 @@ export function SearchableSelect({
                                         className={cn(
                                             "w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg text-left transition-colors",
                                             isSelected 
-                                                ? "bg-blue-50 text-blue-700 font-semibold" 
+                                                ? "bg-red-50 text-primary font-semibold" 
                                                 : "text-gray-700 hover:bg-gray-100/80"
                                         )}
                                     >
                                         <span className="truncate pr-4">{opt.label}</span>
-                                        {isSelected && <Check className="h-4 w-4 text-blue-600 shrink-0" />}
+                                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
                                     </button>
                                 )
                             })

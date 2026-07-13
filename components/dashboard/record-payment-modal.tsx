@@ -140,7 +140,7 @@ export function RecordPaymentModal({
 
                 <div className="space-y-4 py-4">
                     {/* EMI Details */}
-                    <div className="bg-blue-50 p-3 rounded-lg space-y-1">
+                    <div className="bg-primary/5 border border-primary/10 p-3 rounded-lg space-y-1">
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-600">EMI Amount</span>
                             <span className="font-semibold">₹{schedule.emi_amount.toLocaleString('en-IN')}</span>

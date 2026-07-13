@@ -9,6 +9,7 @@ import {
     BarChart3,
     LogOut,
     User,
+    HeartHandshake,
     CreditCard,
     ChevronRight,
     TrendingUp,
@@ -151,10 +152,10 @@ export function Sidebar() {
                 <div className="flex h-16 items-center justify-between px-5 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-                            <CreditCard className="h-5 w-5 text-white" />
+                            <HeartHandshake className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                            <span className="text-lg font-bold text-gray-900">FinFlow</span>
+                            <span className="text-lg font-bold text-gray-900 leading-none">HealthyHome</span>
                             <p className="text-[10px] text-gray-400 -mt-0.5">
                                 {userProfile ? `${userProfile.role} Portal` : 'Portal'}
                             </p>

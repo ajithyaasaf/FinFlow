@@ -165,7 +165,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                     </CardHeader>
                     <CardContent className="p-4 space-y-3">
                         <div className="flex items-center justify-center mb-4">
-                            <div className="h-20 w-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">
+                            <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold">
                                 {client.full_name.charAt(0).toUpperCase()}
                             </div>
                         </div>
@@ -309,7 +309,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                                                         Rejected
                                                     </Badge>
                                                 ) : (
-                                                    <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50 border border-blue-200 font-semibold gap-1 rounded-lg text-xs">
+                                                    <Badge className="bg-primary/5 text-primary hover:bg-primary/5 border border-primary/10 font-semibold gap-1 rounded-lg text-xs">
                                                         <AlertCircle className="h-3 w-3" />
                                                         Pending
                                                     </Badge>
@@ -333,7 +333,7 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         download
-                                                        className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100/80 px-2.5 py-1 rounded-lg transition-colors"
+                                                        className="inline-flex items-center gap-1 font-semibold text-primary hover:text-primary/95 bg-primary/10 hover:bg-primary/20 px-2.5 py-1 rounded-lg transition-colors"
                                                     >
                                                         <Download className="h-3 w-3" />
                                                         <span>PDF</span>

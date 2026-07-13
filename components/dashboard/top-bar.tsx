@@ -1,7 +1,7 @@
 'use client'
 
 import { NotificationBell } from '@/components/notifications/notification-bell'
-import { Menu, CreditCard } from 'lucide-react'
+import { Menu, HeartHandshake } from 'lucide-react'
 import { useMobileMenu } from './mobile-menu-context'
 import { Button } from '@/components/ui/button'
 
@@ -26,9 +26,9 @@ export function DashboardTopBar() {
                 {/* Mobile Logo/Branding - Only visible on mobile */}
                 <div className="flex items-center gap-2 lg:hidden">
                     <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-                        <CreditCard className="h-4 w-4 text-white" />
+                        <HeartHandshake className="h-4 w-4 text-white" />
                     </div>
-                    <span className="text-lg font-bold text-gray-900">FinFlow</span>
+                    <span className="text-lg font-bold text-gray-900">HealthyHome</span>
                 </div>
             </div>
 

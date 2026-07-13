@@ -42,7 +42,7 @@ export function AmortizationSchedule({ amount, rate, tenure }: AmortizationSched
                     </div>
                     <div>
                         <p className="text-gray-500">Total Payable</p>
-                        <p className="font-semibold text-blue-600">{formatCurrency(totalPayment)}</p>
+                        <p className="font-semibold text-primary">{formatCurrency(totalPayment)}</p>
                     </div>
                 </div>
 

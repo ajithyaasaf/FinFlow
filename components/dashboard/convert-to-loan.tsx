@@ -74,8 +74,8 @@ export function ConvertToLoan({ quotationId, clientId, amount, interestRate, ten
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
-                        <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-                            <h4 className="font-semibold text-sm text-blue-900">Loan Details</h4>
+                        <div className="bg-primary/5 border border-primary/10 p-4 rounded-lg space-y-2">
+                            <h4 className="font-semibold text-sm text-primary">Loan Details</h4>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div>
                                     <p className="text-gray-600">Principal</p>
@@ -94,9 +94,9 @@ export function ConvertToLoan({ quotationId, clientId, amount, interestRate, ten
                                     <p className="font-semibold">₹{emi.toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
-                            <div className="pt-2 border-t border-blue-200">
+                            <div className="pt-2 border-t border-primary/10">
                                 <p className="text-xs text-gray-600">Total Payable</p>
-                                <p className="text-lg font-bold text-blue-900">₹{totalAmount.toLocaleString('en-IN')}</p>
+                                <p className="text-lg font-bold text-primary">₹{totalAmount.toLocaleString('en-IN')}</p>
                             </div>
                         </div>
 

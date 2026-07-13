@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Loader2, HeartHandshake } from 'lucide-react'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
@@ -78,20 +78,20 @@ export default function LoginPage() {
             <div className="hidden md:flex md:w-1/2 lg:w-3/5 bg-slate-900 relative items-center justify-center overflow-hidden">
                 <img
                     src="/login_banner.png"
-                    alt="FinFlow Business Success"
+                    alt="HealthyHome Loans Success"
                     className="absolute inset-0 w-full h-full object-cover opacity-85"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20" />
                 <div className="relative z-10 p-12 lg:p-20 text-white space-y-6 max-w-xl">
                     <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="text-xs font-semibold tracking-wide uppercase">Empowering Small Businesses</span>
+                        <span className="text-xs font-semibold tracking-wide uppercase">Empowering Hope & Growth</span>
                     </div>
                     <h1 className="text-4xl lg:text-5xl font-bold leading-tight tracking-tight">
-                        Streamlined loans, built for modern growth.
+                        HealthyHome Loans, built for community growth.
                     </h1>
                     <p className="text-lg text-slate-200 font-medium leading-relaxed">
-                        FinFlow connects staff and clients to deliver fast, secure microfinance solutions directly to local markets.
+                        HealthyHome Loans connects staff and clients to deliver fast, secure microfinance solutions directly to local markets.
                     </p>
                 </div>
             </div>
@@ -101,23 +101,11 @@ export default function LoginPage() {
                 <div className="my-auto max-w-md w-full mx-auto space-y-8">
                     {/* Header */}
                     <div className="space-y-3">
-                        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-airbnb-md">
-                            <svg
-                                className="w-6 h-6 text-white"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                            </svg>
+                        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-md shadow-primary/25">
+                            <HeartHandshake className="w-6 h-6 text-white" />
                         </div>
                         <h2 className="text-2xl lg:text-3xl font-extrabold text-[#222222] tracking-tight">
-                            Welcome to FinFlow
+                            Welcome to HealthyHome Loans
                         </h2>
                         <p className="text-sm text-[#6a6a6a]">
                             Loan Management System. Enter your credentials to continue.
@@ -156,7 +144,7 @@ export default function LoginPage() {
                         </div>
                         <Button
                             type="submit"
-                            className="w-full h-11 rounded-full text-sm font-semibold shadow-airbnb-md mt-2"
+                            className="w-full h-11 rounded-full text-sm font-semibold shadow-md mt-2"
                             disabled={loading}
                         >
                             {loading && <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />}
@@ -167,7 +155,7 @@ export default function LoginPage() {
                     {/* Demo Credentials Box */}
                     <div className="bg-[#f7f7f7] border border-gray-100 p-4 rounded-2xl space-y-2">
                         <p className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                             Demo Credentials
                         </p>
                         <div className="text-[11px] text-[#6a6a6a] leading-relaxed">
@@ -186,7 +174,7 @@ export default function LoginPage() {
                             href="https://www.godivatech.com"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-semibold text-gray-800 hover:text-blue-600 transition-colors underline decoration-dotted"
+                            className="font-semibold text-gray-800 hover:text-primary transition-colors underline decoration-dotted"
                         >
                             Godiva Tech
                         </a>

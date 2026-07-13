@@ -67,7 +67,7 @@ export function ReportsFilter() {
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `finflow-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
+            a.download = `healthy-hope-report-${format(new Date(), 'yyyy-MM-dd')}.csv`
             document.body.appendChild(a)
             a.click()
             window.URL.revokeObjectURL(url)

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finflow-v1';
+const CACHE_NAME = 'healthy-hope-v1';
 const urlsToCache = [
     '/',
     '/globals.css',

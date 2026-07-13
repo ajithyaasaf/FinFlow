@@ -159,8 +159,8 @@ export function DisburseLoanModal({
                 {step === 'confirm' && (
                     <div className="space-y-4 py-4">
                         {/* Loan Summary */}
-                        <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-                            <h4 className="font-semibold text-sm text-blue-900">Loan Details</h4>
+                        <div className="bg-primary/5 border border-primary/10 p-4 rounded-lg space-y-2">
+                            <h4 className="font-semibold text-sm text-primary">Loan Details</h4>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div>
                                     <p className="text-gray-600">Client</p>

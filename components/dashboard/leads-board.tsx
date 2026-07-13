@@ -650,7 +650,7 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-semibold text-gray-800 flex items-center gap-1.5">
                                                         {act.type === 'CALL_LOG' ? (
-                                                            <Phone className="h-3.5 w-3.5 text-blue-500" />
+                                                            <Phone className="h-3.5 w-3.5 text-primary" />
                                                         ) : act.type === 'REMINDER' ? (
                                                             <Calendar className="h-3.5 w-3.5 text-amber-500" />
                                                         ) : (

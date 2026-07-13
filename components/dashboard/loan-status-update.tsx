@@ -223,8 +223,8 @@ export function LoanStatusUpdate({
 
                         {/* Conditional Fields: Disbursement */}
                         {newStage === 'Disbursement' && (
-                            <div className="p-4 bg-blue-50 rounded-lg space-y-3 border border-blue-100">
-                                <h4 className="font-semibold text-sm text-blue-900 flex items-center gap-2">
+                            <div className="p-4 bg-primary/5 rounded-lg space-y-3 border border-primary/10">
+                                <h4 className="font-semibold text-sm text-primary flex items-center gap-2">
                                     <AlertTriangle className="h-4 w-4" />
                                     Disbursement Details Required
                                 </h4>

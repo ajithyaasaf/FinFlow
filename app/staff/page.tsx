@@ -85,7 +85,7 @@ export default function StaffDashboard() {
     }
 
     const handleLogout = async () => {
-        console.log('[FinFlow] Staff logout initiated')
+        console.log('[HealthyHome] Staff logout initiated')
         await supabase.auth.signOut()
         // Use window.location to ensure cookies are fully cleared
         window.location.href = '/login'
@@ -102,7 +102,7 @@ export default function StaffDashboard() {
     return (
         <div className="min-h-screen bg-gray-50">
             <PageHeader
-                title="FinFlow"
+                title="HealthyHome"
                 subtitle={userData?.full_name || 'Staff Dashboard'}
                 showNotifications={true}
             />
@@ -110,9 +110,9 @@ export default function StaffDashboard() {
             {/* Main Content */}
             <main className="p-4 pb-24">
                 {/* Welcome Card */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
+                <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-6 mb-6 text-white shadow-lg">
                     <h2 className="text-xl font-bold mb-1">Welcome Back</h2>
-                    <p className="text-blue-100 text-sm">Manage your loans and clients efficiently</p>
+                    <p className="text-red-100 text-sm">Manage your loans and clients efficiently</p>
                 </div>
 
                 {/* Quick Action Cards */}
@@ -140,8 +140,8 @@ export default function StaffDashboard() {
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <Users className="h-6 w-6 text-blue-600" />
+                                    <div className="h-12 w-12 rounded-lg bg-primary/5 flex items-center justify-center flex-shrink-0">
+                                        <Users className="h-6 w-6 text-primary" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-gray-900">Manage Clients</h3>
@@ -159,8 +159,8 @@ export default function StaffDashboard() {
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <Calculator className="h-6 w-6 text-blue-600" />
+                                    <div className="h-12 w-12 rounded-lg bg-primary/5 flex items-center justify-center flex-shrink-0">
+                                        <Calculator className="h-6 w-6 text-primary" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-gray-900">Create Quotation</h3>
@@ -178,8 +178,8 @@ export default function StaffDashboard() {
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <FileText className="h-6 w-6 text-blue-600" />
+                                    <div className="h-12 w-12 rounded-lg bg-primary/5 flex items-center justify-center flex-shrink-0">
+                                        <FileText className="h-6 w-6 text-primary" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-gray-900">My Quotations</h3>
@@ -197,8 +197,8 @@ export default function StaffDashboard() {
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98]">
                             <CardContent className="p-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <Camera className="h-6 w-6 text-blue-600" />
+                                    <div className="h-12 w-12 rounded-lg bg-primary/5 flex items-center justify-center flex-shrink-0">
+                                        <Camera className="h-6 w-6 text-primary" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-gray-900">Mark Attendance</h3>
@@ -218,7 +218,7 @@ export default function StaffDashboard() {
                     <Link href="/staff/loans">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
                             <CardContent className="p-4 text-center">
-                                <TrendingUp className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                                <TrendingUp className="h-6 w-6 mx-auto mb-2 text-primary" />
                                 <p className="text-xl font-bold text-gray-900">{stats.activeLoans}</p>
                                 <p className="text-xs text-gray-600">Active Loans</p>
                             </CardContent>
@@ -228,7 +228,7 @@ export default function StaffDashboard() {
                     <Link href="/staff/quotations">
                         <Card className="border border-gray-200 bg-white hover:shadow-md transition-all duration-200 active:scale-[0.98] cursor-pointer h-full">
                             <CardContent className="p-4 text-center">
-                                <FileText className="h-6 w-6 mx-auto mb-2 text-blue-600" />
+                                <FileText className="h-6 w-6 mx-auto mb-2 text-primary" />
                                 <p className="text-xl font-bold text-gray-900">{stats.quotations}</p>
                                 <p className="text-xs text-gray-600">Quotations</p>
                             </CardContent>

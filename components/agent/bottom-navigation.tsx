@@ -43,16 +43,16 @@ export function BottomNavigation() {
                                 'min-h-[64px] py-2 px-1 relative',
                                 'active:scale-95',
                                 isActive
-                                    ? 'text-blue-600 font-semibold'
+                                    ? 'text-primary font-semibold'
                                     : 'text-[#6a6a6a] hover:text-[#222222]'
                             )}
                         >
                             {isActive && (
-                                <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-600" />
+                                <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary" />
                             )}
                             <Icon className={cn(
                                 'transition-all',
-                                isActive ? 'h-6 w-6 text-blue-600' : 'h-5 w-5'
+                                isActive ? 'h-6 w-6 text-primary' : 'h-5 w-5'
                             )} />
                             <span className="text-[10px] leading-tight font-medium">
                                 {item.label}

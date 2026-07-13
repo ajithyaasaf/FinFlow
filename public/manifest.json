@@ -1,11 +1,11 @@
 {
-    "name": "FinFlow - Loan Management",
-    "short_name": "FinFlow",
+    "name": "HealthyHome Loans",
+    "short_name": "HealthyHome",
     "description": "Micro-finance loan management system for field agents and administrators",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#3b82f6",
+    "theme_color": "#b51c1c",
     "orientation": "portrait",
     "icons": [
         {

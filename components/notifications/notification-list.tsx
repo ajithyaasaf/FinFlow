@@ -25,7 +25,7 @@ interface NotificationListProps {
 }
 
 const TYPE_CONFIG = {
-    INFO: { icon: Info, color: 'text-blue-600 bg-blue-50' },
+    INFO: { icon: Info, color: 'text-primary bg-primary/10' },
     SUCCESS: { icon: CheckCircle, color: 'text-green-600 bg-green-50' },
     WARNING: { icon: AlertTriangle, color: 'text-orange-600 bg-orange-50' },
     ERROR: { icon: XCircle, color: 'text-red-600 bg-red-50' },
@@ -85,7 +85,7 @@ export function NotificationList({
 
                         const content = (
                             <div
-                                className={`p-3 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.is_read ? 'bg-blue-50/50' : ''
+                                className={`p-3 hover:bg-gray-50 transition-colors cursor-pointer ${!notification.is_read ? 'bg-primary/5' : ''
                                     }`}
                                 onClick={() => {
                                     if (!notification.is_read) {
@@ -103,7 +103,7 @@ export function NotificationList({
                                                 {notification.title}
                                             </p>
                                             {!notification.is_read && (
-                                                <div className="h-2 w-2 rounded-full bg-blue-600 flex-shrink-0 mt-1.5" />
+                                                <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1.5" />
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">

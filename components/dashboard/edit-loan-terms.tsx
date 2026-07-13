@@ -226,9 +226,9 @@ export function EditLoanTerms({
 
                             {/* New EMI Preview */}
                             {newEMI > 0 && (
-                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
                                     <p className="text-sm text-gray-600 mb-1">New Monthly EMI</p>
-                                    <p className="text-2xl font-bold text-blue-600">{formatCurrency(newEMI)}</p>
+                                    <p className="text-2xl font-bold text-primary">{formatCurrency(newEMI)}</p>
                                 </div>
                             )}
                         </div>

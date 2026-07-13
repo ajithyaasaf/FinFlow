@@ -148,7 +148,7 @@ export default function AgentQuotationsPage() {
                                                     Rejected
                                                 </Badge>
                                             ) : (
-                                                <Badge className="bg-blue-50 text-blue-700 hover:bg-blue-50 border border-blue-200 font-semibold gap-1 rounded-lg">
+                                                <Badge className="bg-primary/5 text-primary hover:bg-primary/5 border border-primary/10 font-semibold gap-1 rounded-lg">
                                                     <AlertCircle className="h-3 w-3" />
                                                     Pending
                                                 </Badge>
@@ -195,7 +195,7 @@ export default function AgentQuotationsPage() {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     download={`Quotation-${quote.client?.full_name || 'Client'}.pdf`}
-                                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100/80 rounded-lg transition-colors"
+                                                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-primary hover:text-primary/90 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
                                                 >
                                                     <Download className="h-3.5 w-3.5" />
                                                     <span>PDF</span>
