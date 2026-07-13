@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PageHeader } from '@/components/agent/page-header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, User, Lock, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
@@ -47,9 +48,7 @@ export default function StaffProfilePage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-                <h1 className="text-lg font-bold text-gray-900">My Profile</h1>
-            </header>
+            <PageHeader title="My Profile" />
 
             <main className="p-4 space-y-6">
                 <Card>

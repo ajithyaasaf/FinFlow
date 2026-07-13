@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { LeadsBoard } from '@/components/dashboard/leads-board'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { PageHeader } from '@/components/agent/page-header'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AgentLeadsPage() {
     const [loading, setLoading] = useState(true)
@@ -36,30 +37,37 @@ export default function AgentLeadsPage() {
 
     if (loading) {
         return (
-            <div className="p-4 space-y-4 pb-20">
-                <div>
-                    <h1 className="text-xl font-bold text-gray-900">Leads Hub</h1>
-                    <p className="text-xs text-gray-500">Track your prospects, log follow-up actions, and convert inquiries.</p>
-                </div>
-                <div className="space-y-4 py-4">
-                    <div className="h-10 bg-gray-100 rounded animate-pulse w-full"></div>
-                    <div className="h-64 bg-gray-55 rounded animate-pulse w-full flex flex-col items-center justify-center text-sm text-gray-400 gap-2">
-                        <Loader2 className="h-6 w-6 text-primary animate-spin" />
-                        <span>Loading leads board...</span>
+            <div className="min-h-screen bg-gray-50 pb-20">
+                <PageHeader
+                    title="Leads Hub"
+                    subtitle="Track your prospects, log follow-up actions, and convert inquiries."
+                />
+                <main className="p-4 space-y-4">
+                    <Skeleton className="h-10 w-full rounded-xl" />
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                        {[1, 2].map((i) => (
+                            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3 shadow-airbnb-sm">
+                                <Skeleton className="h-4 w-2/3 rounded-lg" />
+                                <Skeleton className="h-3 w-1/2 rounded-lg" />
+                                <Skeleton className="h-8 w-full rounded-xl" />
+                            </div>
+                        ))}
                     </div>
-                </div>
+                </main>
             </div>
         )
     }
 
     return (
-        <div className="p-4 space-y-4 pb-20">
-            <div>
-                <h1 className="text-xl font-bold text-gray-900">Leads Hub</h1>
-                <p className="text-xs text-gray-500">Track your prospects, log follow-up actions, and convert inquiries.</p>
-            </div>
+        <div className="min-h-screen bg-gray-50 pb-20">
+            <PageHeader
+                title="Leads Hub"
+                subtitle="Track your prospects, log follow-up actions, and convert inquiries."
+            />
 
-            <LeadsBoard initialLeads={leads} agents={agents} />
+            <main className="p-4">
+                <LeadsBoard initialLeads={leads} agents={agents} />
+            </main>
         </div>
     )
 }
