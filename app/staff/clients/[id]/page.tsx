@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Phone, FileText, Calendar, User, CreditCard, Plus, Download, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface ClientDetailsProps {
     params: {
@@ -95,9 +96,36 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 pb-20">
                 <PageHeader title="Client Details" backHref="/staff/clients" />
-                <div className="p-4 text-center">Loading...</div>
+                <main className="p-4 space-y-4">
+                    {/* Personal Information Skeleton */}
+                    <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-4">
+                        <div className="flex items-center justify-center">
+                            <Skeleton className="h-20 w-20 rounded-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-3 w-16 rounded-lg" />
+                            <Skeleton className="h-5 w-40 rounded-lg" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="h-3 w-20 rounded-lg" />
+                            <Skeleton className="h-5 w-48 rounded-lg" />
+                        </div>
+                    </div>
+                    {/* Loan History Card Skeleton */}
+                    <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3">
+                        <Skeleton className="h-5 w-32 rounded-lg" />
+                        <div className="space-y-2 pt-2">
+                            {[1, 2].map((i) => (
+                                <div key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                                    <Skeleton className="h-4 w-28 rounded-lg" />
+                                    <Skeleton className="h-8 w-20 rounded-xl" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </main>
             </div>
         )
     }
