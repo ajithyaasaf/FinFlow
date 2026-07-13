@@ -24,6 +24,7 @@ import {
 import { Loader2, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 
 interface ClientEditModalProps {
     client: any
@@ -49,7 +50,7 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
             try {
                 const { data } = await supabase
                     .from('app_users')
-                    .select('id, full_name')
+                    .select('id, full_name, email')
                     .eq('role', 'STAFF')
                     .order('full_name')
                 if (data) setAgents(data)
@@ -146,21 +147,18 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="agent">Onboarding Staff *</Label>
-                        <Select
+                        <SearchableSelect
+                            options={agents.map((agent) => ({
+                                value: agent.id,
+                                label: agent.email ? `${agent.full_name} (${agent.email})` : agent.full_name,
+                                searchString: agent.email ? `${agent.full_name} ${agent.email}` : agent.full_name
+                            }))}
                             value={formData.onboarding_agent_id}
                             onValueChange={(val) => setFormData({ ...formData, onboarding_agent_id: val })}
-                        >
-                            <SelectTrigger id="agent">
-                                <SelectValue placeholder="Select a staff member" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {agents.map((agent) => (
-                                    <SelectItem key={agent.id} value={agent.id}>
-                                        {agent.full_name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            placeholder="Select a staff member"
+                            searchPlaceholder="Search staff by name or email..."
+                            className="h-10 rounded-xl"
+                        />
                     </div>
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

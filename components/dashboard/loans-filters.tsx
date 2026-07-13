@@ -13,9 +13,10 @@ import {
 import { Search, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { AppUser } from '@/types'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 
 interface LoansFiltersProps {
-    agents: Pick<AppUser, 'id' | 'full_name'>[]
+    agents: { id: string; full_name: string; email?: string }[]
 }
 
 export function LoansFilters({ agents }: LoansFiltersProps) {
@@ -82,19 +83,21 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                 {/* Staff Filter */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Staff</label>
-                    <Select value={agent} onValueChange={setAgent}>
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Staff</SelectItem>
-                            {agents.map((a) => (
-                                <SelectItem key={a.id} value={a.id}>
-                                    {a.full_name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        <SearchableSelect
+                            options={[
+                                { value: 'all', label: 'All Staff' },
+                                ...agents.map((a) => ({
+                                    value: a.id,
+                                    label: a.email ? `${a.full_name} (${a.email})` : a.full_name,
+                                    searchString: a.email ? `${a.full_name} ${a.email}` : a.full_name
+                                }))
+                            ]}
+                            value={agent}
+                            onValueChange={setAgent}
+                            placeholder="Select staff member"
+                            searchPlaceholder="Search staff by name or email..."
+                            className="h-10 rounded-xl"
+                        />
                 </div>
 
                 {/* Date From */}

@@ -43,7 +43,7 @@ export default async function LeadsPage() {
     // Fetch leads and agents in parallel
     const [leadsRes, agentsRes] = await Promise.all([
         query.order('created_at', { ascending: false }),
-        supabase.from('app_users').select('id, full_name').eq('role', 'STAFF')
+        supabase.from('app_users').select('id, full_name, email').eq('role', 'STAFF')
     ])
 
     const leads = leadsRes.data || []

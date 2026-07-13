@@ -19,6 +19,7 @@ import {
 import { Loader2, Upload, FileText, X } from 'lucide-react'
 import Link from 'next/link'
 import type { Client, AppUser } from '@/types'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 
 interface ClientFormData {
     full_name: string
@@ -348,22 +349,18 @@ export function AdminClientForm({
                     <CardContent>
                         <div className="space-y-2">
                             <Label htmlFor="agent">Onboarding Staff *</Label>
-                            <Select
+                            <SearchableSelect
+                                options={availableAgents.map((agent) => ({
+                                    value: agent.id,
+                                    label: agent.email ? `${agent.full_name} (${agent.email})` : agent.full_name,
+                                    searchString: agent.email ? `${agent.full_name} ${agent.email}` : agent.full_name
+                                }))}
                                 value={formData.onboarding_agent_id}
                                 onValueChange={(value) => updateField('onboarding_agent_id', value)}
-                                disabled={loading}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a staff member" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {availableAgents.map((agent) => (
-                                        <SelectItem key={agent.id} value={agent.id}>
-                                            {agent.full_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                placeholder="Select a staff member"
+                                searchPlaceholder="Search staff by name or email..."
+                                className="h-10 rounded-xl"
+                            />
                         </div>
                     </CardContent>
                 </Card>

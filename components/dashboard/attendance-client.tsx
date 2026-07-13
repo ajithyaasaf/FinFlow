@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar, Clock, MapPin, Trash2, Edit, Plus, Users, ImageIcon, ExternalLink } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { saveManualAttendanceAction, deleteAttendanceLogAction } from '@/app/actions/attendance'
 import type { AttendanceLogWithAgent } from '@/lib/services/attendanceService'
 import type { AppUser } from '@/types'
@@ -327,18 +328,18 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                                     className="bg-[#f7f7f7] border-gray-200 text-[#6a6a6a] rounded-xl"
                                 />
                             ) : (
-                                <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
-                                    <SelectTrigger id="agent" className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 hover:bg-[#f7f7f7]/50 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all">
-                                        <SelectValue placeholder="Select a staff member" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl shadow-airbnb-lg border-gray-150">
-                                        {agents.map((agent) => (
-                                            <SelectItem key={agent.id} value={agent.id} className="rounded-lg">
-                                                {agent.full_name} ({agent.email})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <SearchableSelect
+                                    options={agents.map((agent) => ({
+                                        value: agent.id,
+                                        label: `${agent.full_name} (${agent.email})`,
+                                        searchString: `${agent.full_name} ${agent.email}`
+                                    }))}
+                                    value={selectedAgentId}
+                                    onValueChange={setSelectedAgentId}
+                                    placeholder="Select a staff member"
+                                    searchPlaceholder="Search staff by name or email..."
+                                    className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 hover:bg-[#f7f7f7]/50 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all h-10 shadow-none text-sm"
+                                />
                             )}
                         </div>
 

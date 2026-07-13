@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Loader2, UserPlus, Info, Briefcase, Home } from 'lucide-react'
 import { createLeadAction } from '@/app/actions/leads'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 
 interface CreateLeadModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    agents: { id: string; full_name: string }[]
+    agents: { id: string; full_name: string; email?: string }[]
 }
 
 export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalProps) {
@@ -226,21 +227,18 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
 
                             <div className="space-y-2">
                                 <Label htmlFor="assigned_agent_id">Assign Staff</Label>
-                                <Select
-                                    value={formData.assigned_agent_id}
-                                    onValueChange={(val) => setFormData({ ...formData, assigned_agent_id: val })}
-                                >
-                                    <SelectTrigger id="assigned_agent_id">
-                                        <SelectValue placeholder="Select staff member" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {agents.map((agent) => (
-                                            <SelectItem key={agent.id} value={agent.id}>
-                                                {agent.full_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                        <SearchableSelect
+                            options={agents.map((agent) => ({
+                                value: agent.id,
+                                label: agent.email ? `${agent.full_name} (${agent.email})` : agent.full_name,
+                                searchString: agent.email ? `${agent.full_name} ${agent.email}` : agent.full_name
+                            }))}
+                            value={formData.assigned_agent_id}
+                            onValueChange={(val) => setFormData({ ...formData, assigned_agent_id: val })}
+                            placeholder="Select staff member"
+                            searchPlaceholder="Search staff by name or email..."
+                            className="h-11 rounded-xl shadow-none"
+                        />
                             </div>
 
                             <div className="space-y-2">
