@@ -11,17 +11,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ClientSearchSelect } from '@/components/ui/client-search-select'
 import { Loader2, Calculator, Search } from 'lucide-react'
 import Link from 'next/link'
-import type { Client, BankPartner } from '@/types'
+import type { Client, BankPartner, AppUser } from '@/types'
 import { calculateEMI } from '@/lib/utils'
 import { formatCurrency } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { REGIONS } from '@/lib/services/loginsConstants'
 
 interface CreateLoanFormProps {
     clients: Client[]
     partners: BankPartner[]
+    allStaff: AppUser[]
 }
 
-export function CreateLoanForm({ clients, partners }: CreateLoanFormProps) {
+export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormProps) {
     const router = useRouter()
     const supabase = createClient()
 
@@ -36,6 +38,9 @@ export function CreateLoanForm({ clients, partners }: CreateLoanFormProps) {
         product_name: '',
         login_reference_number: '',
         original_request_date: '',
+        region: 'Madurai',
+        assigned_tl_id: '',
+        disbursement_type: 'New',
     })
 
     // Calculate EMI preview
@@ -94,6 +99,10 @@ export function CreateLoanForm({ clients, partners }: CreateLoanFormProps) {
                 payload.login_reference_number = formData.login_reference_number || null
                 payload.original_request_date = formData.original_request_date || null
             }
+
+            // Always save region and TL
+            payload.region = formData.region || 'Madurai'
+            if (formData.assigned_tl_id) payload.assigned_tl_id = formData.assigned_tl_id
 
             const { data: loan, error } = await supabase
                 .from('loan_applications')
@@ -224,6 +233,43 @@ export function CreateLoanForm({ clients, partners }: CreateLoanFormProps) {
                                     value={formData.original_request_date}
                                     onChange={(e) => setFormData(prev => ({ ...prev, original_request_date: e.target.value }))}
                                 />
+                            </div>
+
+                            {/* Region */}
+                            <div className="space-y-2">
+                                <Label htmlFor="region">Region</Label>
+                                <Select
+                                    value={formData.region}
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, region: val }))}
+                                >
+                                    <SelectTrigger id="region">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {REGIONS.map((r) => (
+                                            <SelectItem key={r} value={r}>{r}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Assigned TL */}
+                            <div className="space-y-2">
+                                <Label htmlFor="assigned_tl_id">Assigned TL <span className="text-gray-400 font-normal">(optional)</span></Label>
+                                <Select
+                                    value={formData.assigned_tl_id}
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, assigned_tl_id: val }))}
+                                >
+                                    <SelectTrigger id="assigned_tl_id">
+                                        <SelectValue placeholder="Select TL" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">None</SelectItem>
+                                        {allStaff.filter(s => s.role === 'ADMIN' || s.role === 'MD').map((s) => (
+                                            <SelectItem key={s.id} value={s.id}>{s.full_name} ({s.role})</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     )}

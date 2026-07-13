@@ -1,21 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, FileText, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { CreateLoanForm } from '@/components/dashboard/create-loan-form'
 import { createClient } from '@/lib/supabase/client'
-import type { Client } from '@/types'
+import type { Client, AppUser } from '@/types'
 
 export default function NewLoanPage() {
-    const router = useRouter()
-
     const [loading, setLoading] = useState(true)
     const [clients, setClients] = useState<Client[]>([])
     const [partners, setPartners] = useState<any[]>([])
+    const [allStaff, setAllStaff] = useState<AppUser[]>([])
 
     useEffect(() => {
         async function loadData() {
@@ -23,20 +21,15 @@ export default function NewLoanPage() {
             try {
                 const supabase = createClient()
 
-                const [clientsRes, partnersRes] = await Promise.all([
-                    supabase
-                        .from('clients')
-                        .select('*')
-                        .order('full_name'),
-                    supabase
-                        .from('bank_partners')
-                        .select('*')
-                        .eq('is_active', true)
-                        .order('name')
+                const [clientsRes, partnersRes, staffRes] = await Promise.all([
+                    supabase.from('clients').select('*').order('full_name'),
+                    supabase.from('bank_partners').select('*').order('bank_name'),
+                    supabase.from('app_users').select('*').order('full_name'),
                 ])
 
                 setClients((clientsRes.data || []) as Client[])
                 setPartners(partnersRes.data || [])
+                setAllStaff((staffRes.data || []) as AppUser[])
             } catch (err) {
                 console.error('Failed to load new loan metadata:', err)
             } finally {
@@ -80,6 +73,7 @@ export default function NewLoanPage() {
                             <p className="font-medium text-blue-800">Loan Application Process</p>
                             <p className="text-blue-600 mt-1">
                                 Select a client and enter loan terms. Choose between Direct Lending or Brokerage Submission models.
+                                For Brokerage, select the Bank/NBFC, Region, and optionally assign a Team Leader.
                             </p>
                         </div>
                     </div>
@@ -87,7 +81,7 @@ export default function NewLoanPage() {
             </Card>
 
             {/* Form */}
-            <CreateLoanForm clients={clients} partners={partners} />
+            <CreateLoanForm clients={clients} partners={partners} allStaff={allStaff} />
         </div>
     )
 }

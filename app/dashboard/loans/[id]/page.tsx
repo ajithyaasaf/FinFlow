@@ -5,12 +5,13 @@ import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
 import { EditLoanTerms } from '@/components/dashboard/edit-loan-terms'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
-    User, Phone, Calendar, FileText, ArrowLeft, CheckCircle, AlertCircle, CreditCard
+    User, Phone, Calendar, FileText, ArrowLeft, CheckCircle, AlertCircle, CreditCard, MapPin
 } from 'lucide-react'
 import Link from 'next/link'
 import { ActivityTimeline } from '@/components/dashboard/activity-timeline'
 import { DocumentList } from '@/components/dashboard/document-list'
 import { createClient } from '@/lib/supabase/server'
+import { STAGE_COLORS } from '@/lib/services/loginsConstants'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,14 +81,6 @@ export default async function LoanDetailsPage({ params }: PageProps) {
     }
     const auditLogs = logs || []
 
-    const STAGE_COLORS: Record<string, string> = {
-        'Application Submitted': 'bg-blue-100 text-blue-800',
-        'Document Verification': 'bg-yellow-100 text-yellow-800',
-        'Credit Appraisal': 'bg-purple-100 text-purple-800',
-        'Approval': 'bg-green-100 text-green-800',
-        'Disbursement': 'bg-indigo-100 text-indigo-800',
-        'Closed': 'bg-gray-100 text-gray-800',
-    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">

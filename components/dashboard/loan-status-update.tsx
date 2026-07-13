@@ -16,14 +16,9 @@ import { createNotificationAction } from '@/app/actions/server-actions'
 import { generateEMISchedule } from '@/lib/emi-calculator'
 import { format } from 'date-fns'
 
-const PROCESS_STAGES = [
-    'Application Submitted',
-    'Document Verification',
-    'Credit Appraisal',
-    'Approval',
-    'Disbursement',
-    'Closed'
-] as const
+import { LOGINS_STAGES } from '@/lib/services/loginsConstants'
+
+const PROCESS_STAGES = LOGINS_STAGES
 
 interface LoanStatusUpdateProps {
     loanId: string

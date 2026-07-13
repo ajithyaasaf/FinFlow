@@ -17,7 +17,8 @@ import {
     FileText,
     Flame,
     Building,
-    BookOpen
+    BookOpen,
+    ClipboardList
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,11 @@ const navItems = [
         href: '/dashboard/leads',
         label: 'Leads Hub',
         icon: Flame,
+    },
+    {
+        href: '/dashboard/logins',
+        label: 'Logins Hub',
+        icon: ClipboardList,
     },
     {
         href: '/dashboard/loans',

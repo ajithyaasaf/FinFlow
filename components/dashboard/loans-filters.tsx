@@ -69,13 +69,24 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Statuses</SelectItem>
-                            <SelectItem value="Application Submitted">Application Submitted</SelectItem>
-                            <SelectItem value="Document Verification">Document Verification</SelectItem>
-                            <SelectItem value="Credit Appraisal">Credit Appraisal</SelectItem>
-                            <SelectItem value="Sanction">Sanction</SelectItem>
-                            <SelectItem value="Agreement Signed">Agreement Signed</SelectItem>
-                            <SelectItem value="Disbursement Ready">Disbursement Ready</SelectItem>
+                            <SelectItem value="Login">Login</SelectItem>
+                            <SelectItem value="PD Initiation">PD Initiation</SelectItem>
+                            <SelectItem value="Technical Visit">Technical Visit</SelectItem>
+                            <SelectItem value="Legal Verification">Legal Verification</SelectItem>
+                            <SelectItem value="MOD">MOD</SelectItem>
+                            <SelectItem value="Sanctioned">Sanctioned</SelectItem>
                             <SelectItem value="Disbursed">Disbursed</SelectItem>
+                            <SelectItem value="Declined">Declined</SelectItem>
+                            <SelectItem value="Relook">Relook</SelectItem>
+                            <SelectItem value="Spill Over">Spill Over</SelectItem>
+                            <SelectItem value="Documents Pending">Documents Pending</SelectItem>
+                            <SelectItem value="Application Submitted">Application Submitted (Legacy)</SelectItem>
+                            <SelectItem value="Document Verification">Document Verification (Legacy)</SelectItem>
+                            <SelectItem value="Credit Appraisal">Credit Appraisal (Legacy)</SelectItem>
+                            <SelectItem value="Sanction">Sanction (Legacy)</SelectItem>
+                            <SelectItem value="Agreement Signed">Agreement Signed (Legacy)</SelectItem>
+                            <SelectItem value="Disbursement Ready">Disbursement Ready (Legacy)</SelectItem>
+                            <SelectItem value="Closed">Closed</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

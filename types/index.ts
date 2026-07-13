@@ -3,13 +3,25 @@
 export type UserRole = 'MD' | 'ADMIN' | 'STAFF';
 
 export type LoanProcessStage =
+    | 'Login'
+    | 'PD Initiation'
+    | 'Technical Visit'
+    | 'Legal Verification'
+    | 'MOD'
+    | 'Sanctioned'
+    | 'Disbursed'
+    | 'Declined'
+    | 'Relook'
+    | 'Spill Over'
+    | 'Documents Pending'
+    // Legacy stages kept for backwards-compatibility
     | 'Application Submitted'
     | 'Document Verification'
     | 'Credit Appraisal'
     | 'Sanction'
     | 'Agreement Signed'
     | 'Disbursement Ready'
-    | 'Disbursed';
+    | 'Closed';
 
 export interface AppUser {
     id: string;
@@ -43,10 +55,14 @@ export interface LoanApplication {
     rejection_reason?: string | null;
     disbursement_date?: string | null;
     disbursement_reference?: string | null;
+    disbursement_type?: 'New' | 'Repeat' | 'Spill Over' | null;
+    sanctioned_amount?: number | null;
     bank_partner_id?: string | null;
     product_name?: string | null;
     login_reference_number?: string | null;
     original_request_date?: string | null;
+    region?: string | null;
+    assigned_tl_id?: string | null;
     created_at: string;
     updated_at: string;
 }

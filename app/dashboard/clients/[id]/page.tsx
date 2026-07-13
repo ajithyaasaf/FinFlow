@@ -17,17 +17,8 @@ import { ConvertToLoan } from '@/components/dashboard/convert-to-loan'
 import { RejectQuotationDialog } from '@/components/dashboard/reject-quotation-dialog'
 import { createClient } from '@/lib/supabase/client'
 import type { LoanApplication, Quotation } from '@/types'
+import { STAGE_COLORS } from '@/lib/services/loginsConstants'
 
-// Stage color mapping
-const STAGE_COLORS: Record<string, string> = {
-    'Application Submitted': 'bg-blue-100 text-blue-800',
-    'Document Verification': 'bg-yellow-100 text-yellow-800',
-    'Credit Appraisal': 'bg-purple-100 text-purple-800',
-    'Sanction': 'bg-indigo-100 text-indigo-800',
-    'Agreement Signed': 'bg-cyan-100 text-cyan-800',
-    'Disbursement Ready': 'bg-teal-100 text-teal-800',
-    'Disbursed': 'bg-green-100 text-green-800',
-}
 
 // Info Item Component
 function InfoItem({ icon: Icon, label, value }: {
