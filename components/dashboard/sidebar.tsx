@@ -31,6 +31,12 @@ const navItems = [
         icon: LayoutDashboard,
     },
     {
+        href: '/dashboard/analytics',
+        label: 'Executive Analytics',
+        icon: BarChart3,
+        mdOnly: true,
+    },
+    {
         href: '/dashboard/leads',
         label: 'Leads Hub',
         icon: Flame,
@@ -171,7 +177,9 @@ export function Sidebar() {
                         Menu
                     </p>
 
-                    {navItems.map((item) => {
+                    {navItems
+                        .filter((item) => !item.mdOnly || userProfile?.role === 'MD')
+                        .map((item) => {
                         const isActive = clickedHref
                             ? clickedHref === item.href
                             : (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
