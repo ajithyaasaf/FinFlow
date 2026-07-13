@@ -15,14 +15,17 @@ interface StaffEditModalProps {
     staffId: string
     currentName: string
     currentMobile: string
+    currentEmail: string
 }
 
-export function StaffEditModal({ open, onOpenChange, staffId, currentName, currentMobile }: StaffEditModalProps) {
+export function StaffEditModal({ open, onOpenChange, staffId, currentName, currentMobile, currentEmail }: StaffEditModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         full_name: currentName,
         mobile_number: currentMobile,
+        email: currentEmail,
+        password: '',
     })
 
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -40,6 +43,16 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
             newErrors.mobile_number = 'Mobile number must be 10 digits'
         }
 
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required'
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'Please enter a valid email address'
+        }
+
+        if (formData.password && formData.password.length < 6) {
+            newErrors.password = 'Password must be at least 6 characters'
+        }
+
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
     }
@@ -54,10 +67,20 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
         setLoading(true)
 
         try {
+            // Only send password if it is set
+            const payload: any = {
+                full_name: formData.full_name,
+                mobile_number: formData.mobile_number,
+                email: formData.email,
+            }
+            if (formData.password) {
+                payload.password = formData.password
+            }
+
             const response = await fetch(`/api/staff/${staffId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             })
 
             const data = await response.json()
@@ -68,6 +91,9 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
 
             toast.success('User updated successfully!')
             onOpenChange(false)   // Close immediately
+            
+            // Reset password field
+            setFormData(prev => ({ ...prev, password: '' }))
             router.refresh()      // Refresh list in background
         } catch (error) {
             console.error('Update user error:', error)
@@ -86,7 +112,7 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
                         Edit User Details
                     </DialogTitle>
                     <DialogDescription>
-                        Update user information. Email cannot be changed.
+                        Update user information, Login ID (Email), and Password.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -116,6 +142,35 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
                             />
                             {errors.mobile_number && (
                                 <p className="text-sm text-red-500">{errors.mobile_number}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Login ID / Email *</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className={errors.email ? 'border-red-500' : ''}
+                            />
+                            {errors.email && (
+                                <p className="text-sm text-red-500">{errors.email}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="password">New Password <span className="text-gray-400 font-normal">(leave blank to keep current)</span></Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                placeholder="••••••••"
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                className={errors.password ? 'border-red-500' : ''}
+                            />
+                            {errors.password && (
+                                <p className="text-sm text-red-500">{errors.password}</p>
                             )}
                         </div>
                     </div>

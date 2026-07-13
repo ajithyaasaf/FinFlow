@@ -29,9 +29,10 @@ interface StaffActionsProps {
     staffName: string
     currentName: string
     currentMobile: string
+    currentEmail: string
 }
 
-export function StaffActions({ staffId, staffName, currentName, currentMobile }: StaffActionsProps) {
+export function StaffActions({ staffId, staffName, currentName, currentMobile, currentEmail }: StaffActionsProps) {
     const router = useRouter()
     const [editOpen, setEditOpen] = useState(false)
     const [deleteOpen, setDeleteOpen] = useState(false)
@@ -92,6 +93,7 @@ export function StaffActions({ staffId, staffName, currentName, currentMobile }:
                 staffId={staffId}
                 currentName={currentName}
                 currentMobile={currentMobile}
+                currentEmail={currentEmail}
             />
 
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

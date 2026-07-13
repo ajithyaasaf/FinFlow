@@ -29,16 +29,36 @@ export async function PATCH(
         }
 
         const body = await request.json()
-        const { full_name, mobile_number } = body
+        const { full_name, mobile_number, email, password } = body
 
-        if (!full_name && !mobile_number) {
+        if (!full_name && !mobile_number && !email && !password) {
             return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+        }
+
+        // If email or password needs update, use Supabase Admin Auth API
+        if (email || password) {
+            const supabaseAdmin = createAdminClient()
+            const authUpdateData: any = {}
+            if (email) authUpdateData.email = email
+            if (password) authUpdateData.password = password
+            authUpdateData.email_confirm = true // Auto-confirm email change
+
+            const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+                params.id,
+                authUpdateData
+            )
+
+            if (authError) {
+                console.error('Auth update error:', authError)
+                return NextResponse.json({ error: authError.message }, { status: 500 })
+            }
         }
 
         // Update app_users table
         const updateData: any = {}
         if (full_name) updateData.full_name = full_name
         if (mobile_number) updateData.mobile_number = mobile_number
+        if (email) updateData.email = email
 
         const { data: updatedStaff, error } = await supabase
             .from('app_users')
@@ -50,7 +70,7 @@ export async function PATCH(
 
         if (error) {
             console.error('Update error:', error)
-            return NextResponse.json({ error: 'Failed to update staff' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to update staff database record' }, { status: 500 })
         }
 
         if (!updatedStaff) {

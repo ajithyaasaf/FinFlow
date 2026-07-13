@@ -162,10 +162,10 @@ export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) 
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="login_id">Login ID *</Label>
+                            <Label htmlFor="login_id">Login ID / Email *</Label>
                             <Input
                                 id="login_id"
-                                placeholder="e.g. staff01"
+                                placeholder="e.g. staff01 or name@email.com"
                                 value={formData.login_id}
                                 onChange={(e) => setFormData({ ...formData, login_id: e.target.value })}
                                 className={errors.login_id ? 'border-red-500' : ''}
@@ -174,7 +174,7 @@ export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) 
                                 <p className="text-sm text-red-500">{errors.login_id}</p>
                             )}
                             <p className="text-[11px] text-gray-400">
-                                This will act as the login credentials ID.
+                                Enter a simple ID (like staff01) or their actual email address to act as their login credentials.
                             </p>
                         </div>
 
