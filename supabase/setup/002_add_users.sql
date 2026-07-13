@@ -39,7 +39,7 @@ INSERT INTO public.app_users (id, role, full_name, mobile_number, email)
 VALUES (
   'REPLACE-WITH-STAFF-UUID-FROM-AUTH-USERS',  -- 👈 PASTE STAFF UUID HERE
   'STAFF',
-  'Field Staff',
+  'Staff',
   '9876543211',
   'staff01@finflow.com'
 );

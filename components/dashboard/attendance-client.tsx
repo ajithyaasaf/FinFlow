@@ -312,7 +312,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                             {editLogId ? 'Edit Attendance Log' : 'Add Manual Attendance'}
                         </DialogTitle>
                         <DialogDescription className="text-sm text-[#6a6a6a]">
-                            Create or override attendance check-ins for field staff.
+                            Create or override attendance check-ins for staff.
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSave} className="space-y-4">
