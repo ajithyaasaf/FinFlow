@@ -176,12 +176,7 @@ export default function AgentLoanDetailsPage() {
     if (!loan) {
         return (
             <div className="min-h-screen bg-gray-50 pb-20">
-                <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-                    <Link href="/staff/clients">
-                        <ChevronLeft className="h-6 w-6 text-gray-600" />
-                    </Link>
-                    <h1 className="text-lg font-bold text-gray-900">Loan Details</h1>
-                </header>
+                <PageHeader title="Loan Details" backHref="/staff/clients" />
                 <main className="p-4">
                     <div className="bg-red-50 p-4 rounded-lg border border-red-200 flex items-start gap-3">
                         <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
@@ -204,12 +199,7 @@ export default function AgentLoanDetailsPage() {
     if (!client) {
         return (
             <div className="min-h-screen bg-gray-50 pb-20">
-                <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-                    <Link href="/staff/clients">
-                        <ChevronLeft className="h-6 w-6 text-gray-600" />
-                    </Link>
-                    <h1 className="text-lg font-bold text-gray-900">Loan Details</h1>
-                </header>
+                <PageHeader title="Loan Details" backHref="/staff/clients" />
                 <main className="p-4">
                     <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 flex items-start gap-3">
                         <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
