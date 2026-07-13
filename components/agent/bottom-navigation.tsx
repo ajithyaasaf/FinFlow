@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Users, Calculator, Camera, User, BookOpen } from 'lucide-react'
@@ -8,12 +7,6 @@ import { cn } from '@/lib/utils'
 
 export function BottomNavigation() {
     const pathname = usePathname()
-    const [clickedHref, setClickedHref] = useState<string | null>(null)
-
-    // Reset clicked state when route changes
-    useEffect(() => {
-        setClickedHref(null)
-    }, [pathname])
 
     const navItems = [
         { href: '/staff', label: 'Home', icon: Home },
@@ -34,19 +27,17 @@ export function BottomNavigation() {
         >
             <div className="grid grid-cols-6">
                 {navItems.map((item) => {
-                    const isActive = clickedHref ? clickedHref === item.href : pathname === item.href
+                    const isActive = item.href === '/staff'
+                        ? pathname === '/staff'
+                        : pathname.startsWith(item.href)
+                    
                     const Icon = item.icon
 
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
-                            prefetch={false}
-                            onClick={() => {
-                                if (pathname !== item.href) {
-                                    setClickedHref(item.href)
-                                }
-                            }}
+                            prefetch={true}
                             className={cn(
                                 'flex flex-col items-center justify-center gap-1 transition-all duration-200',
                                 'min-h-[64px] py-2 px-1 relative',
@@ -61,9 +52,11 @@ export function BottomNavigation() {
                             )}
                             <Icon className={cn(
                                 'transition-all',
-                                isActive ? 'h-6 w-6' : 'h-5 w-5'
+                                isActive ? 'h-6 w-6 text-blue-600' : 'h-5 w-5'
                             )} />
-                            <span className="text-[10px] leading-tight font-medium">{item.label}</span>
+                            <span className="text-[10px] leading-tight font-medium">
+                                {item.label}
+                            </span>
                         </Link>
                     )
                 })}

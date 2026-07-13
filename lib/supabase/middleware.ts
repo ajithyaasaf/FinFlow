@@ -32,8 +32,9 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // Refresh session if expired
-    const { data: { user } } = await supabase.auth.getUser()
+    // Get session to check auth (very fast, uses local JWT decoding instead of network query)
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user ?? null
 
     return { supabaseResponse, user, supabase }
 }
