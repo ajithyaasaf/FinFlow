@@ -25,7 +25,7 @@ import { useStaffMobileMenu } from './staff-mobile-menu-context'
 const staffNavItems = [
     { href: '/staff', label: 'Dashboard', icon: Home, exact: true },
     { href: '/staff/leads', label: 'Leads Hub', icon: Flame },
-    { href: '/staff/clients', label: 'My Clients', icon: Users },
+    { href: '/staff/clients', label: 'Clients', icon: Users },
     { href: '/staff/loans', label: 'Loan Applications', icon: CreditCard },
     { href: '/staff/attendance', label: 'Mark Attendance', icon: Camera },
     { href: '/staff/calendar', label: 'My Calendar', icon: Calendar },

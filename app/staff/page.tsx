@@ -165,7 +165,7 @@ export default function StaffDashboard() {
                     <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium text-gray-600">
-                                My Clients
+                                Clients
                             </CardTitle>
                             <Users className="h-4 w-4 text-gray-400" />
                         </CardHeader>
