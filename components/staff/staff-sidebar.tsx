@@ -30,7 +30,6 @@ const staffNavItems = [
     { href: '/staff/attendance', label: 'Mark Attendance', icon: Camera },
     { href: '/staff/calendar', label: 'My Calendar', icon: Calendar },
     { href: '/staff/wiki', label: 'Policy Handbook', icon: BookOpen },
-    { href: '/staff/profile', label: 'My Profile', icon: User },
 ]
 
 export function StaffSidebar() {

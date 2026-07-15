@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { BottomNavigation } from '@/components/agent/bottom-navigation'
 import { StaffSidebar } from '@/components/staff/staff-sidebar'
 import { StaffTopBar } from '@/components/staff/staff-top-bar'
 import { StaffMobileMenuProvider } from '@/components/staff/staff-mobile-menu-context'
@@ -89,18 +88,13 @@ export default function StaffLayout({
 
                 {/* Main content area shifted right on desktop to account for sidebar */}
                 <div className="lg:pl-64">
-                    {/* Top bar with hamburger on mobile, notifications on all */}
+                    {/* Top bar with notifications on all, signout on mobile */}
                     <StaffTopBar />
 
                     {/* Page content */}
-                    <main className="p-4 md:p-6 pb-24 lg:pb-6">
+                    <main className="p-4 md:p-6">
                         {children}
                     </main>
-                </div>
-
-                {/* Bottom Navigation — only visible on mobile */}
-                <div className="lg:hidden">
-                    <BottomNavigation />
                 </div>
             </div>
         </StaffMobileMenuProvider>

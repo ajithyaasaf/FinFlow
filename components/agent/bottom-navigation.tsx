@@ -9,10 +9,7 @@ export function BottomNavigation() {
     const pathname = usePathname()
 
     const navItems = [
-        { href: '/staff', label: 'Home', icon: Home },
-        { href: '/staff/clients', label: 'Clients', icon: Users },
-        { href: '/staff/attendance', label: 'Attend', icon: Camera },
-        { href: '/staff/wiki', label: 'Handbook', icon: BookOpen },
+        { href: '/staff/attendance', label: 'Attendance', icon: Camera },
         { href: '/staff/profile', label: 'Profile', icon: User },
     ]
 
@@ -24,11 +21,9 @@ export function BottomNavigation() {
                 paddingBottom: 'max(8px, env(safe-area-inset-bottom, 0px))'
             }}
         >
-            <div className="grid grid-cols-5">
+            <div className="grid grid-cols-2">
                 {navItems.map((item) => {
-                    const isActive = item.href === '/staff'
-                        ? pathname === '/staff'
-                        : pathname.startsWith(item.href)
+                    const isActive = pathname.startsWith(item.href)
                     
                     const Icon = item.icon
 
@@ -63,3 +58,4 @@ export function BottomNavigation() {
         </nav>
     )
 }
+

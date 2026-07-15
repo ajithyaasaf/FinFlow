@@ -22,6 +22,10 @@ export default function StaffDashboard() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            router.replace('/staff/attendance')
+            return
+        }
         checkAuth()
         fetchStats()
     }, [])
