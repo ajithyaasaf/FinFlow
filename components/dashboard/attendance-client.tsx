@@ -29,6 +29,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
     const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
     const [isOpen, setIsOpen] = useState(false)
     const [lightboxImage, setLightboxImage] = useState<string | null>(null)
+    const [deleteConfirmLogId, setDeleteConfirmLogId] = useState<string | null>(null)
 
     // Form states
     const [editLogId, setEditLogId] = useState<string | null>(null)
@@ -131,8 +132,6 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
     }
 
     const handleDelete = async (logId: string) => {
-        if (!confirm('Are you sure you want to delete this attendance log?')) return
-
         setDeleteLoading(logId)
         const res = await deleteAttendanceLogAction(logId)
         setDeleteLoading(null)
@@ -292,7 +291,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                                                     variant="ghost"
                                                     size="icon"
                                                     disabled={deleteLoading === log.log_id}
-                                                    onClick={() => handleDelete(log.log_id)}
+                                                    onClick={() => setDeleteConfirmLogId(log.log_id)}
                                                     className="h-8 w-8 rounded-full border border-red-100 text-red-500 hover:text-red-600 hover:bg-red-50/50 hover:scale-105 transition-all duration-200"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -457,6 +456,40 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                             />
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Attendance Log Confirmation Dialog */}
+            <Dialog open={!!deleteConfirmLogId} onOpenChange={(open) => !open && setDeleteConfirmLogId(null)}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-bold text-red-600">Delete Attendance Record?</DialogTitle>
+                        <DialogDescription className="pt-2">
+                            Are you sure you want to delete this attendance record? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0 pt-4 border-t">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setDeleteConfirmLogId(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={async () => {
+                                if (deleteConfirmLogId) {
+                                    const id = deleteConfirmLogId
+                                    setDeleteConfirmLogId(null)
+                                    await handleDelete(id)
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

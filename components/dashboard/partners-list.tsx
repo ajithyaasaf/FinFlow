@@ -21,6 +21,7 @@ export function PartnersList({ initialPartners }: PartnersListProps) {
     const [modalOpen, setModalOpen] = useState(false)
     const [selectedPartner, setSelectedPartner] = useState<BankPartner | null>(null)
     const [loading, setLoading] = useState(false)
+    const [deleteConfirmPartnerId, setDeleteConfirmPartnerId] = useState<string | null>(null)
     const [formData, setFormData] = useState({
         bank_name: '',
         branch_name: '',
@@ -85,8 +86,6 @@ export function PartnersList({ initialPartners }: PartnersListProps) {
     }
 
     const handleDelete = async (partnerId: string) => {
-        if (!confirm('Are you sure you want to remove this partner bank?')) return
-
         // Optimistic remove: filter out instantly, restore on failure
         const previousPartners = partners
         setPartners(prev => prev.filter(p => p.partner_id !== partnerId))
@@ -151,7 +150,7 @@ export function PartnersList({ initialPartners }: PartnersListProps) {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => handleDelete(partner.partner_id)}
+                                        onClick={() => setDeleteConfirmPartnerId(partner.partner_id)}
                                         className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                                     >
                                         <Trash className="h-3.5 w-3.5" />
@@ -239,6 +238,40 @@ export function PartnersList({ initialPartners }: PartnersListProps) {
                             </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Partner Confirmation Dialog */}
+            <Dialog open={!!deleteConfirmPartnerId} onOpenChange={(open) => !open && setDeleteConfirmPartnerId(null)}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-bold text-red-600">Delete Bank Partner?</DialogTitle>
+                        <DialogDescription className="pt-2">
+                            Are you sure you want to remove this partner bank? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0 pt-4 border-t">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setDeleteConfirmPartnerId(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={async () => {
+                                if (deleteConfirmPartnerId) {
+                                    const id = deleteConfirmPartnerId
+                                    setDeleteConfirmPartnerId(null)
+                                    await handleDelete(id)
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

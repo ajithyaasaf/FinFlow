@@ -26,6 +26,7 @@ export function WikiHub({ initialArticles, categories, isAdmin }: WikiHubProps) 
     const [selectedArticle, setSelectedArticle] = useState<KnowledgeArticle | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [deleteConfirmArticleId, setDeleteConfirmArticleId] = useState<string | null>(null)
     const [formData, setFormData] = useState({
         title: '',
         content: '',
@@ -94,9 +95,8 @@ export function WikiHub({ initialArticles, categories, isAdmin }: WikiHubProps) 
         }
     }
 
-    const handleDelete = async (articleId: string, e: React.MouseEvent) => {
-        e.stopPropagation()
-        if (!confirm('Are you sure you want to delete this article?')) return
+    const handleDelete = async (articleId: string, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation()
 
         // Optimistic remove with rollback on failure
         const previousArticles = articles
@@ -198,7 +198,10 @@ export function WikiHub({ initialArticles, categories, isAdmin }: WikiHubProps) 
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={(e) => handleDelete(selectedArticle.article_id, e)}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setDeleteConfirmArticleId(selectedArticle.article_id)
+                                    }}
                                     className="gap-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                     <Trash className="h-3.5 w-3.5" />
@@ -339,6 +342,40 @@ export function WikiHub({ initialArticles, categories, isAdmin }: WikiHubProps) 
                             </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Article Confirmation Dialog */}
+            <Dialog open={!!deleteConfirmArticleId} onOpenChange={(open) => !open && setDeleteConfirmArticleId(null)}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-bold text-red-600">Delete Wiki Article?</DialogTitle>
+                        <DialogDescription className="pt-2">
+                            Are you sure you want to delete this article? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0 pt-4 border-t">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setDeleteConfirmArticleId(null)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={async () => {
+                                if (deleteConfirmArticleId) {
+                                    const id = deleteConfirmArticleId
+                                    setDeleteConfirmArticleId(null)
+                                    await handleDelete(id)
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold"
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

@@ -179,9 +179,9 @@ export default function AgentClientsPage() {
                                                 </Button>
                                             ) : (
                                                 <Button asChild variant="default" size="sm" className="flex-1 h-10">
-                                                    <Link href="/staff/quotation">
-                                                        <Plus className="h-4 w-4 mr-2" />
-                                                        New Quote
+                                                    <Link href={`/staff/clients/${client.client_id}`}>
+                                                        <User className="h-4 w-4 mr-2" />
+                                                        View Client
                                                     </Link>
                                                 </Button>
                                             )}

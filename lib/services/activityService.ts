@@ -23,8 +23,8 @@ export async function getActivities() {
         related_client:clients(client_id, full_name, mobile_number)
     `)
 
-    // Agents only view activities assigned to them
-    if (profile.role === 'AGENT') {
+    // Agents and Staff only view activities assigned to them
+    if (profile.role === 'AGENT' || profile.role === 'STAFF') {
         query = query.eq('assigned_agent_id', user.id)
     }
 
@@ -51,7 +51,7 @@ export async function createActivity(activityData: Partial<Activity>) {
 
     const finalActivityData = {
         ...activityData,
-        assigned_agent_id: profile?.role === 'AGENT' ? user.id : (activityData.assigned_agent_id || user.id)
+        assigned_agent_id: (profile?.role === 'AGENT' || profile?.role === 'STAFF') ? user.id : (activityData.assigned_agent_id || user.id)
     }
 
     const { data, error } = await supabase

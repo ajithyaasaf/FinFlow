@@ -30,7 +30,7 @@ export function PageHeader({
 
     return (
         <header
-            className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 shadow-sm"
+            className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 shadow-sm"
             style={{
                 zIndex: 40,
                 paddingTop: 'max(12px, env(safe-area-inset-top, 0px))'

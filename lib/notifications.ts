@@ -205,8 +205,9 @@ export async function generateCallbackAlerts(): Promise<number> {
             const leadName = reminder.related_lead?.full_name || 'Prospect'
             const leadId = reminder.related_lead?.lead_id
             const dueDateString = new Date(reminder.due_date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-            const title = `Upcoming Callback: ${leadName}`
-            const message = `Callback reminder "${reminder.title}" is due on ${dueDateString}.`
+            const isOverdue = new Date(reminder.due_date) < new Date()
+            const title = `${isOverdue ? 'Overdue' : 'Upcoming'} Callback: ${leadName}`
+            const message = `Callback reminder "${reminder.title}" is ${isOverdue ? 'overdue since' : 'due on'} ${dueDateString}.`
 
             // Create notification for the assigned agent
             if (reminder.assigned_agent_id) {

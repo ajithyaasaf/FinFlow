@@ -24,6 +24,50 @@ interface NotificationListProps {
     onMarkAllAsRead: () => void
 }
 
+function formatNotificationContent(title: string, message: string) {
+    let displayTitle = title
+    let displayMessage = message
+
+    if (title.startsWith("Upcoming Callback:")) {
+        const dateMatch = message.match(/is due on (\d{1,2})\/(\d{1,2})\/(\d{4})/i)
+        if (dateMatch) {
+            const day = parseInt(dateMatch[1], 10)
+            const month = parseInt(dateMatch[2], 10) - 1
+            const year = parseInt(dateMatch[3], 10)
+
+            const timeMatch = message.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?/i)
+            let hour = 12
+            let minute = 0
+            let second = 0
+
+            if (timeMatch) {
+                hour = parseInt(timeMatch[1], 10)
+                minute = parseInt(timeMatch[2], 10)
+                if (timeMatch[3]) {
+                    second = parseInt(timeMatch[3], 10)
+                }
+                const amPm = timeMatch[4]
+                if (amPm) {
+                    if (amPm.toLowerCase() === 'pm' && hour < 12) {
+                        hour += 12
+                    } else if (amPm.toLowerCase() === 'am' && hour === 12) {
+                        hour = 0
+                    }
+                }
+            }
+
+            const dueDate = new Date(year, month, day, hour, minute, second)
+            const today = new Date()
+
+            if (dueDate < today) {
+                displayTitle = title.replace("Upcoming Callback:", "Overdue Callback:")
+                displayMessage = message.replace("is due on", "is overdue since")
+            }
+        }
+    }
+    return { title: displayTitle, message: displayMessage }
+}
+
 const TYPE_CONFIG = {
     INFO: { icon: Info, color: 'text-primary bg-primary/10' },
     SUCCESS: { icon: CheckCircle, color: 'text-green-600 bg-green-50' },
@@ -82,6 +126,7 @@ export function NotificationList({
                     {notifications.map((notification) => {
                         const config = TYPE_CONFIG[notification.type]
                         const Icon = config.icon
+                        const { title, message } = formatNotificationContent(notification.title, notification.message)
 
                         const content = (
                             <div
@@ -100,14 +145,14 @@ export function NotificationList({
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between gap-2">
                                             <p className="font-medium text-sm text-gray-900 line-clamp-1">
-                                                {notification.title}
+                                                {title}
                                             </p>
                                             {!notification.is_read && (
                                                 <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1.5" />
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
-                                            {notification.message}
+                                            {message}
                                         </p>
                                         <p className="text-xs text-gray-400 mt-1">
                                             {formatDistanceToNow(new Date(notification.created_at), {

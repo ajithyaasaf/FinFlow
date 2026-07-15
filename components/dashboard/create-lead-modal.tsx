@@ -42,6 +42,7 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
         city: '',
         state: '',
         zip_code: '',
+        branch: '',
     })
 
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -112,6 +113,7 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                 city: '',
                 state: '',
                 zip_code: '',
+                branch: '',
             })
             setErrors({})
             setActiveTab('personal')
@@ -273,6 +275,22 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                                         <SelectItem value="REFERRAL">Referral</SelectItem>
                                         <SelectItem value="WALK_IN">Walk In</SelectItem>
                                         <SelectItem value="OTHER">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="branch">Branch Location</Label>
+                                <Select
+                                    value={formData.branch}
+                                    onValueChange={(val) => setFormData({ ...formData, branch: val })}
+                                >
+                                    <SelectTrigger id="branch">
+                                        <SelectValue placeholder="Select branch location" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Madurai">Madurai</SelectItem>
+                                        <SelectItem value="Tenkasi">Tenkasi</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

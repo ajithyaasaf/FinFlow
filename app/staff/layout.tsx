@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BottomNavigation } from '@/components/agent/bottom-navigation'
+import { StaffSidebar } from '@/components/staff/staff-sidebar'
+import { StaffTopBar } from '@/components/staff/staff-top-bar'
+import { StaffMobileMenuProvider } from '@/components/staff/staff-mobile-menu-context'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function StaffLayout({
@@ -74,15 +77,32 @@ export default function StaffLayout({
                         </div>
                     ))}
                 </div>
-                <BottomNavigation />
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen">
-            {children}
-            <BottomNavigation />
-        </div>
+        <StaffMobileMenuProvider>
+            <div className="min-h-screen bg-slate-100">
+                {/* Sidebar — shown on lg+ always; slides in as drawer on mobile */}
+                <StaffSidebar />
+
+                {/* Main content area shifted right on desktop to account for sidebar */}
+                <div className="lg:pl-64">
+                    {/* Top bar with hamburger on mobile, notifications on all */}
+                    <StaffTopBar />
+
+                    {/* Page content */}
+                    <main className="p-4 md:p-6 pb-24 lg:pb-6">
+                        {children}
+                    </main>
+                </div>
+
+                {/* Bottom Navigation — only visible on mobile */}
+                <div className="lg:hidden">
+                    <BottomNavigation />
+                </div>
+            </div>
+        </StaffMobileMenuProvider>
     )
 }

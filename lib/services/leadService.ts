@@ -182,3 +182,38 @@ export async function promoteLeadToClient(leadId: string): Promise<Client | null
 
     return client
 }
+
+export async function bulkUpdateLeadStatus(leadIds: string[], status: LeadStatus) {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('leads')
+        .update({ status, updated_at: new Date().toISOString() })
+        .in('lead_id', leadIds)
+        .select()
+
+    if (error) {
+        console.error('Error bulk updating lead status:', error)
+        throw error
+    }
+
+    return data || []
+}
+
+export async function bulkAssignAgent(leadIds: string[], agentId: string | null) {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('leads')
+        .update({ assigned_agent_id: agentId, updated_at: new Date().toISOString() })
+        .in('lead_id', leadIds)
+        .select()
+
+    if (error) {
+        console.error('Error bulk assigning agent:', error)
+        throw error
+    }
+
+    return data || []
+}
+

@@ -13,10 +13,8 @@ import {
 import Link from 'next/link'
 import { ClientEditModal } from '@/components/dashboard/client-edit-modal'
 import { ClientDeleteDialog } from '@/components/dashboard/client-delete-dialog'
-import { ConvertToLoan } from '@/components/dashboard/convert-to-loan'
-import { RejectQuotationDialog } from '@/components/dashboard/reject-quotation-dialog'
 import { createClient } from '@/lib/supabase/client'
-import type { LoanApplication, Quotation } from '@/types'
+import type { LoanApplication } from '@/types'
 import { STAGE_COLORS } from '@/lib/services/loginsConstants'
 
 
@@ -97,85 +95,6 @@ function LoansSection({ loans, clientId }: { loans: LoanApplication[], clientId:
     )
 }
 
-// Quotations Section Component
-function QuotationsSection({ quotations, clientName }: { quotations: Quotation[], clientName: string }) {
-    if (quotations.length === 0) return null
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">Quotations ({quotations.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                {quotations.slice(0, 5).map((quote) => {
-                    const currentStatus = quote.status || (quote.converted_to_loan_id ? 'CONVERTED' : 'PENDING')
-
-                    return (
-                        <div
-                            key={quote.quote_id}
-                            className="flex flex-col p-4 bg-gray-50 rounded-lg gap-3 border border-gray-150 hover:border-gray-200 transition-colors"
-                        >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div>
-                                    <p className="font-bold text-gray-900">{formatCurrency(quote.amount)}</p>
-                                    <p className="text-sm text-gray-500">
-                                        {quote.tenure} months @ {quote.interest_rate}% • Created {formatDate(quote.created_at)}
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    {quote.pdf_document_url && (
-                                        <a
-                                            href={quote.pdf_document_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <Button size="sm" variant="outline" className="h-8">
-                                                <Download className="h-3.5 w-3.5 mr-1" />
-                                                PDF
-                                            </Button>
-                                        </a>
-                                    )}
-                                    
-                                    {currentStatus === 'CONVERTED' ? (
-                                        <Badge variant="default" className="bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">
-                                            Converted
-                                        </Badge>
-                                    ) : currentStatus === 'REJECTED' ? (
-                                        <Badge variant="destructive" className="bg-red-50 text-red-700 border border-red-200">
-                                            Rejected
-                                        </Badge>
-                                    ) : (
-                                        <div className="flex items-center gap-1.5">
-                                            <RejectQuotationDialog
-                                                quotationId={quote.quote_id}
-                                                clientName={clientName}
-                                            />
-                                            <ConvertToLoan
-                                                quotationId={quote.quote_id}
-                                                clientId={quote.client_id}
-                                                amount={quote.amount}
-                                                interestRate={quote.interest_rate}
-                                                tenure={quote.tenure}
-                                                clientName={clientName}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {currentStatus === 'REJECTED' && quote.rejection_reason && (
-                                <div className="bg-red-50/70 border border-red-100 rounded-md p-2.5 text-xs text-red-800">
-                                    <span className="font-semibold">Rejection Feedback:</span> {quote.rejection_reason}
-                                </div>
-                            )}
-                        </div>
-                    )
-                })}
-            </CardContent>
-        </Card>
-    )
-}
-
 export default function ClientDetailPage() {
     const params = useParams()
     const router = useRouter()
@@ -184,7 +103,6 @@ export default function ClientDetailPage() {
     const [loading, setLoading] = useState(true)
     const [client, setClient] = useState<any>(null)
     const [loans, setLoans] = useState<any[]>([])
-    const [quotations, setQuotations] = useState<any[]>([])
 
     useEffect(() => {
         if (!id) return
@@ -209,22 +127,14 @@ export default function ClientDetailPage() {
                     return
                 }
 
-                const [loansRes, quotesRes] = await Promise.all([
-                    supabase
-                        .from('loan_applications')
-                        .select('*')
-                        .eq('client_id', id)
-                        .order('created_at', { ascending: false }),
-                    supabase
-                        .from('quotations')
-                        .select('*')
-                        .eq('client_id', id)
-                        .order('created_at', { ascending: false })
-                ])
+                const { data: loansData } = await supabase
+                    .from('loan_applications')
+                    .select('*')
+                    .eq('client_id', id)
+                    .order('created_at', { ascending: false })
 
                 setClient(clientData)
-                setLoans(loansRes.data || [])
-                setQuotations(quotesRes.data || [])
+                setLoans(loansData || [])
             } catch (err) {
                 console.error('Failed to load client details:', err)
             } finally {
@@ -361,10 +271,9 @@ export default function ClientDetailPage() {
                     </Card>
                 </div>
 
-                {/* Right Column - Loans & Quotations */}
+                {/* Right Column - Loans */}
                 <div className="md:col-span-2 space-y-6">
                     <LoansSection loans={loans} clientId={client.client_id} />
-                    <QuotationsSection quotations={quotations} clientName={client.full_name} />
                 </div>
             </div>
         </div>

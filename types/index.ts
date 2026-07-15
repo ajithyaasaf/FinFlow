@@ -29,6 +29,7 @@ export interface AppUser {
     full_name: string;
     mobile_number: string;
     email: string;
+    branch?: string | null;
     created_at: string;
 }
 
@@ -79,27 +80,7 @@ export interface AttendanceLog {
     check_in_time: string;
     check_in_details: CheckInDetails;
 }
-
-export interface Quotation {
-    quote_id: string;
-    client_id: string;
-    amount: number;
-    interest_rate: number;
-    tenure: number;
-    final_amount: number;
-    is_high_value: boolean;
-    pdf_document_url: string | null;
-    converted_to_loan_id?: string | null;
-    status?: 'PENDING' | 'CONVERTED' | 'REJECTED';
-    rejection_reason?: string | null;
-    created_by: string;
-    created_at: string;
-}
-
 // Extended types with relations
-export interface QuotationWithClient extends Quotation {
-    client: Client;
-}
 
 export interface LoanApplicationWithClient extends LoanApplication {
     client: Client;
@@ -247,6 +228,8 @@ export interface Lead {
     city: string | null;
     state: string | null;
     zip_code: string | null;
+    branch?: string | null;
+    last_contacted_at?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -275,6 +258,8 @@ export interface Activity {
     related_client_id: string | null;
     assigned_agent_id: string | null;
     assigned_agent?: { id: string; full_name: string; email: string } | null;
+    related_lead?: { lead_id: string; full_name: string; phone_number: string | null } | null;
+    related_client?: { client_id: string; full_name: string; mobile_number: string | null } | null;
     created_at: string;
     updated_at: string;
 }

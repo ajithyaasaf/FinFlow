@@ -48,15 +48,6 @@ export default async function LoanDetailsPage({ params }: PageProps) {
         )
     }
 
-    // Fetch related quotation if exists
-    const { data: quotation } = await supabase
-        .from('quotations')
-        .select('*')
-        .eq('client_id', loanData.client_id)
-        .eq('amount', loanData.amount)
-        .order('created_at', { ascending: false })
-        .limit(1)
-
     // Fetch documents
     const { data: documents } = await supabase
         .from('loan_documents')
@@ -76,7 +67,6 @@ export default async function LoanDetailsPage({ params }: PageProps) {
 
     const loan = {
         ...loanData,
-        quotation: (quotation && quotation.length > 0) ? quotation[0] : null,
         documents: documents || []
     }
     const auditLogs = logs || []
@@ -223,12 +213,7 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                                     KYC Document Uploaded
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
-                                <CheckCircle className={`h-4 w-4 ${loan.quotation ? 'text-green-500' : 'text-gray-300'}`} />
-                                <span className={loan.quotation ? 'text-gray-700' : 'text-gray-400'}>
-                                    Quotation Linked
-                                </span>
-                            </div>
+
                             <div className="flex items-center gap-2 text-sm">
                                 <CheckCircle className={`h-4 w-4 ${loan.process_stage !== 'Application Submitted' ? 'text-green-500' : 'text-gray-300'}`} />
                                 <span className={loan.process_stage !== 'Application Submitted' ? 'text-gray-700' : 'text-gray-400'}>

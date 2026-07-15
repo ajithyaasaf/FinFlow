@@ -4,100 +4,38 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-    LayoutDashboard,
+    Home,
     Users,
-    BarChart3,
-    LogOut,
-    User,
-    HeartHandshake,
-    CreditCard,
-    ChevronRight,
-    TrendingUp,
-    Clock,
-    X,
-    FileText,
-    Flame,
-    Building,
+    Camera,
     BookOpen,
-    ClipboardList,
-    Calendar
+    User,
+    LogOut,
+    Flame,
+    Calendar,
+    TrendingUp,
+    HeartHandshake,
+    X,
+    ChevronRight,
+    CreditCard,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { useMobileMenu } from './mobile-menu-context'
+import { useStaffMobileMenu } from './staff-mobile-menu-context'
 
-const navItems = [
-    {
-        href: '/dashboard',
-        label: 'Dashboard',
-        icon: LayoutDashboard,
-    },
-    {
-        href: '/dashboard/analytics',
-        label: 'Executive Analytics',
-        icon: BarChart3,
-        mdOnly: true,
-    },
-    {
-        href: '/dashboard/leads',
-        label: 'Leads Hub',
-        icon: Flame,
-    },
-    {
-        href: '/dashboard/logins',
-        label: 'Logins Hub',
-        icon: ClipboardList,
-    },
-    {
-        href: '/dashboard/loans',
-        label: 'Loan Applications',
-        icon: CreditCard,
-    },
-    {
-        href: '/dashboard/partners',
-        label: 'Bank Partners',
-        icon: Building,
-    },
-    {
-        href: '/dashboard/staff',
-        label: 'Staffs',
-        icon: Users,
-    },
-    {
-        href: '/dashboard/attendance',
-        label: 'Attendance Tracker',
-        icon: Clock,
-    },
-    {
-        href: '/dashboard/calendar',
-        label: 'Operations Calendar',
-        icon: Calendar,
-    },
-    {
-        href: '/dashboard/clients',
-        label: 'Clients',
-        icon: User,
-    },
-    {
-        href: '/dashboard/topup',
-        label: 'Top-Up Offers',
-        icon: TrendingUp,
-    },
-    {
-        href: '/dashboard/wiki',
-        label: 'Policy Wiki',
-        icon: BookOpen,
-    },
-    {
-        href: '/dashboard/reports',
-        label: 'Reports',
-        icon: BarChart3,
-    },
+const staffNavItems = [
+    { href: '/staff', label: 'Dashboard', icon: Home, exact: true },
+    { href: '/staff/leads', label: 'Leads Hub', icon: Flame },
+    { href: '/staff/clients', label: 'My Clients', icon: Users },
+    { href: '/staff/loans', label: 'Loan Applications', icon: CreditCard },
+    { href: '/staff/attendance', label: 'Mark Attendance', icon: Camera },
+    { href: '/staff/calendar', label: 'My Calendar', icon: Calendar },
+    { href: '/staff/wiki', label: 'Policy Handbook', icon: BookOpen },
+    { href: '/staff/profile', label: 'My Profile', icon: User },
 ]
 
-export function Sidebar() {
+export function StaffSidebar() {
     const pathname = usePathname()
-    const { isOpen, closeMenu } = useMobileMenu()
+    const { isOpen, closeMenu } = useStaffMobileMenu()
     const [clickedHref, setClickedHref] = useState<string | null>(null)
     const [userProfile, setUserProfile] = useState<{ full_name: string; role: string } | null>(null)
 
@@ -118,7 +56,7 @@ export function Sidebar() {
                     }
                 }
             } catch (error) {
-                console.error('Error fetching sidebar profile:', error)
+                console.error('Error fetching staff sidebar profile:', error)
             }
         }
         fetchProfile()
@@ -157,9 +95,7 @@ export function Sidebar() {
                         </div>
                         <div>
                             <span className="text-lg font-bold text-gray-900 leading-none">HealthyHome</span>
-                            <p className="text-[10px] text-gray-400 -mt-0.5">
-                                {userProfile ? `${userProfile.role} Portal` : 'Portal'}
-                            </p>
+                            <p className="text-[10px] text-gray-400 -mt-0.5">Staff Portal</p>
                         </div>
                     </div>
 
@@ -179,12 +115,12 @@ export function Sidebar() {
                         Menu
                     </p>
 
-                    {navItems
-                        .filter((item) => !item.mdOnly || userProfile?.role === 'MD')
-                        .map((item) => {
+                    {staffNavItems.map((item) => {
                         const isActive = clickedHref
                             ? clickedHref === item.href
-                            : (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
+                            : item.exact
+                                ? pathname === item.href
+                                : pathname.startsWith(item.href)
                         const Icon = item.icon
 
                         return (

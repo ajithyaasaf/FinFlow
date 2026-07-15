@@ -1,6 +1,6 @@
 'use server'
 
-import { createLead, updateLeadStatus, promoteLeadToClient, getLeadDetails } from '@/lib/services/leadService'
+import { createLead, updateLeadStatus, promoteLeadToClient, getLeadDetails, bulkUpdateLeadStatus, bulkAssignAgent } from '@/lib/services/leadService'
 import { createAuditLog } from '@/lib/audit-logger'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -86,5 +86,53 @@ export async function getLeadDetailsAction(leadId: string) {
         return { success: true, details }
     } catch (error: any) {
         return { success: false, error: error.message || 'Failed to fetch lead details' }
+    }
+}
+
+export async function bulkUpdateLeadStatusAction(leadIds: string[], status: LeadStatus) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    try {
+        const updatedLeads = await bulkUpdateLeadStatus(leadIds, status)
+
+        await createAuditLog({
+            userId: user.id,
+            action: 'LEAD_UPDATED' as any,
+            entityType: 'CLIENT' as any,
+            entityId: leadIds[0], // log primary reference
+            newValue: { status, bulkCount: leadIds.length }
+        })
+
+        revalidatePath('/dashboard/leads')
+        revalidatePath('/agent/leads')
+        return { success: true, count: updatedLeads.length }
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Failed to bulk update status' }
+    }
+}
+
+export async function bulkAssignAgentAction(leadIds: string[], agentId: string | null) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    try {
+        const updatedLeads = await bulkAssignAgent(leadIds, agentId)
+
+        await createAuditLog({
+            userId: user.id,
+            action: 'LEAD_UPDATED' as any,
+            entityType: 'CLIENT' as any,
+            entityId: leadIds[0], // log primary reference
+            newValue: { assigned_agent_id: agentId, bulkCount: leadIds.length }
+        })
+
+        revalidatePath('/dashboard/leads')
+        revalidatePath('/agent/leads')
+        return { success: true, count: updatedLeads.length }
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Failed to bulk assign agent' }
     }
 }

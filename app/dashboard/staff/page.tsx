@@ -35,18 +35,15 @@ export default async function StaffPage() {
     today.setHours(0, 0, 0, 0)
     const todayStr = today.toISOString()
 
-    const [clientsRes, quotationsRes, attendanceRes, totalStaffRes, totalClientsRes, totalQuotationsRes, todayAttendanceRes] = await Promise.all([
+    const [clientsRes, attendanceRes, totalStaffRes, totalClientsRes, todayAttendanceRes] = await Promise.all([
         supabase.from('clients').select('onboarding_agent_id'),
-        supabase.from('quotations').select('created_by, converted_to_loan_id'),
         supabase.from('attendance_logs').select('*').order('check_in_time', { ascending: false }),
         supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'STAFF'),
         supabase.from('clients').select('*', { count: 'exact', head: true }),
-        supabase.from('quotations').select('*', { count: 'exact', head: true }),
         supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', todayStr)
     ])
 
     const clientsList = clientsRes.data || []
-    const quotationsList = quotationsRes.data || []
     const attendanceList = attendanceRes.data || []
 
     // Group client counts
@@ -54,18 +51,6 @@ export default async function StaffPage() {
     clientsList.forEach(c => {
         if (c.onboarding_agent_id) {
             clientCounts[c.onboarding_agent_id] = (clientCounts[c.onboarding_agent_id] || 0) + 1
-        }
-    })
-
-    // Group quotation and converted counts
-    const quotationCounts: Record<string, number> = {}
-    const convertedCounts: Record<string, number> = {}
-    quotationsList.forEach(q => {
-        if (q.created_by) {
-            quotationCounts[q.created_by] = (quotationCounts[q.created_by] || 0) + 1
-            if (q.converted_to_loan_id) {
-                convertedCounts[q.created_by] = (convertedCounts[q.created_by] || 0) + 1
-            }
         }
     })
 
@@ -80,15 +65,12 @@ export default async function StaffPage() {
     const processedStaff = staffData.map(member => ({
         ...member,
         client_count: clientCounts[member.id] || 0,
-        quotation_count: quotationCounts[member.id] || 0,
-        converted_count: convertedCounts[member.id] || 0,
         latest_attendance: latestAttendance[member.id]
     })) as StaffWithStats[]
 
     const stats = {
         totalStaff: totalStaffRes.count || 0,
         totalClients: totalClientsRes.count || 0,
-        totalQuotations: totalQuotationsRes.count || 0,
         todayAttendance: todayAttendanceRes.count || 0,
     }
 
@@ -97,7 +79,7 @@ export default async function StaffPage() {
             <StaffPageHeader />
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-gray-600">Total Staff</CardTitle>
@@ -114,16 +96,6 @@ export default async function StaffPage() {
                     <CardContent>
                         <p className="text-2xl font-bold">{stats.totalClients}</p>
                         <p className="text-xs text-gray-500 mt-1">Across all staff</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600">Quotations</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">{stats.totalQuotations}</p>
-                        <p className="text-xs text-gray-500 mt-1">Total generated</p>
                     </CardContent>
                 </Card>
 
@@ -183,22 +155,10 @@ export default async function StaffPage() {
                                             </div>
 
                                             {/* Performance Metrics */}
-                                            <div className="grid grid-cols-3 gap-2 md:gap-4 mt-3 p-2 md:p-3 bg-gray-50 rounded-md">
+                                            <div className="grid grid-cols-1 gap-2 mt-3 p-2 md:p-3 bg-gray-50 rounded-md">
                                                 <div>
-                                                    <p className="text-xs text-gray-600">Clients</p>
+                                                    <p className="text-xs text-gray-600">Clients Onboarded</p>
                                                     <p className="text-base md:text-lg font-bold">{agent.client_count}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-gray-600">Quotations</p>
-                                                    <p className="text-base md:text-lg font-bold">{agent.quotation_count}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-gray-600">Conversion</p>
-                                                    <p className="text-base md:text-lg font-bold">
-                                                        {agent.quotation_count > 0
-                                                            ? Math.round((agent.converted_count / agent.quotation_count) * 100)
-                                                            : 0}%
-                                                    </p>
                                                 </div>
                                             </div>
 
@@ -243,12 +203,12 @@ export default async function StaffPage() {
             <div className="mt-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-lg">Top Performers (by Quotations)</CardTitle>
+                        <CardTitle className="text-lg">Top Performers (by Onboarded Clients)</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
                             {[...processedStaff]
-                                .sort((a, b) => b.quotation_count - a.quotation_count)
+                                .sort((a, b) => b.client_count - a.client_count)
                                 .slice(0, 5)
                                 .map((agent, index) => (
                                     <div
@@ -266,12 +226,12 @@ export default async function StaffPage() {
                                             <div>
                                                 <p className="font-semibold">{agent.full_name}</p>
                                                 <p className="text-xs text-gray-500">
-                                                    {agent.client_count} clients • {agent.quotation_count} quotations
+                                                    {agent.client_count} clients
                                                 </p>
                                             </div>
                                         </div>
-                                        {agent.quotation_count > 0 && (
-                                            <Badge variant="outline">{agent.quotation_count} quotes</Badge>
+                                        {agent.client_count > 0 && (
+                                            <Badge variant="outline">{agent.client_count} clients</Badge>
                                         )}
                                     </div>
                                 ))}
