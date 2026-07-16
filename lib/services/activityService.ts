@@ -23,10 +23,9 @@ export async function getActivities() {
         related_client:clients(client_id, full_name, mobile_number)
     `)
 
-    // Agents and Staff only view activities assigned to them
-    if (profile.role === 'AGENT' || profile.role === 'STAFF') {
-        query = query.eq('assigned_agent_id', user.id)
-    }
+    // Agents and Staff visibility is managed by RLS policies on the database.
+    // We no longer strictly filter by assigned_agent_id here so that Team Leaders 
+    // can see their team members' activities, and staff can see activities linked to their leads.
 
     const { data, error } = await query.order('created_at', { ascending: false })
 
