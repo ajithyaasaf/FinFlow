@@ -34,6 +34,7 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [agents, setAgents] = useState<any[]>([])
+    const [userRole, setUserRole] = useState<string | null>(null)
     const router = useRouter()
     const supabase = createClient()
 
@@ -46,8 +47,14 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
 
     useEffect(() => {
         if (!open) return
-        async function fetchAgents() {
+        async function fetchData() {
             try {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    const { data: profile } = await supabase.from('app_users').select('role').eq('id', user.id).single()
+                    if (profile) setUserRole(profile.role)
+                }
+
                 const { data } = await supabase
                     .from('app_users')
                     .select('id, full_name, email')
@@ -55,10 +62,10 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
                     .order('full_name')
                 if (data) setAgents(data)
             } catch (err) {
-                console.error('Failed to fetch agents:', err)
+                console.error('Failed to fetch data:', err)
             }
         }
-        fetchAgents()
+        fetchData()
     }, [open])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +93,7 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
                     full_name: formData.full_name.trim(),
                     mobile_number: formData.mobile_number.trim(),
                     pan_number: formData.pan_number.toUpperCase().trim() || null,
-                    onboarding_agent_id: formData.onboarding_agent_id || null,
+                    ...( (userRole === 'MD' || userRole === 'ADMIN') ? { onboarding_agent_id: formData.onboarding_agent_id || null } : {} )
                 })
                 .eq('client_id', client.client_id)
 
@@ -145,21 +152,25 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
                             onChange={(e) => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })}
                         />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="agent">Onboarding Staff *</Label>
-                        <SearchableSelect
-                            options={agents.map((agent) => ({
-                                value: agent.id,
-                                label: agent.email ? `${agent.full_name} (${agent.email})` : agent.full_name,
-                                searchString: agent.email ? `${agent.full_name} ${agent.email}` : agent.full_name
-                            }))}
-                            value={formData.onboarding_agent_id}
-                            onValueChange={(val) => setFormData({ ...formData, onboarding_agent_id: val })}
-                            placeholder="Select a staff member"
-                            searchPlaceholder="Search staff by name or email..."
-                            className="h-10 rounded-xl"
-                        />
-                    </div>
+
+                    {(userRole === 'MD' || userRole === 'ADMIN') && (
+                        <div className="space-y-2">
+                            <Label htmlFor="agent">Onboarding Staff <span className="text-gray-400 font-normal">(Admin Override)</span></Label>
+                            <SearchableSelect
+                                options={agents.map((agent) => ({
+                                    value: agent.id,
+                                    label: agent.email ? `${agent.full_name} (${agent.email})` : agent.full_name,
+                                    searchString: agent.email ? `${agent.full_name} ${agent.email}` : agent.full_name
+                                }))}
+                                value={formData.onboarding_agent_id}
+                                onValueChange={(val) => setFormData({ ...formData, onboarding_agent_id: val })}
+                                placeholder="Select a staff member"
+                                searchPlaceholder="Search staff by name or email..."
+                                className="h-10 rounded-xl"
+                            />
+                        </div>
+                    )}
+
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
                         <Button type="submit" disabled={loading}>
