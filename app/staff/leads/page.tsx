@@ -31,11 +31,12 @@ export default function AgentLeadsPage() {
                     agentsList = [{ id: agentProfile.id, full_name: agentProfile.full_name }]
 
                     if (agentProfile.role === 'STAFF' && agentProfile.is_tl) {
-                        // Fetch team members reporting to this TL
+                        // Fetch active team members reporting to this TL
                         const { data: teamMembers } = await supabase
                             .from('app_users')
                             .select('id, full_name')
                             .eq('tl_id', agentProfile.id)
+                            .eq('status', 'ACTIVE')
                         
                         if (teamMembers) {
                             agentsList = [...agentsList, ...teamMembers]

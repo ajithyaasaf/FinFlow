@@ -36,15 +36,16 @@ export default async function LeadsPage() {
         assigned_agent:app_users(id, full_name, email)
     `)
 
-    let agentsQuery = supabase.from('app_users').select('id, full_name, email')
+    let agentsQuery = supabase.from('app_users').select('id, full_name, email').eq('status', 'ACTIVE')
 
     if (profile.role === 'STAFF') {
         if (profile.is_tl) {
-            // Fetch team members
+            // Fetch active team members
             const { data: teamMembers } = await supabase
                 .from('app_users')
                 .select('id')
                 .eq('tl_id', user.id)
+                .eq('status', 'ACTIVE')
             
             const teamIds = teamMembers ? teamMembers.map(m => m.id) : []
             const allowedIds = [user.id, ...teamIds]
@@ -57,7 +58,7 @@ export default async function LeadsPage() {
             agentsQuery = agentsQuery.eq('id', user.id)
         }
     } else {
-        // Admin or MD: see all staff
+        // Admin or MD: see all active staff
         agentsQuery = agentsQuery.eq('role', 'STAFF')
     }
 
