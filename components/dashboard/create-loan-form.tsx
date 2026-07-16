@@ -265,8 +265,10 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="none">None</SelectItem>
-                                        {allStaff.filter(s => s.role === 'ADMIN' || s.role === 'MD').map((s) => (
-                                            <SelectItem key={s.id} value={s.id}>{s.full_name} ({s.role})</SelectItem>
+                                        {allStaff.filter(s => s.role === 'ADMIN' || s.role === 'MD' || s.is_tl).map((s) => (
+                                            <SelectItem key={s.id} value={s.id}>
+                                                {s.full_name} ({s.role === 'STAFF' && s.is_tl ? 'TL' : s.role})
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>

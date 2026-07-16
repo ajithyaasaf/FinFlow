@@ -33,15 +33,30 @@ interface StaffActionsProps {
     currentMobile: string
     currentEmail: string
     currentStatus?: 'ACTIVE' | 'INACTIVE'
+    currentIsTl?: boolean
+    currentTlId?: string | null
+    allPossibleTls: { id: string; full_name: string; role: string; is_tl?: boolean }[]
 }
 
-export function StaffActions({ staffId, staffName, currentName, currentMobile, currentEmail, currentStatus = 'ACTIVE' }: StaffActionsProps) {
+export function StaffActions({ 
+    staffId, 
+    staffName, 
+    currentName, 
+    currentMobile, 
+    currentEmail, 
+    currentStatus = 'ACTIVE',
+    currentIsTl = false,
+    currentTlId = null,
+    allPossibleTls
+}: StaffActionsProps) {
     const router = useRouter()
     const [editOpen, setEditOpen] = useState(false)
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE'>(currentStatus)
+    const [isTl, setIsTl] = useState<boolean>(currentIsTl)
     const [toggling, setToggling] = useState(false)
+    const [togglingTl, setTogglingTl] = useState(false)
 
     const handleToggleStatus = async (checked: boolean) => {
         const newStatus = checked ? 'ACTIVE' : 'INACTIVE'
@@ -75,6 +90,37 @@ export function StaffActions({ staffId, staffName, currentName, currentMobile, c
         }
     }
 
+    const handleToggleTl = async (checked: boolean) => {
+        setTogglingTl(true)
+        const oldIsTl = isTl
+        setIsTl(checked)
+
+        try {
+            const response = await fetch(`/api/staff/${staffId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ is_tl: checked }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update Team Leader status')
+            }
+
+            toast.success(checked ? 'Staff member designated as TL' : 'Staff member removed from TL')
+            router.refresh()
+        } catch (error) {
+            console.error('TL update error:', error)
+            toast.error(error instanceof Error ? error.message : 'Failed to update Team Leader status')
+            setIsTl(oldIsTl)
+        } finally {
+            setTogglingTl(false)
+        }
+    }
+
     const handleDelete = async () => {
         setDeleting(true)
 
@@ -103,7 +149,23 @@ export function StaffActions({ staffId, staffName, currentName, currentMobile, c
     const isActive = status === 'ACTIVE'
 
     return (
-        <div className="flex items-center gap-3 sm:gap-4 justify-between sm:justify-end">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 justify-between sm:justify-end">
+            {/* Team Leader Toggle */}
+            <div className="flex items-center gap-2">
+                <span className={cn(
+                    "text-xs font-semibold select-none transition-colors", 
+                    isTl ? "text-primary font-bold" : "text-gray-400"
+                )}>
+                    {isTl ? 'TL Assigned' : 'Not TL'}
+                </span>
+                <Switch
+                    checked={isTl}
+                    onCheckedChange={handleToggleTl}
+                    disabled={togglingTl}
+                />
+            </div>
+
+            {/* Active Toggle */}
             <div className="flex items-center gap-2">
                 <span className={cn(
                     "text-xs font-semibold select-none transition-colors", 
@@ -147,6 +209,8 @@ export function StaffActions({ staffId, staffName, currentName, currentMobile, c
                 currentName={currentName}
                 currentMobile={currentMobile}
                 currentEmail={currentEmail}
+                currentTlId={currentTlId}
+                allPossibleTls={allPossibleTls}
             />
 
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

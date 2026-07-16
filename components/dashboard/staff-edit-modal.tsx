@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Loader2, Edit } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface StaffEditModalProps {
     open: boolean
@@ -16,9 +17,20 @@ interface StaffEditModalProps {
     currentName: string
     currentMobile: string
     currentEmail: string
+    currentTlId?: string | null
+    allPossibleTls: { id: string; full_name: string; role: string; is_tl?: boolean }[]
 }
 
-export function StaffEditModal({ open, onOpenChange, staffId, currentName, currentMobile, currentEmail }: StaffEditModalProps) {
+export function StaffEditModal({ 
+    open, 
+    onOpenChange, 
+    staffId, 
+    currentName, 
+    currentMobile, 
+    currentEmail,
+    currentTlId = null,
+    allPossibleTls
+}: StaffEditModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
@@ -26,9 +38,23 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
         mobile_number: currentMobile,
         email: currentEmail,
         password: '',
+        tl_id: currentTlId || 'none',
     })
 
     const [errors, setErrors] = useState<Record<string, string>>({})
+
+    useEffect(() => {
+        if (open) {
+            setFormData({
+                full_name: currentName,
+                mobile_number: currentMobile,
+                email: currentEmail,
+                password: '',
+                tl_id: currentTlId || 'none',
+            })
+            setErrors({})
+        }
+    }, [open, currentName, currentMobile, currentEmail, currentTlId])
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
@@ -72,6 +98,7 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
                 full_name: formData.full_name,
                 mobile_number: formData.mobile_number,
                 email: formData.email,
+                tl_id: formData.tl_id === 'none' ? null : formData.tl_id,
             }
             if (formData.password) {
                 payload.password = formData.password
@@ -157,6 +184,29 @@ export function StaffEditModal({ open, onOpenChange, staffId, currentName, curre
                             {errors.email && (
                                 <p className="text-sm text-red-500">{errors.email}</p>
                             )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit_tl_id">Assigned Team Leader (TL)</Label>
+                            <Select
+                                value={formData.tl_id}
+                                onValueChange={(val) => setFormData(prev => ({ ...prev, tl_id: val }))}
+                            >
+                                <SelectTrigger id="edit_tl_id">
+                                    <SelectValue placeholder="Select Team Leader" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None / No TL</SelectItem>
+                                    {allPossibleTls
+                                        .filter(s => s.id !== staffId)
+                                        .map((s) => (
+                                            <SelectItem key={s.id} value={s.id}>
+                                                {s.full_name} ({s.role === 'STAFF' && s.is_tl ? 'TL' : s.role})
+                                            </SelectItem>
+                                        ))
+                                    }
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">

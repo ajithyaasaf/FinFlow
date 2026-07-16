@@ -10,13 +10,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Loader2, UserPlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { UserRole } from '@/types'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface StaffCreateModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
+    allPossibleTls: { id: string; full_name: string; role: string; is_tl?: boolean }[]
 }
 
-export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) {
+export function StaffCreateModal({ open, onOpenChange, allPossibleTls }: StaffCreateModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null)
@@ -26,6 +28,7 @@ export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) 
         mobile_number: '',
         password: '',
         role: 'STAFF',
+        tl_id: 'none',
     })
 
     useEffect(() => {
@@ -109,6 +112,7 @@ export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) 
                     mobile_number: formData.mobile_number,
                     password: formData.password,
                     role: formData.role,
+                    tl_id: formData.tl_id === 'none' ? null : formData.tl_id,
                 }),
             })
 
@@ -121,7 +125,7 @@ export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) 
             toast.success(`${formData.role} created successfully!`)
             // Close and reset form immediately — list refresh happens in background
             onOpenChange(false)
-            setFormData({ full_name: '', login_id: '', mobile_number: '', password: '', role: 'STAFF' })
+            setFormData({ full_name: '', login_id: '', mobile_number: '', password: '', role: 'STAFF', tl_id: 'none' })
             setErrors({})
             router.refresh()
         } catch (error) {
@@ -201,6 +205,26 @@ export function StaffCreateModal({ open, onOpenChange }: StaffCreateModalProps) 
                                 </div>
                             )
                         )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="tl_id">Assigned Team Leader (TL)</Label>
+                            <Select
+                                value={formData.tl_id}
+                                onValueChange={(val) => setFormData(prev => ({ ...prev, tl_id: val }))}
+                            >
+                                <SelectTrigger id="tl_id">
+                                    <SelectValue placeholder="Select Team Leader" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None / No TL</SelectItem>
+                                    {allPossibleTls.map((s) => (
+                                        <SelectItem key={s.id} value={s.id}>
+                                            {s.full_name} ({s.role === 'STAFF' && s.is_tl ? 'TL' : s.role})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="mobile_number">Mobile Number *</Label>

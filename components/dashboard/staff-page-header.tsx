@@ -5,7 +5,11 @@ import { StaffCreateModal } from './staff-create-modal'
 import { Button } from '@/components/ui/button'
 import { UserPlus } from 'lucide-react'
 
-export function StaffPageHeader() {
+interface StaffPageHeaderProps {
+    allPossibleTls?: { id: string; full_name: string; role: string; is_tl?: boolean }[]
+}
+
+export function StaffPageHeader({ allPossibleTls = [] }: StaffPageHeaderProps) {
     const [createOpen, setCreateOpen] = useState(false)
 
     return (
@@ -21,7 +25,7 @@ export function StaffPageHeader() {
                 </Button>
             </div>
 
-            <StaffCreateModal open={createOpen} onOpenChange={setCreateOpen} />
+            <StaffCreateModal open={createOpen} onOpenChange={setCreateOpen} allPossibleTls={allPossibleTls} />
         </>
     )
 }

@@ -31,6 +31,9 @@ export interface AppUser {
     email: string;
     branch?: string | null;
     status?: 'ACTIVE' | 'INACTIVE';
+    is_tl?: boolean;
+    tl_id?: string | null;
+    tl?: { id: string; full_name: string } | null;
     created_at: string;
 }
 

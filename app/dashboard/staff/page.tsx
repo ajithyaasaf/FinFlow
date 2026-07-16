@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
 export default async function StaffPage() {
     const supabase = await createClient()
 
-    // Fetch all staff
+    // Fetch all staff members using wildcard to avoid missing-column errors
     const { data: staffData, error: staffError } = await supabase
         .from('app_users')
         .select('*')
@@ -25,26 +25,37 @@ export default async function StaffPage() {
         return (
             <div className="p-4 sm:p-6 lg:p-8">
                 <StaffPageHeader />
-                <p className="text-red-500">Failed to load staff members.</p>
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 font-medium">Failed to load staff members.</p>
+                    {staffError && (
+                        <p className="text-red-400 text-xs mt-1 font-mono">{staffError.message}</p>
+                    )}
+                </div>
             </div>
         )
     }
 
-    // Fetch Stats
+    // Fetch Stats and possible Team Leaders in parallel
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayStr = today.toISOString()
 
-    const [clientsRes, attendanceRes, totalStaffRes, totalClientsRes, todayAttendanceRes] = await Promise.all([
+    const [clientsRes, attendanceRes, totalStaffRes, totalClientsRes, todayAttendanceRes, allTlsRes] = await Promise.all([
         supabase.from('clients').select('onboarding_agent_id'),
         supabase.from('attendance_logs').select('*').order('check_in_time', { ascending: false }),
         supabase.from('app_users').select('*', { count: 'exact', head: true }).eq('role', 'STAFF'),
         supabase.from('clients').select('*', { count: 'exact', head: true }),
-        supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', todayStr)
+        supabase.from('attendance_logs').select('*', { count: 'exact', head: true }).gte('check_in_time', todayStr),
+        supabase.from('app_users')
+            .select('id, full_name, role, is_tl')
+            .or('role.eq.ADMIN,role.eq.MD,is_tl.eq.true')
+            .order('full_name')
     ])
 
     const clientsList = clientsRes.data || []
     const attendanceList = attendanceRes.data || []
+    // allTlsRes now includes: ADMIN, MD, and any STAFF with is_tl = true
+    const allPossibleTls = allTlsRes.data || []
 
     // Group client counts
     const clientCounts: Record<string, number> = {}
@@ -62,11 +73,17 @@ export default async function StaffPage() {
         }
     })
 
-    const processedStaff = staffData.map(member => ({
-        ...member,
-        client_count: clientCounts[member.id] || 0,
-        latest_attendance: latestAttendance[member.id]
-    })) as StaffWithStats[]
+    const processedStaff = staffData.map(member => {
+        const assignedTl = member.tl_id 
+            ? allPossibleTls.find(t => t.id === member.tl_id) 
+            : null;
+        return {
+            ...member,
+            tl: assignedTl ? { id: assignedTl.id, full_name: assignedTl.full_name } : null,
+            client_count: clientCounts[member.id] || 0,
+            latest_attendance: latestAttendance[member.id]
+        }
+    }) as StaffWithStats[]
 
     const stats = {
         totalStaff: totalStaffRes.count || 0,
@@ -76,7 +93,7 @@ export default async function StaffPage() {
 
     return (
         <div className="p-4 sm:p-6 lg:p-8">
-            <StaffPageHeader />
+            <StaffPageHeader allPossibleTls={allPossibleTls} />
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -152,6 +169,12 @@ export default async function StaffPage() {
                                                 <div className="flex items-center gap-2 text-gray-600">
                                                     <span className="text-xs">{agent.email}</span>
                                                 </div>
+                                                {agent.tl && (
+                                                    <div className="flex items-center gap-2 text-xs sm:col-span-2 text-gray-700 font-medium mt-1">
+                                                        <span className="text-gray-400 font-normal">Team Leader:</span>
+                                                        <span className="bg-primary/5 text-primary px-2 py-0.5 rounded-md text-[11px] font-semibold">{agent.tl.full_name}</span>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Performance Metrics */}
@@ -190,6 +213,9 @@ export default async function StaffPage() {
                                                 currentMobile={agent.mobile_number}
                                                 currentEmail={agent.email}
                                                 currentStatus={agent.status}
+                                                currentIsTl={agent.is_tl}
+                                                currentTlId={agent.tl_id}
+                                                allPossibleTls={allPossibleTls}
                                             />
                                         </div>
                                     </div>
