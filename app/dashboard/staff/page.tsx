@@ -199,10 +199,6 @@ export default async function StaffPage() {
                                                     <span className="text-gray-500">No attendance records</span>
                                                 </div>
                                             )}
-
-                                            <p className="text-xs text-gray-400 mt-2">
-                                                Joined {formatDate(agent.created_at)}
-                                            </p>
                                         </div>
 
                                         <div className="sm:ml-auto w-full sm:w-auto mt-3 sm:mt-0">
