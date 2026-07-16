@@ -156,7 +156,7 @@ export function StaffActions({
                     "text-xs font-semibold select-none transition-colors", 
                     isTl ? "text-primary font-bold" : "text-gray-400"
                 )}>
-                    {isTl ? 'TL Assigned' : 'Not TL'}
+                    {isTl ? 'TL' : 'Not TL'}
                 </span>
                 <Switch
                     checked={isTl}
