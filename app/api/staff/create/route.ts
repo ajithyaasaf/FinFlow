@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
         // Get request body
         const body = await request.json()
-        const { email, password, full_name, mobile_number, role = 'STAFF', tl_id } = body
+        const { email, password, full_name, mobile_number, role = 'STAFF', tl_id, is_tl } = body
 
         // Validate inputs
         if (!email || !password || !full_name || !mobile_number) {
@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
                 mobile_number,
                 email,
                 tl_id: tl_id || null,
+                is_tl: is_tl || false,
             })
             .select()
             .single()

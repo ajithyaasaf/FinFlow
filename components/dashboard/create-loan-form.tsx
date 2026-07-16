@@ -102,7 +102,9 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
 
             // Always save region and TL
             payload.region = formData.region || 'Madurai'
-            if (formData.assigned_tl_id) payload.assigned_tl_id = formData.assigned_tl_id
+            payload.assigned_tl_id = (formData.assigned_tl_id && formData.assigned_tl_id !== 'none') 
+                ? formData.assigned_tl_id 
+                : null
 
             const { data: loan, error } = await supabase
                 .from('loan_applications')

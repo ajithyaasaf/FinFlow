@@ -29,6 +29,7 @@ export function StaffCreateModal({ open, onOpenChange, allPossibleTls }: StaffCr
         password: '',
         role: 'STAFF',
         tl_id: 'none',
+        is_tl: false,
     })
 
     useEffect(() => {
@@ -112,7 +113,8 @@ export function StaffCreateModal({ open, onOpenChange, allPossibleTls }: StaffCr
                     mobile_number: formData.mobile_number,
                     password: formData.password,
                     role: formData.role,
-                    tl_id: formData.tl_id === 'none' ? null : formData.tl_id,
+                    is_tl: formData.role === 'STAFF' ? formData.is_tl : false,
+                    tl_id: (formData.role === 'STAFF' && !formData.is_tl && formData.tl_id !== 'none') ? formData.tl_id : null,
                 }),
             })
 
@@ -125,7 +127,7 @@ export function StaffCreateModal({ open, onOpenChange, allPossibleTls }: StaffCr
             toast.success(`${formData.role} created successfully!`)
             // Close and reset form immediately — list refresh happens in background
             onOpenChange(false)
-            setFormData({ full_name: '', login_id: '', mobile_number: '', password: '', role: 'STAFF', tl_id: 'none' })
+            setFormData({ full_name: '', login_id: '', mobile_number: '', password: '', role: 'STAFF', tl_id: 'none', is_tl: false })
             setErrors({})
             router.refresh()
         } catch (error) {
@@ -155,7 +157,7 @@ export function StaffCreateModal({ open, onOpenChange, allPossibleTls }: StaffCr
                             <Label htmlFor="full_name">Full Name *</Label>
                             <Input
                                 id="full_name"
-                                placeholder="John Doe"
+                                placeholder="Enter staff name"
                                 value={formData.full_name}
                                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                 className={errors.full_name ? 'border-red-500' : ''}
@@ -206,14 +208,38 @@ export function StaffCreateModal({ open, onOpenChange, allPossibleTls }: StaffCr
                             )
                         )}
 
+                        {formData.role === 'STAFF' && (
+                            <div className="flex items-center space-x-2 py-1">
+                                <input
+                                    type="checkbox"
+                                    id="is_tl"
+                                    checked={formData.is_tl}
+                                    onChange={(e) => {
+                                        const checked = e.target.checked
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            is_tl: checked,
+                                            // Reset tl_id to 'none' if they are designated as a TL
+                                            tl_id: checked ? 'none' : prev.tl_id
+                                        }))
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                                />
+                                <Label htmlFor="is_tl" className="text-sm font-medium cursor-pointer select-none">
+                                    Designate as Team Leader (TL)
+                                </Label>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
-                            <Label htmlFor="tl_id">Assigned Team Leader (TL)</Label>
+                            <Label htmlFor="tl_id" className={formData.is_tl ? "text-gray-400" : ""}>Assigned Team Leader (TL)</Label>
                             <Select
                                 value={formData.tl_id}
                                 onValueChange={(val) => setFormData(prev => ({ ...prev, tl_id: val }))}
+                                disabled={formData.role !== 'STAFF' || formData.is_tl}
                             >
-                                <SelectTrigger id="tl_id">
-                                    <SelectValue placeholder="Select Team Leader" />
+                                <SelectTrigger id="tl_id" className={formData.is_tl ? "bg-gray-100/80 border-gray-200 text-gray-400 cursor-not-allowed" : ""}>
+                                    <SelectValue placeholder={formData.is_tl ? "Not applicable (User is a TL)" : "Select Team Leader"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">None / No TL</SelectItem>
