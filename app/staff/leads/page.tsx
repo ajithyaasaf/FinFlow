@@ -17,14 +17,36 @@ export default function AgentLeadsPage() {
                 const supabase = createClient()
                 const { data: { user } } = await supabase.auth.getUser()
 
-                const [leadsRes, agentProfileRes] = await Promise.all([
-                    supabase.from('leads').select('*').order('created_at', { ascending: false }),
-                    supabase.from('app_users').select('id, full_name').eq('id', user?.id || '').single()
-                ])
+                // Fetch profile to check role & TL status
+                const agentProfileRes = await supabase
+                    .from('app_users')
+                    .select('id, full_name, role, is_tl')
+                    .eq('id', user?.id || '')
+                    .single()
+
+                const agentProfile = agentProfileRes.data
+                let agentsList: any[] = []
+
+                if (agentProfile) {
+                    agentsList = [{ id: agentProfile.id, full_name: agentProfile.full_name }]
+
+                    if (agentProfile.role === 'STAFF' && agentProfile.is_tl) {
+                        // Fetch team members reporting to this TL
+                        const { data: teamMembers } = await supabase
+                            .from('app_users')
+                            .select('id, full_name')
+                            .eq('tl_id', agentProfile.id)
+                        
+                        if (teamMembers) {
+                            agentsList = [...agentsList, ...teamMembers]
+                        }
+                    }
+                }
+
+                const leadsRes = await supabase.from('leads').select('*').order('created_at', { ascending: false })
 
                 setLeads(leadsRes.data || [])
-                const agentProfile = agentProfileRes.data
-                setAgents(agentProfile ? [{ id: agentProfile.id, full_name: agentProfile.full_name }] : [])
+                setAgents(agentsList)
             } catch (error) {
                 console.error('Failed to fetch leads data:', error)
             } finally {

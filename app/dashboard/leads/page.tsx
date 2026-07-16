@@ -15,10 +15,10 @@ export default async function LeadsPage() {
         )
     }
 
-    // Fetch role
+    // Fetch role & TL status
     const { data: profile } = await supabase
         .from('app_users')
-        .select('role')
+        .select('role, is_tl')
         .eq('id', user.id)
         .single()
 
@@ -36,18 +36,44 @@ export default async function LeadsPage() {
         assigned_agent:app_users(id, full_name, email)
     `)
 
+    let agentsQuery = supabase.from('app_users').select('id, full_name, email')
+
     if (profile.role === 'STAFF') {
-        query = query.eq('assigned_agent_id', user.id)
+        if (profile.is_tl) {
+            // Fetch team members
+            const { data: teamMembers } = await supabase
+                .from('app_users')
+                .select('id')
+                .eq('tl_id', user.id)
+            
+            const teamIds = teamMembers ? teamMembers.map(m => m.id) : []
+            const allowedIds = [user.id, ...teamIds]
+            
+            query = query.in('assigned_agent_id', allowedIds)
+            agentsQuery = agentsQuery.or(`id.eq.${user.id},tl_id.eq.${user.id}`)
+        } else {
+            // Regular staff: only themselves
+            query = query.eq('assigned_agent_id', user.id)
+            agentsQuery = agentsQuery.eq('id', user.id)
+        }
+    } else {
+        // Admin or MD: see all staff
+        agentsQuery = agentsQuery.eq('role', 'STAFF')
     }
 
     // Fetch leads and agents in parallel
     const [leadsRes, agentsRes] = await Promise.all([
         query.order('created_at', { ascending: false }),
-        supabase.from('app_users').select('id, full_name, email').eq('role', 'STAFF')
+        agentsQuery
     ])
 
     const leads = leadsRes.data || []
     const agents = agentsRes.data || []
+
+    console.log('[DEBUG] profile:', profile)
+    console.log('[DEBUG] agents fetched:', agents)
+    console.log('[DEBUG] leadsRes error:', leadsRes.error)
+    console.log('[DEBUG] agentsRes error:', agentsRes.error)
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
