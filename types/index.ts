@@ -30,6 +30,7 @@ export interface AppUser {
     mobile_number: string;
     email: string;
     branch?: string | null;
+    status?: 'ACTIVE' | 'INACTIVE';
     created_at: string;
 }
 

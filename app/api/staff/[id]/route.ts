@@ -29,9 +29,9 @@ export async function PATCH(
         }
 
         const body = await request.json()
-        const { full_name, mobile_number, email, password } = body
+        const { full_name, mobile_number, email, password, status } = body
 
-        if (!full_name && !mobile_number && !email && !password) {
+        if (!full_name && !mobile_number && !email && !password && !status) {
             return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
         }
 
@@ -59,6 +59,7 @@ export async function PATCH(
         if (full_name) updateData.full_name = full_name
         if (mobile_number) updateData.mobile_number = mobile_number
         if (email) updateData.email = email
+        if (status) updateData.status = status
 
         const { data: updatedStaff, error } = await supabase
             .from('app_users')

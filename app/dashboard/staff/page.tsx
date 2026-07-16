@@ -189,6 +189,7 @@ export default async function StaffPage() {
                                                 currentName={agent.full_name}
                                                 currentMobile={agent.mobile_number}
                                                 currentEmail={agent.email}
+                                                currentStatus={agent.status}
                                             />
                                         </div>
                                     </div>

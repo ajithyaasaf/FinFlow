@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
+import { Switch } from '@/components/ui/switch'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,13 +32,48 @@ interface StaffActionsProps {
     currentName: string
     currentMobile: string
     currentEmail: string
+    currentStatus?: 'ACTIVE' | 'INACTIVE'
 }
 
-export function StaffActions({ staffId, staffName, currentName, currentMobile, currentEmail }: StaffActionsProps) {
+export function StaffActions({ staffId, staffName, currentName, currentMobile, currentEmail, currentStatus = 'ACTIVE' }: StaffActionsProps) {
     const router = useRouter()
     const [editOpen, setEditOpen] = useState(false)
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [deleting, setDeleting] = useState(false)
+    const [status, setStatus] = useState<'ACTIVE' | 'INACTIVE'>(currentStatus)
+    const [toggling, setToggling] = useState(false)
+
+    const handleToggleStatus = async (checked: boolean) => {
+        const newStatus = checked ? 'ACTIVE' : 'INACTIVE'
+        setToggling(true)
+        const oldStatus = status
+        setStatus(newStatus)
+
+        try {
+            const response = await fetch(`/api/staff/${staffId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update status')
+            }
+
+            toast.success(`Staff member is now ${newStatus.toLowerCase()}`)
+            router.refresh()
+        } catch (error) {
+            console.error('Status update error:', error)
+            toast.error(error instanceof Error ? error.message : 'Failed to update status')
+            setStatus(oldStatus)
+        } finally {
+            setToggling(false)
+        }
+    }
 
     const handleDelete = async () => {
         setDeleting(true)
@@ -63,8 +100,24 @@ export function StaffActions({ staffId, staffName, currentName, currentMobile, c
         }
     }
 
+    const isActive = status === 'ACTIVE'
+
     return (
-        <>
+        <div className="flex items-center gap-3 sm:gap-4 justify-between sm:justify-end">
+            <div className="flex items-center gap-2">
+                <span className={cn(
+                    "text-xs font-semibold select-none transition-colors", 
+                    isActive ? "text-green-600" : "text-gray-400"
+                )}>
+                    {isActive ? 'Active' : 'Inactive'}
+                </span>
+                <Switch
+                    checked={isActive}
+                    onCheckedChange={handleToggleStatus}
+                    disabled={toggling}
+                />
+            </div>
+
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -118,6 +171,6 @@ export function StaffActions({ staffId, staffName, currentName, currentMobile, c
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </div>
     )
 }

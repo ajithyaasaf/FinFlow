@@ -27,15 +27,18 @@ export default function StaffLayout({
                     return
                 }
 
-                // Verify user is a staff
+                // Verify user is active staff
                 const { data: userData } = await supabase
                     .from('app_users')
-                    .select('role')
+                    .select('role, status')
                     .eq('id', user.id)
                     .single()
 
-                if (!userData || userData.role !== 'STAFF') {
-                    router.push('/dashboard')
+                if (!userData || userData.role !== 'STAFF' || userData.status === 'INACTIVE') {
+                    if (userData?.status === 'INACTIVE') {
+                        await supabase.auth.signOut()
+                    }
+                    router.push('/login')
                     return
                 }
 

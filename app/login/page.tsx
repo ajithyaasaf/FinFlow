@@ -40,15 +40,20 @@ export default function LoginPage() {
             }
 
             if (data.user) {
-                // Get user role from app_users table
+                // Get user role and status from app_users table
                 const { data: userData, error: userError } = await supabase
                     .from('app_users')
-                    .select('role, full_name')
+                    .select('role, full_name, status')
                     .eq('id', data.user.id)
                     .single()
 
                 if (userError) {
                     throw new Error('User profile not found')
+                }
+
+                if (userData.status === 'INACTIVE') {
+                    await supabase.auth.signOut()
+                    throw new Error('Your account is inactive. Please contact your administrator.')
                 }
 
                 toast.success(`Welcome back, ${userData.full_name}!`)

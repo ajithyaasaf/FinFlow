@@ -96,6 +96,19 @@ export default function AttendancePage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) throw new Error('Not authenticated')
 
+            // Verify user active status
+            const { data: profile } = await supabase
+                .from('app_users')
+                .select('status')
+                .eq('id', user.id)
+                .single()
+
+            if (profile?.status === 'INACTIVE') {
+                await supabase.auth.signOut()
+                window.location.href = '/login'
+                throw new Error('Your account is inactive. Please contact your administrator.')
+            }
+
             // Upload selfie
             const selfieUrl = await uploadSelfie(selfieFile, user.id)
 

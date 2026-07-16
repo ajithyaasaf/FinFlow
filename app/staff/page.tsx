@@ -43,6 +43,12 @@ export default function StaffDashboard() {
             .eq('id', user.id)
             .single()
 
+        if (profile?.status === 'INACTIVE') {
+            await supabase.auth.signOut()
+            router.replace('/login')
+            return
+        }
+
         setUserData(profile)
         setLoading(false)
     }
