@@ -25,6 +25,7 @@ interface ClientFormData {
     full_name: string
     mobile_number: string
     pan_number: string
+    aadhaar_number: string
     onboarding_agent_id: string
 }
 
@@ -163,6 +164,7 @@ export function AdminClientForm({
         full_name: initialData?.full_name || '',
         mobile_number: initialData?.mobile_number || '',
         pan_number: initialData?.pan_number || '',
+        aadhaar_number: initialData?.aadhaar_number || '',
         onboarding_agent_id: initialData?.onboarding_agent_id || '',
     })
     const [kycFile, setKycFile] = useState<File | null>(null)
@@ -233,6 +235,7 @@ export function AdminClientForm({
                 full_name: formData.full_name.trim(),
                 mobile_number: formData.mobile_number.trim(),
                 pan_number: formData.pan_number.toUpperCase().trim() || null,
+                aadhaar_number: formData.aadhaar_number.replace(/\D/g, '').trim() || null,
                 kyc_document_url: kycUrl,
                 onboarding_agent_id: formData.onboarding_agent_id || initialData?.onboarding_agent_id,
             }
@@ -330,6 +333,17 @@ export function AdminClientForm({
                             onChange={(e) => updateField('pan_number', e.target.value.toUpperCase().slice(0, 10))}
                             disabled={loading}
                             className="uppercase"
+                        />
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <Label htmlFor="aadhaar_number">Aadhaar Number</Label>
+                        <Input
+                            id="aadhaar_number"
+                            placeholder="123456789012"
+                            value={formData.aadhaar_number}
+                            onChange={(e) => updateField('aadhaar_number', e.target.value.replace(/\D/g, '').slice(0, 12))}
+                            disabled={loading}
                         />
                     </div>
 

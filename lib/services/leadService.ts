@@ -143,7 +143,8 @@ export async function promoteLeadToClient(leadId: string): Promise<Client | null
         full_name: lead.full_name,
         mobile_number: lead.phone_number,
         onboarding_agent_id: lead.assigned_agent_id || user.id, // Fallback if no agent is assigned
-        pan_number: null,
+        pan_number: lead.pan_number || null,
+        aadhaar_number: lead.aadhaar_number || null,
         kyc_document_url: null,
         company_name: lead.company_name,
         email: lead.email,

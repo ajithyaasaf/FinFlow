@@ -1029,6 +1029,14 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                                     <span>{selectedLead.company_name || 'N/A'}</span>
                                 </div>
                                 <div>
+                                    <span className="text-xs text-gray-400 block font-medium">PAN Number</span>
+                                    <span>{selectedLead.pan_number || 'Not provided'}</span>
+                                </div>
+                                <div>
+                                    <span className="text-xs text-gray-400 block font-medium">Aadhaar Number</span>
+                                    <span>{selectedLead.aadhaar_number || 'Not provided'}</span>
+                                </div>
+                                <div>
                                     <span className="text-xs text-gray-400 block font-medium">Source</span>
                                     <span className="capitalize">{selectedLead.source.replace('_', ' ').toLowerCase()}</span>
                                 </div>

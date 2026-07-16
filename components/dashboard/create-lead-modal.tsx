@@ -28,6 +28,8 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
         company_name: '',
         phone_number: '',
         email: '',
+        pan_number: '',
+        aadhaar_number: '',
         status: 'NEW',
         source: 'OTHER',
         heat_level: 'WARM',
@@ -98,6 +100,8 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                 company_name: '',
                 phone_number: '',
                 email: '',
+                pan_number: '',
+                aadhaar_number: '',
                 status: 'NEW',
                 source: 'OTHER',
                 heat_level: 'WARM',
@@ -224,6 +228,27 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                                 {errors.email && (
                                     <p className="text-xs text-red-500">{errors.email}</p>
                                 )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="pan_number">PAN Number</Label>
+                                <Input
+                                    id="pan_number"
+                                    placeholder="ABCDE1234F"
+                                    value={formData.pan_number}
+                                    onChange={(e) => setFormData({ ...formData, pan_number: e.target.value.toUpperCase().slice(0, 10) })}
+                                    className="uppercase"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="aadhaar_number">Aadhaar Number</Label>
+                                <Input
+                                    id="aadhaar_number"
+                                    placeholder="123456789012"
+                                    value={formData.aadhaar_number}
+                                    onChange={(e) => setFormData({ ...formData, aadhaar_number: e.target.value.replace(/\D/g, '').slice(0, 12) })}
+                                />
                             </div>
 
                             <div className="space-y-2">

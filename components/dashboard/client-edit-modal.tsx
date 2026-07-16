@@ -42,6 +42,7 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
         full_name: client.full_name || '',
         mobile_number: client.mobile_number || '',
         pan_number: client.pan_number || '',
+        aadhaar_number: client.aadhaar_number || '',
         onboarding_agent_id: client.onboarding_agent_id || '',
     })
 
@@ -93,6 +94,7 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
                     full_name: formData.full_name.trim(),
                     mobile_number: formData.mobile_number.trim(),
                     pan_number: formData.pan_number.toUpperCase().trim() || null,
+                    aadhaar_number: formData.aadhaar_number.replace(/\D/g, '').trim() || null,
                     ...( (userRole === 'MD' || userRole === 'ADMIN') ? { onboarding_agent_id: formData.onboarding_agent_id || null } : {} )
                 })
                 .eq('client_id', client.client_id)
@@ -150,6 +152,15 @@ export function ClientEditModal({ client }: ClientEditModalProps) {
                             placeholder="ABCDE1234F"
                             value={formData.pan_number}
                             onChange={(e) => setFormData({ ...formData, pan_number: e.target.value.toUpperCase() })}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="aadhaar">Aadhaar Number</Label>
+                        <Input
+                            id="aadhaar"
+                            placeholder="123456789012"
+                            value={formData.aadhaar_number}
+                            onChange={(e) => setFormData({ ...formData, aadhaar_number: e.target.value.replace(/\D/g, '').slice(0, 12) })}
                         />
                     </div>
 

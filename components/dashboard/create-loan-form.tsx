@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ClientSearchSelect } from '@/components/ui/client-search-select'
 import { Loader2, Calculator, Search } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import type { Client, BankPartner, AppUser } from '@/types'
 import { calculateEMI } from '@/lib/utils'
 import { formatCurrency } from '@/lib/utils'
@@ -31,6 +32,8 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
     const [lenderModel, setLenderModel] = useState<'DIRECT' | 'BROKERAGE'>('DIRECT')
     const [formData, setFormData] = useState({
         client_id: '',
+        pan_number: '',
+        aadhaar_number: '',
         amount: '',
         interest_rate: '12',
         tenure: '12',
@@ -55,6 +58,16 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
 
     // Get selected client details
     const selectedClient = clients.find(c => c.client_id === formData.client_id)
+
+    useEffect(() => {
+        if (selectedClient) {
+            setFormData(prev => ({
+                ...prev,
+                pan_number: selectedClient.pan_number || '',
+                aadhaar_number: selectedClient.aadhaar_number || '',
+            }))
+        }
+    }, [selectedClient])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -106,6 +119,17 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
                 ? formData.assigned_tl_id 
                 : null
 
+            // Update client identity fields if they were entered
+            if (formData.pan_number || formData.aadhaar_number) {
+                await supabase
+                    .from('clients')
+                    .update({
+                        pan_number: formData.pan_number.toUpperCase().trim() || null,
+                        aadhaar_number: formData.aadhaar_number.replace(/\D/g, '').trim() || null,
+                    })
+                    .eq('client_id', formData.client_id)
+            }
+
             const { data: loan, error } = await supabase
                 .from('loan_applications')
                 .insert(payload)
@@ -139,15 +163,44 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
                         placeholder="Select a client"
                     />
 
-                    {/* Selected Client Info */}
+                    {/* Selected Client Info & Identity Update */}
                     {selectedClient && (
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <p className="text-sm font-medium text-green-800">
-                                Selected: {selectedClient.full_name}
-                            </p>
-                            <p className="text-xs text-green-600">
-                                Mobile: {selectedClient.mobile_number}
-                                {selectedClient.pan_number && ` • PAN: ${selectedClient.pan_number}`}
+                        <div className="space-y-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="font-medium text-slate-900">
+                                        {selectedClient.full_name}
+                                    </p>
+                                    <p className="text-sm text-slate-500">
+                                        Mobile: {selectedClient.mobile_number}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4 pt-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="pan_number">PAN Number</Label>
+                                    <Input
+                                        id="pan_number"
+                                        placeholder="ABCDE1234F"
+                                        value={formData.pan_number}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, pan_number: e.target.value.toUpperCase().slice(0, 10) }))}
+                                        className="uppercase bg-white"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="aadhaar_number">Aadhaar Number</Label>
+                                    <Input
+                                        id="aadhaar_number"
+                                        placeholder="123456789012"
+                                        value={formData.aadhaar_number}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, aadhaar_number: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
+                                        className="bg-white"
+                                    />
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                                Identity details entered here will automatically be updated in the client's master profile.
                             </p>
                         </div>
                     )}

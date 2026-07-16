@@ -22,7 +22,8 @@ interface ClientData {
     client_id: string
     full_name: string
     mobile_number: string
-    pan_number: string
+    pan_number: string | null
+    aadhaar_number: string | null
     created_at: string
     kyc_document_url: string | null
     loans: {
@@ -165,6 +166,13 @@ export default function ClientDetailsPage({ params }: ClientDetailsProps) {
                             <div>
                                 <p className="text-xs text-gray-600">PAN Number</p>
                                 <p className="text-base font-semibold text-gray-900">{client.pan_number}</p>
+                            </div>
+                        )}
+
+                        {client.aadhaar_number && (
+                            <div>
+                                <p className="text-xs text-gray-600">Aadhaar Number</p>
+                                <p className="text-base font-semibold text-gray-900">{client.aadhaar_number}</p>
                             </div>
                         )}
 

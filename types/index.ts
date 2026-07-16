@@ -233,6 +233,8 @@ export interface Lead {
     status: LeadStatus;
     source: LeadSource;
     heat_level: LeadHeatLevel;
+    pan_number: string | null;
+    aadhaar_number: string | null;
     assigned_agent_id: string | null;
     assigned_agent?: { id: string; full_name: string; email: string } | null;
     constitution: string | null;

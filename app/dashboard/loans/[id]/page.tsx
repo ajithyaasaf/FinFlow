@@ -157,6 +157,14 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                                         <p className="text-sm">{formatDate(loan.client?.created_at)}</p>
                                     </div>
                                 </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">PAN Number</label>
+                                    <p className="text-sm">{loan.client?.pan_number || '-'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">Aadhaar Number</label>
+                                    <p className="text-sm">{loan.client?.aadhaar_number || '-'}</p>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
