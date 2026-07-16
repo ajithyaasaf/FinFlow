@@ -1304,7 +1304,7 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                             className="bg-primary hover:bg-primary-dark font-semibold px-5"
                         >
                             {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Confirm Promotion
+                            Confirm
                         </Button>
                     </DialogFooter>
                 </DialogContent>
