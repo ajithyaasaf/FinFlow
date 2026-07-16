@@ -12,8 +12,8 @@ async function verifyAdmin(supabase: any, userId: string) {
         .select('role')
         .eq('id', userId)
         .single()
-    if (!profile || profile.role !== 'ADMIN') {
-        throw new Error('Forbidden: Admin access required')
+    if (!profile || !['ADMIN', 'MD'].includes(profile.role)) {
+        throw new Error('Forbidden: Admin/MD access required')
     }
 }
 
