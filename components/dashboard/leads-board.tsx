@@ -711,7 +711,17 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                                                 </Badge>
                                                 <span className="text-[10px] text-gray-400 capitalize">{lead.source.replace('_', ' ').toLowerCase()}</span>
                                             </div>
-                                            <h4 className="font-semibold text-sm text-gray-800 group-hover:text-primary transition">{lead.full_name}</h4>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <h4 className="font-semibold text-sm text-gray-800 group-hover:text-primary transition">{lead.full_name}</h4>
+                                                {(lead.activities?.filter(a => a.status === 'PENDING').length || 0) > 0 && (
+                                                    <span 
+                                                        className="flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-red-500 rounded-full shrink-0 animate-pulse" 
+                                                        title={`${lead.activities?.filter(a => a.status === 'PENDING').length} pending task(s)`}
+                                                    >
+                                                        {lead.activities?.filter(a => a.status === 'PENDING').length}
+                                                    </span>
+                                                )}
+                                            </div>
                                             {lead.company_name && (
                                                 <p className="text-xs text-gray-500 font-medium truncate mt-0.5">{lead.company_name}</p>
                                             )}
@@ -787,7 +797,19 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                                         <TableCell className="font-mono text-xs text-gray-500 w-[60px]">
                                             {(currentPage - 1) * pageSize + idx + 1}
                                         </TableCell>
-                                        <TableCell className="font-semibold text-sm text-gray-800">{lead.full_name}</TableCell>
+                                        <TableCell className="font-semibold text-sm text-gray-800">
+                                            <div className="flex items-center gap-2">
+                                                {lead.full_name}
+                                                {(lead.activities?.filter(a => a.status === 'PENDING').length || 0) > 0 && (
+                                                    <span 
+                                                        className="flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-red-500 rounded-full shrink-0 animate-pulse" 
+                                                        title={`${lead.activities?.filter(a => a.status === 'PENDING').length} pending task(s)`}
+                                                    >
+                                                        {lead.activities?.filter(a => a.status === 'PENDING').length}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </TableCell>
                                         <TableCell className="font-mono text-xs text-gray-600">{lead.phone_number}</TableCell>
                                         <TableCell className="text-gray-500 text-xs truncate max-w-[130px]">{lead.company_name || 'N/A'}</TableCell>
                                         <TableCell className="text-xs font-semibold text-gray-600 capitalize">

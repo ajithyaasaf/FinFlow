@@ -236,6 +236,7 @@ export interface Lead {
     last_contacted_at?: string | null;
     created_at: string;
     updated_at: string;
+    activities?: { status: string }[];
 }
 
 export interface BankPartner {

@@ -39,12 +39,13 @@ export default async function AgentLeadsPage() {
         }
     }
 
-    // Fetch leads with assigned_agent relation joined
+    // Fetch leads with assigned_agent relation joined and activities status
     const { data: leads } = await supabase
         .from('leads')
         .select(`
             *,
-            assigned_agent:app_users(id, full_name, email)
+            assigned_agent:app_users(id, full_name, email),
+            activities(status)
         `)
         .order('created_at', { ascending: false })
 

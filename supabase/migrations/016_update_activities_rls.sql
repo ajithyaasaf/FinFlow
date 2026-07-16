@@ -28,6 +28,31 @@ CREATE POLICY "Users and TLs can view relevant activities" ON public.activities
     )
   );
 
+-- 1.b Combined policy for UPDATE:
+DROP POLICY IF EXISTS "TLs can update team activities" ON public.activities;
+DROP POLICY IF EXISTS "Users and TLs can update relevant activities" ON public.activities;
+
+CREATE POLICY "Users and TLs can update relevant activities" ON public.activities
+  FOR UPDATE TO authenticated USING (
+    -- Direct assignment to self or team
+    assigned_agent_id = auth.uid() OR
+    assigned_agent_id IN (SELECT id FROM public.app_users WHERE tl_id = auth.uid())
+    OR
+    -- Lead assignment to self or team
+    related_lead_id IN (
+        SELECT lead_id FROM public.leads WHERE 
+        assigned_agent_id = auth.uid() OR 
+        assigned_agent_id IN (SELECT id FROM public.app_users WHERE tl_id = auth.uid())
+    )
+    OR
+    -- Client assignment to self or team
+    related_client_id IN (
+        SELECT client_id FROM public.clients WHERE 
+        onboarding_agent_id = auth.uid() OR 
+        onboarding_agent_id IN (SELECT id FROM public.app_users WHERE tl_id = auth.uid())
+    )
+  );
+
 -- 2. Give MD and Admin full access to everything (Leads and Activities)
 DROP POLICY IF EXISTS "Admins full access to activities" ON public.activities;
 DROP POLICY IF EXISTS "Admins and MD full access to activities" ON public.activities;

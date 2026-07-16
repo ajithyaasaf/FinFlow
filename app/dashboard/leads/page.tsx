@@ -33,7 +33,8 @@ export default async function LeadsPage() {
     // Build query
     let query = supabase.from('leads').select(`
         *,
-        assigned_agent:app_users(id, full_name, email)
+        assigned_agent:app_users(id, full_name, email),
+        activities(status)
     `)
 
     let agentsQuery = supabase.from('app_users').select('id, full_name, email').eq('status', 'ACTIVE')
