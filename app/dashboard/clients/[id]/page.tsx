@@ -215,10 +215,14 @@ export default function ClientDetailPage() {
                                 <InfoItem icon={Mail} label="Email" value={client.email} />
                                 <InfoItem icon={CreditCard} label="PAN" value={client.pan_number} />
                                 <InfoItem icon={FileText} label="Aadhaar" value={client.aadhaar_number} />
-                                <InfoItem icon={MapPin} label="Address" value={client.address} />
+                                <InfoItem icon={MapPin} label="Address" value={
+                                    [client.address, client.city, client.state, client.zip_code].filter(Boolean).join(', ')
+                                } />
                             </div>
                         </CardContent>
                     </Card>
+
+
 
                     <Card animate-duration-fast>
                         <CardHeader>
@@ -273,6 +277,20 @@ export default function ClientDetailPage() {
 
                 {/* Right Column - Loans */}
                 <div className="md:col-span-2 space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Business & Property Info</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <InfoItem icon={User} label="Company Name" value={client.company_name} />
+                            <InfoItem icon={FileText} label="Constitution" value={client.constitution} />
+                            <InfoItem icon={FileText} label="Industry / Nature" value={[client.industry_type, client.nature_of_business].filter(Boolean).join(' - ')} />
+                            <InfoItem icon={MapPin} label="Property Details" value={client.property_details} />
+                            <InfoItem icon={User} label="Ownership" value={client.ownership_type} />
+                            <InfoItem icon={FileText} label="IT Returns" value={client.regular_it} />
+                        </CardContent>
+                    </Card>
+
                     <LoansSection loans={loans} clientId={client.client_id} />
                 </div>
             </div>

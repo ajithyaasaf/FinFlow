@@ -44,6 +44,19 @@ export interface Client {
     pan_number?: string;
     kyc_document_url: string | null;
     onboarding_agent_id: string;
+    company_name?: string | null;
+    email?: string | null;
+    constitution?: string | null;
+    industry_type?: string | null;
+    nature_of_business?: string | null;
+    property_details?: string | null;
+    ownership_type?: string | null;
+    regular_it?: string | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip_code?: string | null;
+    branch?: string | null;
     created_at: string;
 }
 

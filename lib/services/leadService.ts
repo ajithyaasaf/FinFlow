@@ -145,6 +145,19 @@ export async function promoteLeadToClient(leadId: string): Promise<Client | null
         onboarding_agent_id: lead.assigned_agent_id || user.id, // Fallback if no agent is assigned
         pan_number: null,
         kyc_document_url: null,
+        company_name: lead.company_name,
+        email: lead.email,
+        constitution: lead.constitution,
+        industry_type: lead.industry_type,
+        nature_of_business: lead.nature_of_business,
+        property_details: lead.property_details,
+        ownership_type: lead.ownership_type,
+        regular_it: lead.regular_it,
+        address: lead.address,
+        city: lead.city,
+        state: lead.state,
+        zip_code: lead.zip_code,
+        branch: lead.branch
     }
 
     const { data: client, error: clientError } = await supabase

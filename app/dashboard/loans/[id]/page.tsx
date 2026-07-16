@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { ActivityTimeline } from '@/components/dashboard/activity-timeline'
-import { DocumentList } from '@/components/dashboard/document-list'
+
 import { createClient } from '@/lib/supabase/server'
 import { STAGE_COLORS } from '@/lib/services/loginsConstants'
 
@@ -161,6 +161,44 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                         </CardContent>
                     </Card>
 
+                    {/* Business & Property Info Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <MapPin className="h-5 w-5 text-gray-500" />
+                                Business & Property Info
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">Company Name</label>
+                                    <p className="text-sm font-medium">{loan.client?.company_name || '-'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">Constitution</label>
+                                    <p className="text-sm">{loan.client?.constitution || '-'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">Industry / Nature</label>
+                                    <p className="text-sm">{[loan.client?.industry_type, loan.client?.nature_of_business].filter(Boolean).join(' - ') || '-'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">Property Details</label>
+                                    <p className="text-sm">{loan.client?.property_details || '-'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">Ownership</label>
+                                    <p className="text-sm">{loan.client?.ownership_type || '-'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-500 uppercase font-semibold">IT Returns</label>
+                                    <p className="text-sm">{loan.client?.regular_it || '-'}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {/* Loan Terms Card */}
                     <Card>
                         <CardHeader>
@@ -190,16 +228,7 @@ export default async function LoanDetailsPage({ params }: PageProps) {
 
                 {/* Right Column - Documents & Actions */}
                 <div className="space-y-6">
-                    {/* Documents Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Documents</CardTitle>
-                            <CardDescription>Verify client documents</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <DocumentList documents={loan.documents} />
-                        </CardContent>
-                    </Card>
+
 
                     {/* Verification Checklist */}
                     <Card>
