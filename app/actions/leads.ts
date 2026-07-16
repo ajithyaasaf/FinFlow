@@ -23,7 +23,7 @@ export async function createLeadAction(leadData: Partial<Lead>) {
         })
 
         revalidatePath('/dashboard/leads')
-        revalidatePath('/agent/leads')
+        revalidatePath('/staff/leads')
         return { success: true, lead }
     } catch (error: any) {
         return { success: false, error: error.message || 'Failed to create lead' }
@@ -47,7 +47,7 @@ export async function updateLeadStatusAction(leadId: string, status: LeadStatus)
         })
 
         revalidatePath('/dashboard/leads')
-        revalidatePath('/agent/leads')
+        revalidatePath('/staff/leads')
         return { success: true, lead }
     } catch (error: any) {
         return { success: false, error: error.message || 'Failed to update lead status' }
@@ -73,7 +73,7 @@ export async function promoteLeadToClientAction(leadId: string) {
 
         revalidatePath('/dashboard/leads')
         revalidatePath('/dashboard/clients')
-        revalidatePath('/agent/leads')
+        revalidatePath('/staff/leads')
         return { success: true, clientId: client.client_id }
     } catch (error: any) {
         return { success: false, error: error.message || 'Failed to convert lead to client' }
@@ -106,7 +106,7 @@ export async function bulkUpdateLeadStatusAction(leadIds: string[], status: Lead
         })
 
         revalidatePath('/dashboard/leads')
-        revalidatePath('/agent/leads')
+        revalidatePath('/staff/leads')
         return { success: true, count: updatedLeads.length }
     } catch (error: any) {
         return { success: false, error: error.message || 'Failed to bulk update status' }
@@ -130,7 +130,7 @@ export async function bulkAssignAgentAction(leadIds: string[], agentId: string |
         })
 
         revalidatePath('/dashboard/leads')
-        revalidatePath('/agent/leads')
+        revalidatePath('/staff/leads')
         return { success: true, count: updatedLeads.length }
     } catch (error: any) {
         return { success: false, error: error.message || 'Failed to bulk assign agent' }
