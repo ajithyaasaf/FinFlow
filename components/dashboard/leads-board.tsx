@@ -1235,11 +1235,18 @@ export function LeadsBoard({ initialLeads, agents }: LeadsBoardProps) {
                                                     <p className="text-gray-600 pl-5 text-[11px] leading-relaxed">{act.description}</p>
                                                 )}
                                                 <div className="flex items-center justify-between text-[10px] text-gray-400 mt-1 border-t pt-1.5 pl-5">
-                                                    <span>
-                                                        Logged: {new Date(act.created_at).toLocaleString()}
-                                                        {act.assigned_agent?.full_name && ` by ${act.assigned_agent.full_name}`}
-                                                    </span>
-                                                    {act.due_date && (
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span>
+                                                            Logged: {new Date(act.created_at).toLocaleString()}
+                                                            {act.assigned_agent?.full_name && ` by ${act.assigned_agent.full_name}`}
+                                                        </span>
+                                                        {act.status !== 'PENDING' && act.completed_by && act.completed_at && (
+                                                            <span className="text-gray-500 font-medium italic">
+                                                                {act.status === 'COMPLETED' ? 'Completed' : 'Cancelled'}: {new Date(act.completed_at).toLocaleString()} by {act.completed_by.full_name}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {act.due_date && act.status === 'PENDING' && (
                                                         <span className="font-semibold text-amber-600">
                                                             Due: {new Date(act.due_date).toLocaleString()}
                                                         </span>

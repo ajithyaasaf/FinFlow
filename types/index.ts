@@ -263,6 +263,9 @@ export interface Activity {
     related_client_id: string | null;
     assigned_agent_id: string | null;
     assigned_agent?: { id: string; full_name: string; email: string } | null;
+    completed_by_id?: string | null;
+    completed_at?: string | null;
+    completed_by?: { id: string; full_name: string } | null;
     related_lead?: { lead_id: string; full_name: string; phone_number: string | null } | null;
     related_client?: { client_id: string; full_name: string; mobile_number: string | null } | null;
     created_at: string;

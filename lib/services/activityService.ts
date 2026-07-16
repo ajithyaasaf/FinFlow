@@ -18,7 +18,8 @@ export async function getActivities() {
 
     let query = supabase.from('activities').select(`
         *,
-        assigned_agent:app_users(id, full_name, email),
+        assigned_agent:app_users!activities_assigned_agent_id_fkey(id, full_name, email),
+        completed_by:app_users!activities_completed_by_id_fkey(id, full_name),
         related_lead:leads(lead_id, full_name, phone_number),
         related_client:clients(client_id, full_name, mobile_number)
     `)
@@ -58,7 +59,7 @@ export async function createActivity(activityData: Partial<Activity>) {
         .insert([finalActivityData])
         .select(`
             *,
-            assigned_agent:app_users(id, full_name, email)
+            assigned_agent:app_users!activities_assigned_agent_id_fkey(id, full_name, email)
         `)
         .single()
 
@@ -72,12 +73,30 @@ export async function createActivity(activityData: Partial<Activity>) {
 
 export async function updateActivityStatus(activityId: string, status: ActivityStatus) {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const updateData: any = { 
+        status, 
+        updated_at: new Date().toISOString() 
+    }
+
+    if (status === 'COMPLETED' || status === 'CANCELLED') {
+        updateData.completed_by_id = user?.id || null
+        updateData.completed_at = new Date().toISOString()
+    } else {
+        updateData.completed_by_id = null
+        updateData.completed_at = null
+    }
 
     const { data, error } = await supabase
         .from('activities')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('activity_id', activityId)
-        .select()
+        .select(`
+            *,
+            assigned_agent:app_users!activities_assigned_agent_id_fkey(id, full_name, email),
+            completed_by:app_users!activities_completed_by_id_fkey(id, full_name)
+        `)
         .single()
 
     if (error) {

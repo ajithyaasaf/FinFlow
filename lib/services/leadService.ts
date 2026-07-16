@@ -53,7 +53,8 @@ export async function getLeadDetails(leadId: string) {
             .from('activities')
             .select(`
                 *,
-                assigned_agent:app_users(id, full_name, email)
+                assigned_agent:app_users!activities_assigned_agent_id_fkey(id, full_name, email),
+                completed_by:app_users!activities_completed_by_id_fkey(id, full_name)
             `)
             .eq('related_lead_id', leadId)
             .order('created_at', { ascending: false })
