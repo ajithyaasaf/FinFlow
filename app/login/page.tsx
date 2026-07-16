@@ -166,7 +166,7 @@ export default function LoginPage() {
                         <div className="text-[11px] text-[#6a6a6a] leading-relaxed">
                             <p><span className="font-semibold text-gray-700">MD:</span> md@finflow.com / password123</p>
                             <p><span className="font-semibold text-gray-700">Admin:</span> admin@finflow.com / password123</p>
-                            <p><span className="font-semibold text-gray-700">Staff:</span> staff01 / password123</p>
+                            <p><span className="font-semibold text-gray-700">Staff:</span> durga / 12345678</p>
                         </div>
                     </div>
                 </div>
