@@ -71,11 +71,6 @@ export default async function LeadsPage() {
     const leads = leadsRes.data || []
     const agents = agentsRes.data || []
 
-    console.log('[DEBUG] profile:', profile)
-    console.log('[DEBUG] agents fetched:', agents)
-    console.log('[DEBUG] leadsRes error:', leadsRes.error)
-    console.log('[DEBUG] agentsRes error:', agentsRes.error)
-
     return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-6">
             <div>

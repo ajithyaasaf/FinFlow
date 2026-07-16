@@ -68,8 +68,7 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
         return Object.keys(newErrors).length === 0
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+    const handleSubmit = async () => {
 
         if (!validateForm()) {
             setActiveTab('personal') // Switch back to personal if validation failed
@@ -179,7 +178,7 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-6">
                     {/* Tab 1: Personal & Contact */}
                     {activeTab === 'personal' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -471,13 +470,13 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                                 Next Step
                             </Button>
                         ) : (
-                            <Button type="submit" disabled={loading} className="px-6">
+                            <Button type="button" onClick={handleSubmit} disabled={loading} className="px-6">
                                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {loading ? 'Creating...' : 'Save Lead'}
                             </Button>
                         )}
                     </DialogFooter>
-                </form>
+                </div>
             </DialogContent>
         </Dialog>
     )
