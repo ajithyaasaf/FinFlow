@@ -18,6 +18,7 @@ interface StaffEditModalProps {
     currentMobile: string
     currentEmail: string
     currentTlId?: string | null
+    currentIsTl?: boolean
     allPossibleTls: { id: string; full_name: string; role: string; is_tl?: boolean }[]
 }
 
@@ -29,6 +30,7 @@ export function StaffEditModal({
     currentMobile, 
     currentEmail,
     currentTlId = null,
+    currentIsTl = false,
     allPossibleTls
 }: StaffEditModalProps) {
     const router = useRouter()
@@ -187,13 +189,14 @@ export function StaffEditModal({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="edit_tl_id">Assigned Team Leader (TL)</Label>
+                            <Label htmlFor="edit_tl_id" className={currentIsTl ? "text-gray-400" : ""}>Assigned Team Leader (TL)</Label>
                             <Select
                                 value={formData.tl_id}
                                 onValueChange={(val) => setFormData(prev => ({ ...prev, tl_id: val }))}
+                                disabled={currentIsTl}
                             >
-                                <SelectTrigger id="edit_tl_id">
-                                    <SelectValue placeholder="Select Team Leader" />
+                                <SelectTrigger id="edit_tl_id" className={currentIsTl ? "bg-gray-100/80 border-gray-200 text-gray-400 cursor-not-allowed" : ""}>
+                                    <SelectValue placeholder={currentIsTl ? "Not applicable (User is a TL)" : "Select Team Leader"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">None / No TL</SelectItem>

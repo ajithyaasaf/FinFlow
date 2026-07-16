@@ -57,6 +57,12 @@ export function StaffActions({
     const [isTl, setIsTl] = useState<boolean>(currentIsTl)
     const [toggling, setToggling] = useState(false)
     const [togglingTl, setTogglingTl] = useState(false)
+    const [confirmTlOpen, setConfirmTlOpen] = useState(false)
+    const [pendingTlState, setPendingTlState] = useState<boolean | null>(null)
+
+    const currentTlName = currentTlId
+        ? allPossibleTls.find(t => t.id === currentTlId)?.full_name
+        : null
 
     const handleToggleStatus = async (checked: boolean) => {
         const newStatus = checked ? 'ACTIVE' : 'INACTIVE'
@@ -90,7 +96,7 @@ export function StaffActions({
         }
     }
 
-    const handleToggleTl = async (checked: boolean) => {
+    const executeToggleTl = async (checked: boolean) => {
         setTogglingTl(true)
         const oldIsTl = isTl
         setIsTl(checked)
@@ -118,6 +124,21 @@ export function StaffActions({
             setIsTl(oldIsTl)
         } finally {
             setTogglingTl(false)
+        }
+    }
+
+    const handleToggleTlClick = (checked: boolean) => {
+        if (checked && currentTlId) {
+            // Case 1: Toggling ON but they have an assigned TL
+            setPendingTlState(true)
+            setConfirmTlOpen(true)
+        } else if (!checked) {
+            // Case 2: Toggling OFF
+            setPendingTlState(false)
+            setConfirmTlOpen(true)
+        } else {
+            // Normal case: no warnings needed
+            executeToggleTl(checked)
         }
     }
 
@@ -160,7 +181,7 @@ export function StaffActions({
                 </span>
                 <Switch
                     checked={isTl}
-                    onCheckedChange={handleToggleTl}
+                    onCheckedChange={handleToggleTlClick}
                     disabled={togglingTl}
                 />
             </div>
@@ -210,6 +231,7 @@ export function StaffActions({
                 currentMobile={currentMobile}
                 currentEmail={currentEmail}
                 currentTlId={currentTlId}
+                currentIsTl={isTl}
                 allPossibleTls={allPossibleTls}
             />
 
@@ -231,6 +253,47 @@ export function StaffActions({
                         >
                             {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {deleting ? 'Deleting...' : 'Delete'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={confirmTlOpen} onOpenChange={setConfirmTlOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {pendingTlState === true ? 'Designate as Team Leader?' : 'Remove Team Leader Status?'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {pendingTlState === true ? (
+                                <>
+                                    <strong>{staffName}</strong> is currently assigned to Team Leader <strong>{currentTlName}</strong>. 
+                                    Making her a Team Leader will automatically remove her from {currentTlName}&apos;s team. Do you want to proceed?
+                                </>
+                            ) : (
+                                <>
+                                    Removing <strong>{staffName}</strong>&apos;s Team Leader status will unassign any staff members currently reporting to her. Do you want to proceed?
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => {
+                            setConfirmTlOpen(false)
+                            setPendingTlState(null)
+                        }}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (pendingTlState !== null) {
+                                    executeToggleTl(pendingTlState)
+                                }
+                                setConfirmTlOpen(false)
+                                setPendingTlState(null)
+                            }}
+                        >
+                            Confirm
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
