@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, Users, Calendar } from 'lucide-react'
+import { TrendingUp, Users, Calendar, CheckCircle, XCircle, Target } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ReportsFilter } from '@/components/dashboard/reports-filter'
+import { formatCurrency } from '@/lib/utils'
 import Loading from './loading'
 
 function calculateGrowth(current: number, previous: number): { value: number; positive: boolean } {
@@ -201,11 +202,131 @@ function ReportsPageContent() {
                     </Card>
                 </div>
             </div>
+
+            {/* Top-Up Conversion Analytics */}
+            <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Top-Up Loan Performance
+                </h2>
+                <TopUpConversionReportClient from={from} to={to} />
+            </div>
         </div>
     )
 }
 
 import { Suspense } from 'react'
+
+/**
+ * Client-side Top-Up Conversion report widget for the Reports page.
+ * Fetches topup_offers data directly from the browser to avoid making the
+ * reports page a server component (it's already 'use client').
+ */
+function TopUpConversionReportClient({ from, to }: { from: string; to: string }) {
+    const [data, setData] = useState<{
+        total: number
+        accepted: number
+        rejected: number
+        pending: number
+        totalOfferedAmount: number
+        acceptedAmount: number
+    } | null>(null)
+
+    useEffect(() => {
+        async function fetch() {
+            const supabase = createClient()
+            const now = new Date()
+            const fromDate = from ? new Date(from) : new Date(now.getFullYear(), now.getMonth(), 1)
+            const toDate = to ? new Date(to) : now
+
+            const { data: offers } = await supabase
+                .from('topup_offers')
+                .select('offer_id, offered_amount, status')
+                .gte('offered_at', fromDate.toISOString())
+                .lte('offered_at', toDate.toISOString())
+
+            if (!offers) return
+
+            const accepted = offers.filter(o => o.status === 'ACCEPTED')
+            setData({
+                total: offers.length,
+                accepted: accepted.length,
+                rejected: offers.filter(o => o.status === 'REJECTED').length,
+                pending: offers.filter(o => o.status === 'PENDING').length,
+                totalOfferedAmount: offers.reduce((s, o) => s + o.offered_amount, 0),
+                acceptedAmount: accepted.reduce((s, o) => s + o.offered_amount, 0),
+            })
+        }
+        fetch()
+    }, [from, to])
+
+    if (!data) return <Card><CardContent className="py-8 text-center text-sm text-gray-400">Loading top-up data...</CardContent></Card>
+
+    const conversionRate = data.total > 0 ? (data.accepted / data.total) * 100 : 0
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-purple-600" />
+                    Top-Up Loan Conversion
+                </CardTitle>
+                <CardDescription>Offers generated and converted in the selected period</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-primary/5 p-4 rounded-lg">
+                        <p className="text-xs text-primary uppercase mb-1">Total Offers</p>
+                        <p className="text-2xl font-bold text-gray-900">{data.total}</p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                        <div className="flex items-center gap-1 mb-1">
+                            <CheckCircle className="h-3 w-3 text-green-600" />
+                            <p className="text-xs text-green-600 uppercase">Converted</p>
+                        </div>
+                        <p className="text-2xl font-bold text-green-900">{data.accepted}</p>
+                    </div>
+                    <div className="bg-red-50 p-4 rounded-lg">
+                        <div className="flex items-center gap-1 mb-1">
+                            <XCircle className="h-3 w-3 text-red-600" />
+                            <p className="text-xs text-red-600 uppercase">Rejected</p>
+                        </div>
+                        <p className="text-2xl font-bold text-red-900">{data.rejected}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-600 uppercase mb-1">Pending</p>
+                        <p className="text-2xl font-bold text-gray-900">{data.pending}</p>
+                    </div>
+                </div>
+
+                <div className="border-t pt-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Conversion Rate</span>
+                        <Badge variant={conversionRate >= 50 ? 'default' : conversionRate >= 30 ? 'secondary' : 'outline'}>
+                            {conversionRate.toFixed(1)}%
+                        </Badge>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                            className="bg-purple-600 h-2 rounded-full transition-all"
+                            style={{ width: `${Math.min(conversionRate, 100)}%` }}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase mb-1">Total Offered</p>
+                            <p className="text-lg font-semibold">{formatCurrency(data.totalOfferedAmount)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase mb-1">Accepted Value</p>
+                            <p className="text-lg font-semibold text-green-600">{formatCurrency(data.acceptedAmount)}</p>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function ReportsPage() {
     return (

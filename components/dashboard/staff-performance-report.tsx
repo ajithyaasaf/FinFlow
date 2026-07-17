@@ -61,25 +61,13 @@ export async function StaffPerformanceReport({ from, to }: StaffPerformanceRepor
 
         const totalAmount = loans?.reduce((sum, loan) => sum + loan.amount, 0) || 0
 
-        // Get payments collected for this staff's clients
-        const { data: payments } = await supabase
-            .from('payments')
-            .select('amount, collected_by')
-            .eq('collected_by', member.id)
-            .gte('payment_date', fromDate)
-            .lte('payment_date', toDate)
-
-        const paymentsCollected = payments?.reduce((sum, p) => sum + p.amount, 0) || 0
-
-        const collectionRate = totalAmount > 0 ? (paymentsCollected / totalAmount) * 100 : 0
-
         staffStats.push({
             staff_id: member.id,
             staff_name: member.full_name,
             loans_disbursed: loansCount || 0,
             total_amount: totalAmount,
-            payments_collected: paymentsCollected,
-            collection_rate: collectionRate
+            payments_collected: 0,
+            collection_rate: 0
         })
     }
 
@@ -106,14 +94,14 @@ export async function StaffPerformanceReport({ from, to }: StaffPerformanceRepor
                                     <div>
                                         <p className="font-semibold text-sm">{member.staff_name}</p>
                                         <p className="text-xs text-gray-500">
-                                            {member.loans_disbursed} loan{member.loans_disbursed !== 1 ? 's' : ''} • {formatCurrency(member.total_amount)}
+                                            {member.loans_disbursed} loan{member.loans_disbursed !== 1 ? 's' : ''} active
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-semibold">{formatCurrency(member.payments_collected)}</p>
-                                    <Badge variant={member.collection_rate >= 80 ? 'default' : 'secondary'} className="text-xs">
-                                        {member.collection_rate.toFixed(0)}% collected
+                                    <p className="text-sm font-semibold">{formatCurrency(member.total_amount)}</p>
+                                    <Badge variant="outline" className="text-xs">
+                                        Total disbursed
                                     </Badge>
                                 </div>
                             </div>

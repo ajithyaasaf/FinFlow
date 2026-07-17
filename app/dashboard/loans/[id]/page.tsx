@@ -111,14 +111,7 @@ export default async function LoanDetailsPage({ params }: PageProps) {
                         tenure={loan.tenure}
                         agentId={loan.client?.onboarding_agent_id}
                     />
-                    {loan.process_stage === 'Disbursed' && (
-                        <Link href={`/dashboard/loans/${loan.loan_id}/payments`}>
-                            <Button variant="outline" className="gap-2">
-                                <CreditCard className="h-4 w-4" />
-                                Manage Payments
-                            </Button>
-                        </Link>
-                    )}
+
                 </div>
             </div>
 

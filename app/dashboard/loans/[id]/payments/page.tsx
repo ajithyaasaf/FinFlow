@@ -26,55 +26,10 @@ export default function LoanPaymentsPage() {
     const [payments, setPayments] = useState<Payment[]>([])
 
     useEffect(() => {
-        if (!id) return
-
-        async function loadData() {
-            setLoading(true)
-            try {
-                const supabase = createClient()
-
-                // Get loan details
-                const { data: loanData, error: loanError } = await supabase
-                    .from('loan_applications')
-                    .select(`
-                        *,
-                        client:clients(*)
-                    `)
-                    .eq('loan_id', id)
-                    .single()
-
-                if (loanError || !loanData) {
-                    setLoan(null)
-                    setLoading(false)
-                    return
-                }
-
-                // Get EMI schedule and payment history in parallel
-                const [scheduleRes, paymentsRes] = await Promise.all([
-                    supabase
-                        .from('emi_schedule')
-                        .select('*')
-                        .eq('loan_id', id)
-                        .order('emi_number', { ascending: true }),
-                    supabase
-                        .from('payments')
-                        .select('*')
-                        .eq('loan_id', id)
-                        .order('payment_date', { ascending: false })
-                ])
-
-                setLoan(loanData)
-                setSchedule(scheduleRes.data || [])
-                setPayments(paymentsRes.data || [])
-            } catch (err) {
-                console.error('Failed to load payments details:', err)
-            } finally {
-                setLoading(false)
-            }
+        if (id) {
+            router.replace(`/dashboard/loans/${id}`)
         }
-
-        loadData()
-    }, [id])
+    }, [id, router])
 
     if (loading) {
         return (

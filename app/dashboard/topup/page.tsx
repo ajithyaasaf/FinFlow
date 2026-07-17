@@ -133,7 +133,6 @@ export default async function TopUpListPage() {
                                                 <div>
                                                     <p className="font-semibold text-sm md:text-base">{client?.full_name}</p>
                                                     <p className="text-xs md:text-sm text-gray-500">
-                                                        Offered: {formatCurrency(offer.offered_amount)} •
                                                         Original: {formatCurrency(loan?.amount || 0)}
                                                     </p>
                                                 </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -18,20 +18,35 @@ import { formatCurrency } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { REGIONS } from '@/lib/services/loginsConstants'
 
+interface TopupContext {
+    clientId: string
+    topupOfferId: string
+    maxAmount: string
+    disbursementType: string
+    originalLoanId: string
+}
+
 interface CreateLoanFormProps {
     clients: Client[]
     partners: BankPartner[]
     allStaff: AppUser[]
+    /** Passed when entering from a top-up offer conversion */
+    topupContext?: TopupContext
 }
 
-export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormProps) {
+export function CreateLoanForm({ clients, partners, allStaff, topupContext }: CreateLoanFormProps) {
     const router = useRouter()
+    const pathname = usePathname()
+    const isStaff = pathname.startsWith('/staff')
     const supabase = createClient()
 
     const [loading, setLoading] = useState(false)
     const [lenderModel, setLenderModel] = useState<'DIRECT' | 'BROKERAGE'>('DIRECT')
+    const isTopUp = !!topupContext?.topupOfferId
+    const maxTopUpAmount = topupContext ? parseFloat(topupContext.maxAmount) : Infinity
+
     const [formData, setFormData] = useState({
-        client_id: '',
+        client_id: topupContext?.clientId || '',
         pan_number: '',
         aadhaar_number: '',
         amount: '',
@@ -43,7 +58,8 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
         original_request_date: '',
         region: 'Madurai',
         assigned_tl_id: '',
-        disbursement_type: 'New',
+        // Lock to 'Repeat' in top-up flow so Logins Hub analytics are correct
+        disbursement_type: topupContext?.disbursementType || 'New',
     })
 
     // Calculate EMI preview
@@ -104,6 +120,7 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
                 interest_rate: rate,
                 tenure: tenure,
                 process_stage: 'Application Submitted',
+                disbursement_type: formData.disbursement_type,
             }
 
             if (lenderModel === 'BROKERAGE') {
@@ -139,7 +156,10 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
             if (error) throw error
 
             toast.success('Loan application created successfully!')
-            router.push(`/dashboard/loans/${loan.loan_id}`)
+            const nextUrl = isStaff
+                ? `/staff/loans/${loan.loan_id}`
+                : `/dashboard/loans/${loan.loan_id}`
+            router.push(nextUrl)
         } catch (error) {
             console.error('Create loan error:', error)
             toast.error('Failed to create loan application')
@@ -426,7 +446,7 @@ export function CreateLoanForm({ clients, partners, allStaff }: CreateLoanFormPr
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {loading ? 'Creating...' : 'Create Loan Application'}
                 </Button>
-                <Link href="/dashboard/loans">
+                <Link href={isStaff ? (isTopUp ? '/staff/topup' : '/staff/clients') : '/dashboard/loans'}>
                     <Button type="button" variant="outline" disabled={loading}>
                         Cancel
                     </Button>

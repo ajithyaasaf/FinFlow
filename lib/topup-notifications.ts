@@ -26,7 +26,7 @@ export function generateWhatsAppLink(
 
 Great news from FinFlow!
 
-Based on your excellent payment history, you're now eligible for an additional top-up loan of ₹${amount.toLocaleString('en-IN')}.
+Based on your active relationship of more than 12 months, you're now eligible to apply for a top-up loan on your active account.
 
 ✅ Benefits:
 • No new KYC required
@@ -69,7 +69,7 @@ export function generateTopUpEmailHTML(
           <tr>
             <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
               <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 Congratulations!</h1>
-              <p style="color: #ffffff; margin: 10px 0 0; font-size: 16px; opacity: 0.9;">You're Pre-Approved for a Top-Up Loan</p>
+              <p style="color: #ffffff; margin: 10px 0 0; font-size: 16px; opacity: 0.9;">You're Eligible for a Top-Up Loan</p>
             </td>
           </tr>
 
@@ -80,12 +80,12 @@ export function generateTopUpEmailHTML(
             </td>
           </tr>
 
-          <!-- Amount Card -->
+          <!-- Status Card -->
           <tr>
             <td style="padding: 0 30px 20px;">
               <div style="background: #f0f9ff; border-left: 4px solid #667eea; padding: 20px; border-radius: 8px;">
-                <p style="margin: 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Your Top-Up Amount</p>
-                <h2 style="margin: 10px 0 0; color: #667eea; font-size: 36px;">₹${offer.offered_amount.toLocaleString('en-IN')}</h2>
+                <p style="margin: 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Eligibility Status</p>
+                <h2 style="margin: 10px 0 0; color: #667eea; font-size: 24px;">Pre-Approved</h2>
               </div>
             </td>
           </tr>
@@ -95,10 +95,8 @@ export function generateTopUpEmailHTML(
             <td style="padding: 0 30px 20px; color: #333;">
               <h3 style="color: #667eea; font-size: 18px; margin: 0 0 15px;">Why You're Eligible:</h3>
               <ul style="margin: 0; padding-left: 20px; color: #666;">
-                <li style="margin-bottom: 8px;">✅ Excellent payment record (${offer.eligibility_details.emisPaid} EMIs paid on time)</li>
-                <li style="margin-bottom: 8px;">✅ ${offer.eligibility_details.repaidPercentage.toFixed(1)}% principal repaid</li>
-                <li style="margin-bottom: 8px;">✅ No due payments</li>
-                <li style="margin-bottom: 8px;">✅ Strong repayment history</li>
+                <li style="margin-bottom: 8px;">✅ Active relationship of more than 12 months</li>
+                <li style="margin-bottom: 8px;">✅ Pre-approved top-up candidate</li>
               </ul>
             </td>
           </tr>
@@ -185,15 +183,11 @@ export function generateTopUpEmailText(
     return `
 Congratulations ${client.full_name}!
 
-You're Pre-Approved for a Top-Up Loan
-
-YOUR TOP-UP AMOUNT: ₹${offer.offered_amount.toLocaleString('en-IN')}
+You're Eligible for a Top-Up Loan
 
 WHY YOU'RE ELIGIBLE:
-✓ Excellent payment record (${offer.eligibility_details.emisPaid} EMIs paid on time)
-✓ ${offer.eligibility_details.repaidPercentage.toFixed(1)}% principal repaid
-✓ No due payments
-✓ Strong repayment history
+✓ Active relationship of more than 12 months
+✓ Pre-approved top-up candidate
 
 BENEFITS:
 • No new KYC documents needed

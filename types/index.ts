@@ -41,7 +41,8 @@ export interface Client {
     client_id: string;
     full_name: string;
     mobile_number: string;
-    pan_number?: string;
+    pan_number?: string | null;
+    aadhaar_number?: string | null;
     kyc_document_url: string | null;
     onboarding_agent_id: string;
     company_name?: string | null;
@@ -186,10 +187,13 @@ export interface TopUpOffer {
     client_id: string
     offered_amount: number
     eligibility_details: {
-        emisPaid: number
-        missedPayments: number
-        principalRepaid: number
-        repaidPercentage: number
+        emisPaid?: number
+        missedPayments?: number
+        principalRepaid?: number
+        repaidPercentage?: number
+        monthsActive?: number
+        originalAmount?: number
+        disbursedDate?: string
     }
     status: TopUpOfferStatus
     offered_at: string

@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Loading from './loading'
+import { TopUpOpportunitiesWidget } from '@/components/dashboard/topup-opportunities-widget'
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true)
@@ -131,36 +132,9 @@ export default function DashboardPage() {
                 </Link>
             </div>
 
-            {/* EMI Payment Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-                <Card className={stats.overdueEMIs > 0 ? "border-red-300 bg-red-50" : ""}>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600">
-                            Overdue EMIs
-                        </CardTitle>
-                        <AlertCircle className={`h-4 w-4 ${stats.overdueEMIs > 0 ? 'text-red-500' : 'text-gray-400'}`} />
-                    </CardHeader>
-                    <CardContent>
-                        <p className={`text-3xl font-bold ${stats.overdueEMIs > 0 ? 'text-red-600' : ''}`}>
-                            {stats.overdueEMIs}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">Requires collection follow-up</p>
-                    </CardContent>
-                </Card>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-600">
-                            Upcoming Payments (7 days)
-                        </CardTitle>
-                        <CreditCard className="h-4 w-4 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold text-primary">{stats.upcomingPayments}</p>
-                        <p className="text-xs text-gray-500 mt-1">EMIs due this week</p>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* Top-Up Opportunities */}
+            <TopUpOpportunitiesWidget />
 
         </div>
     )

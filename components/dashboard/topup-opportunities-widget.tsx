@@ -23,8 +23,11 @@ interface TopUpOpportunity {
         amount: number
     }
     eligibility_details: {
-        emisPaid: number
-        repaidPercentage: number
+        emisPaid?: number
+        repaidPercentage?: number
+        monthsActive?: number
+        disbursedDate?: string
+        originalAmount?: number
     }
 }
 
@@ -114,18 +117,16 @@ export function TopUpOpportunitiesWidget() {
                                         <p className="font-semibold text-sm">{client?.full_name || 'Client'}</p>
                                         <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
                                             <span>Original: {formatCurrency(loan?.amount || 0)}</span>
-                                            <span>•</span>
-                                            <span className="text-green-600 font-medium">
-                                                Top-up: {formatCurrency(opp.offered_amount)}
-                                            </span>
                                         </div>
                                         <div className="flex items-center gap-2 mt-1">
                                             <Badge variant="outline" className="text-xs">
-                                                {opp.eligibility_details.emisPaid} EMIs Paid
+                                                {opp.eligibility_details.monthsActive} Months Active
                                             </Badge>
-                                            <Badge variant="outline" className="text-xs">
-                                                {opp.eligibility_details.repaidPercentage.toFixed(0)}% Repaid
-                                            </Badge>
+                                            {opp.eligibility_details.disbursedDate && (
+                                                <Badge variant="outline" className="text-xs">
+                                                    Disbursed: {new Date(opp.eligibility_details.disbursedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </Badge>
+                                            )}
                                         </div>
                                     </div>
 

@@ -27,6 +27,7 @@ const staffNavItems = [
     { href: '/staff/leads', label: 'Leads Hub', icon: Flame },
     { href: '/staff/clients', label: 'Clients', icon: Users },
     { href: '/staff/loans', label: 'Loan Applications', icon: CreditCard },
+    { href: '/staff/topup', label: 'Top-Up Leads', icon: TrendingUp },
     { href: '/staff/attendance', label: 'Mark Attendance', icon: Camera },
     { href: '/staff/calendar', label: 'My Calendar', icon: Calendar },
     { href: '/staff/wiki', label: 'Policy Handbook', icon: BookOpen },

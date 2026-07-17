@@ -15,27 +15,37 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { CheckCircle, X, Loader2 } from 'lucide-react'
+import { CheckCircle, X, Loader2, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface TopUpActionsProps {
     offerId: string
     clientName: string
     amount: number
+    clientId: string
     loanId: string
+    userRole?: string
 }
 
-export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActionsProps) {
+export function TopUpActions({ offerId, clientName, amount, clientId, loanId, userRole = 'STAFF' }: TopUpActionsProps) {
     const router = useRouter()
     const supabase = createClient()
 
     const [loading, setLoading] = useState(false)
-    const [showApproveDialog, setShowApproveDialog] = useState(false)
+    const [showConvertDialog, setShowConvertDialog] = useState(false)
     const [showRejectDialog, setShowRejectDialog] = useState(false)
     const [rejectionReason, setRejectionReason] = useState('')
 
-    // Handle Approve Top-Up
-    const handleApprove = async () => {
+    /**
+     * Gap 5 Fix: "Convert to Loan" handoff.
+     * Instead of silently creating a loan in the background, we:
+     * 1. Mark the offer as ACCEPTED (so it disappears from the pending list)
+     * 2. Redirect the agent to the standard CreateLoan page with pre-filled URL params
+     *    so they can review the amount, tenure, and rate before submitting.
+     * Gap 6 Fix: The redirect URL includes disbursement_type=Repeat so the form
+     *    is pre-locked to "Repeat (Top-Up)" and the Logins Hub analytics are correct.
+     */
+    const handleConvert = async () => {
         setLoading(true)
         try {
             const { error } = await supabase
@@ -43,51 +53,37 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
                 .update({
                     status: 'ACCEPTED',
                     accepted_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
+                    updated_at: new Date().toISOString(),
                 })
                 .eq('offer_id', offerId)
 
             if (error) throw error
 
-            // Create a new loan application for the top-up
-            const { data: originalLoan } = await supabase
-                .from('loan_applications')
-                .select('client_id, interest_rate, tenure')
-                .eq('loan_id', loanId)
-                .single()
+            toast.success('Offer accepted! Redirecting to loan creation form...')
+            setShowConvertDialog(false)
 
-            if (originalLoan) {
-                const { error: loanError } = await supabase
-                    .from('loan_applications')
-                    .insert({
-                        client_id: originalLoan.client_id,
-                        amount: amount,
-                        interest_rate: originalLoan.interest_rate,
-                        tenure: originalLoan.tenure,
-                        process_stage: 'Application Submitted',
-                        original_amount: amount,
-                        original_rate: originalLoan.interest_rate,
-                        original_tenure: originalLoan.tenure
-                    })
-
-                if (loanError) {
-                    console.error('Error creating top-up loan:', loanError)
-                }
-            }
-
-            toast.success('Top-up offer approved! New loan application created.')
-            setShowApproveDialog(false)  // Close immediately
-            router.refresh()             // Refresh in background
-            router.push('/dashboard/loans')
+            // Redirect to CreateLoan page with pre-filled query params
+            // The form will read these and lock/prefill the relevant fields
+            const params = new URLSearchParams({
+                client_id: clientId,
+                topup_offer_id: offerId,
+                max_amount: String(amount),
+                disbursement_type: 'Repeat',
+                original_loan_id: loanId,
+            })
+            
+            const targetUrl = userRole === 'STAFF' 
+                ? `/staff/loans/new?${params.toString()}`
+                : `/dashboard/loans/new?${params.toString()}`
+                
+            router.push(targetUrl)
         } catch (error) {
-            console.error('Approve error:', error)
-            toast.error('Failed to approve top-up offer')
-        } finally {
+            console.error('Convert error:', error)
+            toast.error('Failed to accept top-up offer')
             setLoading(false)
         }
     }
 
-    // Handle Reject Top-Up
     const handleReject = async () => {
         if (!rejectionReason.trim()) {
             toast.error('Please provide a rejection reason')
@@ -101,16 +97,16 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
                 .update({
                     status: 'REJECTED',
                     rejected_at: new Date().toISOString(),
-                    rejection_reason: rejectionReason,
-                    updated_at: new Date().toISOString()
+                    rejection_reason: rejectionReason.trim(),
+                    updated_at: new Date().toISOString(),
                 })
                 .eq('offer_id', offerId)
 
             if (error) throw error
 
-            toast.success('Top-up offer rejected')
-            setShowRejectDialog(false)   // Close immediately
-            router.refresh()             // Refresh in background
+            toast.success('Offer marked as rejected.')
+            setShowRejectDialog(false)
+            router.refresh()
         } catch (error) {
             console.error('Reject error:', error)
             toast.error('Failed to reject top-up offer')
@@ -127,12 +123,11 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
                 </CardHeader>
                 <CardContent className="space-y-2">
                     <Button
-                        className="w-full"
-                        variant="default"
-                        onClick={() => setShowApproveDialog(true)}
+                        className="w-full gap-2"
+                        onClick={() => setShowConvertDialog(true)}
                     >
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Approve Top-Up
+                        <ArrowRight className="h-4 w-4" />
+                        Convert to Loan
                     </Button>
                     <Button
                         className="w-full"
@@ -145,33 +140,41 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
                 </CardContent>
             </Card>
 
-            {/* Approve Dialog */}
-            <Dialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
+            {/* Convert Dialog */}
+            <Dialog open={showConvertDialog} onOpenChange={setShowConvertDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Approve Top-Up Offer</DialogTitle>
+                        <DialogTitle>Convert to Loan Application</DialogTitle>
                         <DialogDescription>
-                            This will create a new loan application for {clientName}
+                            This will accept the offer and take you to the loan creation form,
+                            pre-filled for <strong>{clientName}</strong>.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
-                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                            <p className="text-sm text-green-800">
-                                A new loan application of <strong>₹{amount.toLocaleString('en-IN')}</strong> will be created for this client.
-                            </p>
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200 space-y-2">
+                            <div className="flex items-center gap-2 text-green-800 text-sm font-medium">
+                                <CheckCircle className="h-4 w-4" />
+                                What happens next:
+                            </div>
+                            <ul className="text-sm text-green-700 space-y-1 ml-6 list-disc">
+                                <li>This offer is marked as <strong>Accepted</strong></li>
+                                <li>You are taken to the Loan Form — pre-filled with client details</li>
+                                <li>You can enter the desired loan amount</li>
+                                <li>The loan is tagged as <strong>Top-Up (Repeat)</strong> for analytics</li>
+                            </ul>
                         </div>
                     </div>
                     <DialogFooter>
                         <Button
                             variant="outline"
-                            onClick={() => setShowApproveDialog(false)}
+                            onClick={() => setShowConvertDialog(false)}
                             disabled={loading}
                         >
                             Cancel
                         </Button>
-                        <Button onClick={handleApprove} disabled={loading}>
-                            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Confirm Approval
+                        <Button onClick={handleConvert} disabled={loading} className="gap-2">
+                            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Yes, Convert to Loan
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -183,7 +186,7 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
                     <DialogHeader>
                         <DialogTitle>Reject Top-Up Offer</DialogTitle>
                         <DialogDescription>
-                            The client will be notified of this decision
+                            Record why the client declined. This helps improve future outreach.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
@@ -191,7 +194,7 @@ export function TopUpActions({ offerId, clientName, amount, loanId }: TopUpActio
                             <Label htmlFor="reason">Rejection Reason *</Label>
                             <Textarea
                                 id="reason"
-                                placeholder="Enter reason for rejection..."
+                                placeholder="e.g. Not interested, Doesn't need funds, Wrong number..."
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
                                 rows={3}

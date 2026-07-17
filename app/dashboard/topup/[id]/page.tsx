@@ -21,6 +21,18 @@ interface PageProps {
 export default async function TopUpOfferPage({ params }: PageProps) {
     const id = params.id
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    let userRole = 'STAFF'
+    if (user) {
+        const { data: profile } = await supabase
+            .from('app_users')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+        if (profile) {
+            userRole = profile.role
+        }
+    }
 
     const { data, error } = await supabase
         .from('topup_offers')
@@ -87,16 +99,17 @@ export default async function TopUpOfferPage({ params }: PageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Main Details */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Offer Amount */}
+                    {/* Eligibility Status */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Offered Amount</CardTitle>
+                            <CardTitle className="text-lg font-bold text-gray-900">Eligibility Status</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 p-4 md:p-6 rounded-lg">
-                                <p className="text-xs md:text-sm text-gray-600 mb-2">Top-Up Loan</p>
-                                <p className="text-2xl md:text-4xl font-bold text-primary">
-                                    {formatCurrency(offer.offered_amount)}
+                            <div className="bg-green-50/50 border border-green-100 p-4 md:p-5 rounded-lg text-sm text-green-800 space-y-1">
+                                <p className="font-semibold">Pre-Approved for Top-Up</p>
+                                <p className="text-green-700 leading-relaxed">
+                                    This client is eligible to apply for a top-up loan based on an active relationship of more than 12 months.
+                                    Convert this offer to a loan to proceed to the creation form and specify the sanctioned amount.
                                 </p>
                             </div>
                         </CardContent>
@@ -126,11 +139,13 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                                 <div className="flex gap-2">
                                     <Button
                                         size="sm"
-                                        onClick={() => window.open(whatsappUrl, '_blank')}
                                         className="gap-2"
+                                        asChild
                                     >
-                                        <MessageCircle className="h-4 w-4" />
-                                        Send WhatsApp
+                                        <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                                            <MessageCircle className="h-4 w-4" />
+                                            Send WhatsApp
+                                        </a>
                                     </Button>
                                     <Link href={`/dashboard/loans/${loan.loan_id}`}>
                                         <Button size="sm" variant="outline">
@@ -177,28 +192,22 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                             <CardTitle className="text-base">Eligibility Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">EMIs Paid</span>
-                                <Badge variant="outline">
-                                    {offer.eligibility_details?.emisPaid}
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Months Active</span>
+                                <Badge variant="outline" className="font-bold">
+                                    {offer.eligibility_details?.monthsActive}
                                 </Badge>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Principal Repaid</span>
-                                <Badge variant="outline">
-                                    {offer.eligibility_details?.repaidPercentage?.toFixed(1)}%
-                                </Badge>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Disbursement Date</span>
+                                <span className="font-bold">
+                                    {offer.eligibility_details?.disbursedDate ? formatDate(offer.eligibility_details.disbursedDate) : 'N/A'}
+                                </span>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Missed Payments</span>
-                                <Badge variant={offer.eligibility_details?.missedPayments > 0 ? 'destructive' : 'default'}>
-                                    {offer.eligibility_details?.missedPayments}
-                                </Badge>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Amount Repaid</span>
-                                <span className="font-semibold text-sm">
-                                    {formatCurrency(offer.eligibility_details?.principalRepaid || 0)}
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Original Loan Amount</span>
+                                <span className="font-bold">
+                                    {formatCurrency(offer.eligibility_details?.originalAmount || 0)}
                                 </span>
                             </div>
                         </CardContent>
@@ -244,7 +253,9 @@ export default async function TopUpOfferPage({ params }: PageProps) {
                             offerId={offer.offer_id}
                             clientName={client.full_name}
                             amount={offer.offered_amount}
+                            clientId={client.client_id}
                             loanId={loan.loan_id}
+                            userRole={userRole}
                         />
                     )}
                 </div>
