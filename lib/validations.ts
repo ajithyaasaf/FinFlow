@@ -52,12 +52,13 @@ export const attendanceSchema = z.object({
         .max(180, 'Invalid longitude'),
 
     selfie: z.instanceof(File)
+        .optional()
         .refine(
-            (file) => file.size <= 5 * 1024 * 1024,
+            (file) => !file || file.size <= 5 * 1024 * 1024,
             'Selfie size must be less than 5MB'
         )
         .refine(
-            (file) => ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type),
+            (file) => !file || ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type),
             'Selfie must be JPEG or PNG'
         ),
 })

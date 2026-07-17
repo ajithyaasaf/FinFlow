@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Calendar, Clock, MapPin, Trash2, Edit, Plus, Users, ImageIcon, ExternalLink } from 'lucide-react'
+import { Calendar, Clock, MapPin, Trash2, Edit, Plus, Users, ExternalLink } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { saveManualAttendanceAction, deleteAttendanceLogAction } from '@/app/actions/attendance'
@@ -28,7 +28,6 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
     const [loading, setLoading] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
     const [isOpen, setIsOpen] = useState(false)
-    const [lightboxImage, setLightboxImage] = useState<string | null>(null)
     const [deleteConfirmLogId, setDeleteConfirmLogId] = useState<string | null>(null)
 
     // Form states
@@ -43,7 +42,6 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
     
     const [latitude, setLatitude] = useState('12.9252') // Default office latitude
     const [longitude, setLongitude] = useState('79.1198') // Default office longitude
-    const [selfieUrl, setSelfieUrl] = useState('')
 
     // Date navigation
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,7 +73,6 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
         
         setLatitude('12.9252')
         setLongitude('79.1198')
-        setSelfieUrl('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=80') // Default manual checkin placeholder
         setIsOpen(true)
     }
 
@@ -89,7 +86,6 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
         const details = log.check_in_details || {}
         setLatitude(String(details.lat ?? '12.9252'))
         setLongitude(String(details.lng ?? '79.1198'))
-        setSelfieUrl(details.selfie_url || '')
         setIsOpen(true)
     }
 
@@ -117,8 +113,7 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
             agentId: selectedAgentId,
             checkInTime: finalCheckInTime,
             latitude: parseFloat(latitude) || 0,
-            longitude: parseFloat(longitude) || 0,
-            selfieUrl: selfieUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&fit=crop&q=80'
+            longitude: parseFloat(longitude) || 0
         })
 
         setLoading(false)
@@ -205,12 +200,11 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {initialLogs.map((log) => {
+                             {initialLogs.map((log) => {
                                 const details = log.check_in_details || {}
                                 const lat = typeof details.lat === 'number' ? details.lat : 12.9252
                                 const lng = typeof details.lng === 'number' ? details.lng : 79.1198
-                                const selfie = details.selfie_url || ''
-                                const isManual = selfie.includes('unsplash') || selfie.includes('placehold.co') || !selfie
+                                const isManual = details.is_manual === true
 
                                 return (
                                     <div
@@ -236,48 +230,38 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                                                 </Badge>
                                             </div>
 
-                                            {/* Selfie and Location info */}
-                                            <div className="flex gap-3 items-center bg-[#f7f7f7] p-3 rounded-2xl border border-gray-100/50">
-                                                {selfie ? (
-                                                    <div className="overflow-hidden rounded-xl w-16 h-16 border border-gray-200/60 bg-white shrink-0">
-                                                        <img
-                                                            src={selfie}
-                                                            alt="Staff Selfie"
-                                                            onClick={() => setLightboxImage(selfie)}
-                                                            className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-300"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-16 h-16 bg-white border border-gray-200/60 rounded-xl flex items-center justify-center shrink-0">
-                                                        <ImageIcon className="h-6 w-6 text-gray-400" />
-                                                    </div>
-                                                )}
-                                                <div className="text-xs space-y-1">
+                                            {/* Location & Time info */}
+                                            <div className="bg-[#f7f7f7] p-3 rounded-2xl border border-gray-100/50 text-xs space-y-1.5">
+                                                <p className="flex items-center gap-1.5 text-[#6a6a6a]">
+                                                    <Clock className="h-4 w-4 text-gray-400 shrink-0" />
+                                                    <span>{formatDateTime(log.check_in_time)}</span>
+                                                </p>
+                                                {!isManual && (
                                                     <p className="flex items-center gap-1.5 text-[#6a6a6a]">
-                                                        <Clock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                                                        <span>{formatDateTime(log.check_in_time)}</span>
-                                                    </p>
-                                                    <p className="flex items-center gap-1.5 text-[#6a6a6a]">
-                                                        <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                                                        <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
                                                         <span className="truncate">
-                                                            {lat.toFixed(4)}, {lng.toFixed(4)}
+                                                            {lat.toFixed(6)}, {lng.toFixed(6)}
                                                         </span>
                                                     </p>
-                                                </div>
+                                                )}
                                             </div>
                                         </div>
 
                                         {/* Actions */}
                                         <div className="flex items-center justify-between border-t border-gray-100 pt-3.5 mt-4 gap-2">
-                                            <a
-                                                href={`https://www.google.com/maps?q=${lat},${lng}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-xs text-[#222222] font-semibold hover:underline flex items-center gap-1.5 transition-colors"
-                                            >
-                                                <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
-                                                View Map
-                                            </a>
+                                            {!isManual ? (
+                                                <a
+                                                    href={`https://www.google.com/maps?q=${lat},${lng}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-xs text-[#222222] font-semibold hover:underline flex items-center gap-1.5 transition-colors"
+                                                >
+                                                    <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
+                                                    View Map
+                                                </a>
+                                            ) : (
+                                                <div />
+                                            )}
                                             <div className="flex items-center gap-2">
                                                 <Button
                                                     variant="ghost"
@@ -394,43 +378,6 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="latitude" className="text-sm font-semibold text-[#222222]">Latitude</Label>
-                                <Input
-                                    id="latitude"
-                                    type="number"
-                                    step="any"
-                                    value={latitude}
-                                    onChange={(e) => setLatitude(e.target.value)}
-                                    className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all"
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label htmlFor="longitude" className="text-sm font-semibold text-[#222222]">Longitude</Label>
-                                <Input
-                                    id="longitude"
-                                    type="number"
-                                    step="any"
-                                    value={longitude}
-                                    onChange={(e) => setLongitude(e.target.value)}
-                                    className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="selfie" className="text-sm font-semibold text-[#222222]">Selfie / Attachment URL</Label>
-                            <Input
-                                id="selfie"
-                                placeholder="https://..."
-                                value={selfieUrl}
-                                onChange={(e) => setSelfieUrl(e.target.value)}
-                                className="rounded-xl border-gray-200 bg-[#f7f7f7]/30 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all"
-                            />
-                        </div>
 
                         <DialogFooter className="pt-2 gap-2 sm:gap-0">
                             <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="rounded-full px-5">
@@ -441,21 +388,6 @@ export function AttendanceClient({ initialLogs, agents, selectedDate }: Attendan
                             </Button>
                         </DialogFooter>
                     </form>
-                </DialogContent>
-            </Dialog>
-
-            {/* Selfie Lightbox Modal */}
-            <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
-                <DialogContent className="max-w-xl p-1 bg-black overflow-hidden flex items-center justify-center">
-                    {lightboxImage && (
-                        <div className="relative w-full max-h-[80vh] flex items-center justify-center">
-                            <img
-                                src={lightboxImage}
-                                alt="Selfie Fullscreen"
-                                className="max-w-full max-h-[75vh] object-contain rounded-md"
-                            />
-                        </div>
-                    )}
                 </DialogContent>
             </Dialog>
 

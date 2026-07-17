@@ -10,7 +10,6 @@ interface SaveAttendanceParams {
     checkInTime: string
     latitude: number
     longitude: number
-    selfieUrl: string
 }
 
 export async function saveManualAttendanceAction(params: SaveAttendanceParams) {
@@ -23,8 +22,7 @@ export async function saveManualAttendanceAction(params: SaveAttendanceParams) {
             params.agentId,
             params.checkInTime,
             params.latitude,
-            params.longitude,
-            params.selfieUrl
+            params.longitude
         )
 
         // Audit log action

@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { uploadSelfie } from '@/lib/storage'
 import { PageHeader } from '@/components/agent/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Camera, MapPin, CheckCircle, AlertCircle } from 'lucide-react'
+import { Loader2, MapPin, CheckCircle, AlertCircle } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import type { AttendanceLog } from '@/types'
 
@@ -19,12 +18,9 @@ interface LocationData {
 
 export default function AttendancePage() {
     const supabase = createClient()
-    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [loading, setLoading] = useState(false)
     const [location, setLocation] = useState<LocationData | null>(null)
-    const [selfieFile, setSelfieFile] = useState<File | null>(null)
-    const [selfiePreview, setSelfiePreview] = useState<string | null>(null)
     const [lastCheckIn, setLastCheckIn] = useState<AttendanceLog | null>(null)
     const [gpsLoading, setGpsLoading] = useState(false)
 
@@ -71,22 +67,9 @@ export default function AttendancePage() {
         )
     }
 
-    const handleSelfieCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            setSelfieFile(file)
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setSelfiePreview(reader.result as string)
-            }
-            reader.readAsDataURL(file)
-            toast.success('Selfie captured successfully')
-        }
-    }
-
     const handleCheckIn = async () => {
-        if (!location || !selfieFile) {
-            toast.error('Please complete both steps')
+        if (!location) {
+            toast.error('Please capture your location first')
             return
         }
 
@@ -109,9 +92,6 @@ export default function AttendancePage() {
                 throw new Error('Your account is inactive. Please contact your administrator.')
             }
 
-            // Upload selfie
-            const selfieUrl = await uploadSelfie(selfieFile, user.id)
-
             // Create attendance log
             const { data, error } = await supabase
                 .from('attendance_logs')
@@ -121,7 +101,6 @@ export default function AttendancePage() {
                     check_in_details: {
                         lat: location.latitude,
                         lng: location.longitude,
-                        selfie_url: selfieUrl,
                     }
                 })
                 .select()
@@ -134,8 +113,6 @@ export default function AttendancePage() {
 
             // Reset form
             setLocation(null)
-            setSelfieFile(null)
-            setSelfiePreview(null)
 
         } catch (error) {
             console.error('Error marking attendance:', error)
@@ -174,13 +151,11 @@ export default function AttendancePage() {
                     </Card>
                 )}
 
-                {/* Step 1: Capture Location */}
+                {/* Capture Location */}
                 <Card className="border border-gray-100 shadow-airbnb-sm rounded-2xl overflow-hidden bg-white">
                     <CardHeader className={`${location ? 'bg-emerald-50/30 border-b border-emerald-100/60' : 'bg-[#f7f7f7]/50 border-b border-gray-100'} p-4`}>
                         <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#222222]">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${location ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'} font-bold`}>
-                                {location ? '✓' : '1'}
-                            </div>
+                            <MapPin className={`h-5 w-5 ${location ? 'text-emerald-600' : 'text-primary'}`} />
                             <span>Capture Location</span>
                         </CardTitle>
                         <CardDescription className="text-xs text-[#6a6a6a]">
@@ -236,74 +211,10 @@ export default function AttendancePage() {
                     </CardContent>
                 </Card>
 
-                {/* Step 2: Take Selfie */}
-                <Card className="border border-gray-100 shadow-airbnb-sm rounded-2xl overflow-hidden bg-white">
-                    <CardHeader className={`${selfieFile ? 'bg-emerald-50/30 border-b border-emerald-100/60' : 'bg-[#f7f7f7]/50 border-b border-gray-100'} p-4`}>
-                        <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#222222]">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${selfieFile ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'} font-bold`}>
-                                {selfieFile ? '✓' : '2'}
-                            </div>
-                            <span>Take Selfie</span>
-                        </CardTitle>
-                        <CardDescription className="text-xs text-[#6a6a6a]">
-                            Capture a clear photo of yourself for verification
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3 pt-4 p-4">
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            capture="user"
-                            onChange={handleSelfieCapture}
-                            className="hidden"
-                        />
-
-                        {selfiePreview ? (
-                            <div className="space-y-3">
-                                <div className="relative overflow-hidden rounded-2xl border border-gray-200">
-                                    <img
-                                        src={selfiePreview}
-                                        alt="Selfie Preview"
-                                        className="w-full h-56 object-cover"
-                                    />
-                                    <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1.5 shadow-md">
-                                        <CheckCircle className="h-4 w-4" />
-                                    </div>
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="w-full h-10 border-gray-200 rounded-full text-[#222222] font-semibold"
-                                >
-                                    <Camera className="mr-2 h-4 w-4" />
-                                    Retake Selfie
-                                </Button>
-                            </div>
-                        ) : (
-                            <Button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={!location}
-                                className="w-full h-11 rounded-full text-sm font-semibold"
-                                size="lg"
-                            >
-                                <Camera className="mr-2 h-4.5 w-4.5" />
-                                Open Camera
-                            </Button>
-                        )}
-
-                        {!location && (
-                            <p className="text-[11px] text-[#6a6a6a] text-center bg-[#f7f7f7] py-2 rounded-xl">
-                                Please capture your location first
-                            </p>
-                        )}
-                    </CardContent>
-                </Card>
-
                 {/* Check-In Button */}
                 <Button
                     onClick={handleCheckIn}
-                    disabled={!location || !selfieFile || loading}
+                    disabled={!location || loading}
                     className="w-full h-12 rounded-full text-sm font-semibold shadow-airbnb-md mt-2"
                     size="lg"
                 >

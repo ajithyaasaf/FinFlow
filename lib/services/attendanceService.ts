@@ -66,8 +66,7 @@ export async function saveManualAttendance(
     agentId: string,
     checkInTime: string,
     lat: number,
-    lng: number,
-    selfieUrl: string
+    lng: number
 ): Promise<AttendanceLog> {
     const supabase = await createClient()
 
@@ -95,7 +94,7 @@ export async function saveManualAttendance(
         check_in_details: {
             lat,
             lng,
-            selfie_url: selfieUrl
+            is_manual: true
         }
     }
 

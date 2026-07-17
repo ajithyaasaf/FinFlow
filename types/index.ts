@@ -89,7 +89,8 @@ export interface LoanApplication {
 export interface CheckInDetails {
     lat: number;
     lng: number;
-    selfie_url: string;
+    selfie_url?: string;
+    is_manual?: boolean;
 }
 
 export interface AttendanceLog {
