@@ -117,7 +117,8 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                 </div>
             </div>
 
-            {/* Metric KPI Cards */}
+            {/* Metric KPI Cards (Hidden for now) */}
+            {/* 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="hover:shadow-md transition-all duration-300 border-l-4 border-l-primary overflow-hidden relative group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
@@ -126,14 +127,14 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                     <CardHeader className="pb-2">
                         <CardDescription className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                             <Briefcase className="h-3.5 w-3.5 text-primary" />
-                            Total Sourced Business
+                            Total Applied Amount
                         </CardDescription>
                         <CardTitle className="text-3xl font-extrabold text-gray-900 mt-1">
                             {formatIndianCurrency(data.summary.totalSourcedVolume)}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-gray-500">Total volume of all files logged in this period.</p>
+                        <p className="text-xs text-gray-500">Total loan amount submitted in this period.</p>
                     </CardContent>
                 </Card>
 
@@ -144,7 +145,7 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                     <CardHeader className="pb-2">
                         <CardDescription className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                             <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                            Total Disbursed Volume
+                            Total Disbursed Amount
                         </CardDescription>
                         <CardTitle className="text-3xl font-extrabold text-emerald-900 mt-1">
                             {formatIndianCurrency(data.summary.totalDisbursedVolume)}
@@ -152,9 +153,9 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                     </CardHeader>
                     <CardContent>
                         <p className="text-xs text-gray-500">
-                            Conversion: {data.summary.totalSourcedVolume > 0 
+                            Payout Rate: {data.summary.totalSourcedVolume > 0 
                                 ? Math.round((data.summary.totalDisbursedVolume / data.summary.totalSourcedVolume) * 100) 
-                                : 0}% of sourced volume.
+                                : 0}% of applied amount.
                         </p>
                     </CardContent>
                 </Card>
@@ -166,14 +167,14 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                     <CardHeader className="pb-2">
                         <CardDescription className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                             <Percent className="h-3.5 w-3.5 text-violet-500" />
-                            Total Sanctioned Volume
+                            Total Approved Amount
                         </CardDescription>
                         <CardTitle className="text-3xl font-extrabold text-violet-900 mt-1">
                             {formatIndianCurrency(data.summary.totalSanctionedVolume)}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-gray-500">Loans approved and awaiting final disbursement.</p>
+                        <p className="text-xs text-gray-500">Total loans sanctioned & ready for payout.</p>
                     </CardContent>
                 </Card>
 
@@ -184,17 +185,18 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
                     <CardHeader className="pb-2">
                         <CardDescription className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5 text-amber-500" />
-                            Active Loan Pipeline
+                            Active Applications
                         </CardDescription>
                         <CardTitle className="text-3xl font-extrabold text-amber-900 mt-1">
-                            {data.summary.activeLoansCount} Files
+                            {data.summary.activeLoansCount} {data.summary.activeLoansCount === 1 ? 'File' : 'Files'}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xs text-gray-500">Total files currently being appraised and processed.</p>
+                        <p className="text-xs text-gray-500">Loan files currently under active processing.</p>
                     </CardContent>
                 </Card>
             </div>
+            */}
 
             {/* Row 1: Disbursement Trends & Product Distribution */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
