@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { LOGINS_STAGES, STAGE_COLORS, REGIONS, type LoginWithRelations, type LoginsStats } from '@/lib/services/loginsConstants'
+import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
 
 // ─────────────────────────────────────────────
 // Metric card
@@ -366,15 +367,26 @@ function LoginsRow({ login, router }: { login: LoginWithRelations; router: Retur
                 {new Date(login.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
             </TableCell>
             <TableCell className="text-right">
-                <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 gap-1 text-xs"
-                    onClick={() => router.push(`/dashboard/loans/${login.loan_id}`)}
-                >
-                    <Eye className="h-3.5 w-3.5" />
-                    View
-                </Button>
+                <div className="flex items-center justify-end gap-1.5">
+                    <LoanStatusUpdate
+                        loanId={login.loan_id}
+                        currentStage={login.process_stage}
+                        clientName={login.client?.full_name || 'Client'}
+                        loanAmount={login.amount}
+                        interestRate={login.interest_rate}
+                        tenure={login.tenure}
+                        agentId={login.onboarding_agent_id}
+                    />
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 gap-1 text-xs text-gray-600 hover:text-gray-900"
+                        onClick={() => router.push(`/dashboard/loans/${login.loan_id}`)}
+                    >
+                        <Eye className="h-3.5 w-3.5" />
+                        View
+                    </Button>
+                </div>
             </TableCell>
         </TableRow>
     )

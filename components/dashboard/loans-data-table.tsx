@@ -14,6 +14,7 @@ import {
 import { Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { LoanWithRelations } from '@/lib/services/loanService'
+import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
 
 interface LoansDataTableProps {
     loans: LoanWithRelations[]
@@ -112,15 +113,26 @@ export function LoansDataTable({ loans, currentPage, totalPages, total }: LoansD
                                         {formatDate(loan.created_at)}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => router.push(`/dashboard/loans/${loan.loan_id}`)}
-                                            className="gap-1"
-                                        >
-                                            <Eye className="h-3 w-3" />
-                                            View
-                                        </Button>
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <LoanStatusUpdate
+                                                loanId={loan.loan_id}
+                                                currentStage={loan.process_stage}
+                                                clientName={client?.full_name || 'Client'}
+                                                loanAmount={loan.amount}
+                                                interestRate={loan.interest_rate}
+                                                tenure={loan.tenure}
+                                                agentId={loan.onboarding_agent_id}
+                                            />
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => router.push(`/dashboard/loans/${loan.loan_id}`)}
+                                                className="gap-1 text-gray-600 hover:text-gray-900"
+                                            >
+                                                <Eye className="h-3.5 w-3.5" />
+                                                View
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             )
