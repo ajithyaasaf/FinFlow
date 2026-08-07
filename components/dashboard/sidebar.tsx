@@ -98,7 +98,6 @@ const navItems = [
 export function Sidebar() {
     const pathname = usePathname()
     const { isOpen, closeMenu } = useMobileMenu()
-    const [clickedHref, setClickedHref] = useState<string | null>(null)
     const [userProfile, setUserProfile] = useState<{ full_name: string; role: string } | null>(null)
 
     useEffect(() => {
@@ -124,9 +123,8 @@ export function Sidebar() {
         fetchProfile()
     }, [])
 
-    // Close menu when route changes and reset clicked state
+    // Close menu when route changes
     useEffect(() => {
-        setClickedHref(null)
         closeMenu()
     }, [pathname, closeMenu])
 
@@ -182,21 +180,14 @@ export function Sidebar() {
                     {navItems
                         .filter((item) => !item.mdOnly || userProfile?.role === 'MD')
                         .map((item) => {
-                        const isActive = clickedHref
-                            ? clickedHref === item.href
-                            : (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
+                        const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
                         const Icon = item.icon
 
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                prefetch={false}
-                                onClick={() => {
-                                    if (pathname !== item.href) {
-                                        setClickedHref(item.href)
-                                    }
-                                }}
+                                onClick={closeMenu}
                                 className={cn(
                                     'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                                     isActive
