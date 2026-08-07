@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -123,15 +124,16 @@ export function LoansDataTable({ loans, currentPage, totalPages, total }: LoansD
                                                 tenure={loan.tenure}
                                                 agentId={loan.onboarding_agent?.id}
                                             />
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                onClick={() => router.push(`/dashboard/loans/${loan.loan_id}`)}
-                                                className="gap-1 text-gray-600 hover:text-gray-900"
-                                            >
-                                                <Eye className="h-3.5 w-3.5" />
-                                                View
-                                            </Button>
+                                            <Link href={`/dashboard/loans/${loan.loan_id}`}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="gap-1 text-gray-600 hover:text-gray-900"
+                                                >
+                                                    <Eye className="h-3.5 w-3.5" />
+                                                    View
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </TableCell>
                                 </TableRow>

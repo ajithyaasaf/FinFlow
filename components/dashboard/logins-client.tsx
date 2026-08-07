@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -377,15 +378,16 @@ function LoginsRow({ login, router }: { login: LoginWithRelations; router: Retur
                         tenure={login.tenure}
                         agentId={login.onboarding_agent?.id}
                     />
-                    <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 gap-1 text-xs text-gray-600 hover:text-gray-900"
-                        onClick={() => router.push(`/dashboard/loans/${login.loan_id}`)}
-                    >
-                        <Eye className="h-3.5 w-3.5" />
-                        View
-                    </Button>
+                    <Link href={`/dashboard/loans/${login.loan_id}`}>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 gap-1 text-xs text-gray-600 hover:text-gray-900"
+                        >
+                            <Eye className="h-3.5 w-3.5" />
+                            View
+                        </Button>
+                    </Link>
                 </div>
             </TableCell>
         </TableRow>

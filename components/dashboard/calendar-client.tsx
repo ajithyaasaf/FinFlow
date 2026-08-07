@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -593,14 +594,15 @@ export function CalendarClient({
                                                                 <Phone className="h-2.5 w-2.5 text-amber-500" />
                                                                 <span className="truncate">Lead: {act.related_lead.full_name}</span>
                                                             </div>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-4 w-4 text-amber-600 hover:text-amber-800 shrink-0"
-                                                                onClick={() => router.push(`/dashboard/leads?search=${encodeURIComponent(act.related_lead?.full_name || '')}`)}
-                                                            >
-                                                                <ArrowUpRight className="h-3 w-3" />
-                                                            </Button>
+                                                            <Link href={`/dashboard/leads?search=${encodeURIComponent(act.related_lead?.full_name || '')}`}>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-4 w-4 text-amber-600 hover:text-amber-800 shrink-0"
+                                                                >
+                                                                    <ArrowUpRight className="h-3 w-3" />
+                                                                </Button>
+                                                            </Link>
                                                         </div>
                                                     )}
 
@@ -610,14 +612,15 @@ export function CalendarClient({
                                                                 <User className="h-2.5 w-2.5 text-primary" />
                                                                 <span className="truncate">Client: {act.related_client.full_name}</span>
                                                             </div>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-4 w-4 text-primary hover:text-primary shrink-0"
-                                                                onClick={() => router.push(`/dashboard/clients/${act.related_client?.client_id}`)}
-                                                            >
-                                                                <ArrowUpRight className="h-3 w-3" />
-                                                            </Button>
+                                                            <Link href={`/dashboard/clients/${act.related_client?.client_id}`}>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-4 w-4 text-primary hover:text-primary shrink-0"
+                                                                >
+                                                                    <ArrowUpRight className="h-3 w-3" />
+                                                                </Button>
+                                                            </Link>
                                                         </div>
                                                     )}
 
