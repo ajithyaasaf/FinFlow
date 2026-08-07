@@ -375,7 +375,7 @@ function LoginsRow({ login, router }: { login: LoginWithRelations; router: Retur
                         loanAmount={login.amount}
                         interestRate={login.interest_rate}
                         tenure={login.tenure}
-                        agentId={login.onboarding_agent_id}
+                        agentId={login.onboarding_agent?.id}
                     />
                     <Button
                         size="sm"

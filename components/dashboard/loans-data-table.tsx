@@ -121,7 +121,7 @@ export function LoansDataTable({ loans, currentPage, totalPages, total }: LoansD
                                                 loanAmount={loan.amount}
                                                 interestRate={loan.interest_rate}
                                                 tenure={loan.tenure}
-                                                agentId={loan.onboarding_agent_id}
+                                                agentId={loan.onboarding_agent?.id}
                                             />
                                             <Button
                                                 size="sm"
