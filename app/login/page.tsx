@@ -17,10 +17,18 @@ export default function LoginPage() {
     const router = useRouter()
     const supabase = createClient()
 
+    const fillCredentials = (demoEmail: string, demoPass: string) => {
+        setEmail(demoEmail)
+        setPassword(demoPass)
+        toast.info('Credentials loaded into form!')
+    }
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!email || !password) {
+        const cleanedEmail = email.trim().toLowerCase()
+
+        if (!cleanedEmail || !password) {
             toast.error('Please fill in all fields')
             return
         }
@@ -28,7 +36,7 @@ export default function LoginPage() {
         setLoading(true)
 
         try {
-            const loginEmail = email.includes('@') ? email : `${email}@finflow.com`
+            const loginEmail = cleanedEmail.includes('@') ? cleanedEmail : `${cleanedEmail}@finflow.com`
 
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: loginEmail,
@@ -158,15 +166,33 @@ export default function LoginPage() {
                     </form>
 
                     {/* Demo Credentials Box */}
-                    <div className="bg-[#f7f7f7] border border-gray-100 p-4 rounded-2xl space-y-2">
-                        <p className="text-xs font-semibold text-[#222222] flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                            Demo Credentials
-                        </p>
-                        <div className="text-[11px] text-[#6a6a6a] leading-relaxed">
-                            <p><span className="font-semibold text-gray-700">MD:</span> md@finflow.com / password123</p>
-                            <p><span className="font-semibold text-gray-700">Admin:</span> admin@finflow.com / password123</p>
-                            <p><span className="font-semibold text-gray-700">Staff:</span> durga / 12345678</p>
+                    <div className="bg-[#f7f7f7] border border-gray-100 p-4 rounded-2xl space-y-2.5">
+                        <div className="flex items-center justify-between text-xs font-semibold text-[#222222]">
+                            <span className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                Demo Credentials
+                            </span>
+                            <span className="text-[10px] text-gray-500 font-normal">Click to auto-fill</span>
+                        </div>
+                        <div className="space-y-1.5">
+                            {[
+                                { role: 'MD', email: 'md@finflow.com', pass: 'password123' },
+                                { role: 'Admin', email: 'admin@finflow.com', pass: 'password123' },
+                                { role: 'Staff', email: 'durga', pass: '12345678' },
+                            ].map((demo) => (
+                                <div key={demo.role} className="flex items-center justify-between text-xs bg-white p-2 px-3 rounded-xl border border-gray-100 hover:border-gray-300 transition-all shadow-sm">
+                                    <span className="text-[#6a6a6a] font-mono text-[11px]">
+                                        <strong className="text-gray-800 font-sans">{demo.role}:</strong> {demo.email}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => fillCredentials(demo.email, demo.pass)}
+                                        className="px-2.5 py-1 text-[11px] font-semibold bg-gray-100 hover:bg-primary hover:text-white text-gray-700 rounded-lg transition-colors"
+                                    >
+                                        Auto Fill
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
