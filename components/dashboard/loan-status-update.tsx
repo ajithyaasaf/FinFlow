@@ -45,7 +45,7 @@ export function LoanStatusUpdate({
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [newStage, setNewStage] = useState(currentStage)
+    const [newStage, setNewStage] = useState('')
     const [notes, setNotes] = useState('')
 
     // New fields for business logic
@@ -53,20 +53,41 @@ export function LoanStatusUpdate({
     const [disbursementRef, setDisbursementRef] = useState('')
     const [disbursementDate, setDisbursementDate] = useState(new Date().toISOString().split('T')[0])
 
+    const handleOpenChange = (isOpen: boolean) => {
+        setOpen(isOpen)
+        if (isOpen) {
+            // Reset form to clean default state on dialog open
+            setNewStage('')
+            setNotes('')
+            setRejectionReason('')
+            setDisbursementRef('')
+            setDisbursementDate(new Date().toISOString().split('T')[0])
+        }
+    }
+
+    const isDisbursementStage = newStage === 'Disbursement' || newStage === 'Disbursed'
+    const isClosedStage = newStage === 'Closed' || newStage === 'Declined'
+
     const handleUpdate = async () => {
-        if (newStage === currentStage) {
-            toast.error('Please select a different stage')
+        if (!newStage || newStage === currentStage) {
+            toast.error('Please select a new processing stage')
             return
         }
 
-        // Validation
-        if (newStage === 'Closed' && !rejectionReason && !notes) {
-            toast.error('Please provide a reason for closing/rejecting the loan')
+        // Validation for Closing / Rejection
+        if (isClosedStage && !rejectionReason && !notes.trim()) {
+            toast.error('Please provide a reason for closing/declining the loan')
             return
         }
 
-        if (newStage === 'Disbursement' && (!disbursementRef || !disbursementDate)) {
-            toast.error('Please provide disbursement details')
+        if (isClosedStage && rejectionReason === 'Other' && !notes.trim()) {
+            toast.error('Please specify details in the notes field for "Other" reason')
+            return
+        }
+
+        // Validation for Disbursement
+        if (isDisbursementStage && (!disbursementRef.trim() || !disbursementDate)) {
+            toast.error('Please provide transaction reference and disbursement date')
             return
         }
 
@@ -78,13 +99,17 @@ export function LoanStatusUpdate({
                 updated_at: new Date().toISOString(),
             }
 
-            // Add conditional fields
-            if (newStage === 'Closed') {
-                updateData.rejection_reason = rejectionReason || notes
+            if (notes.trim()) {
+                updateData.notes = notes.trim()
             }
 
-            if (newStage === 'Disbursement') {
-                updateData.disbursement_reference = disbursementRef
+            // Add conditional fields
+            if (isClosedStage) {
+                updateData.rejection_reason = rejectionReason || notes.trim()
+            }
+
+            if (isDisbursementStage) {
+                updateData.disbursement_reference = disbursementRef.trim()
                 updateData.disbursement_date = new Date(disbursementDate).toISOString()
             }
 
@@ -96,7 +121,7 @@ export function LoanStatusUpdate({
             if (error) throw error
 
             // Generate EMI schedule when disbursing
-            if (newStage === 'Disbursement' && loanAmount && interestRate && tenure) {
+            if (isDisbursementStage && loanAmount && interestRate && tenure) {
                 const disbursementDateObj = new Date(disbursementDate)
                 const schedule = generateEMISchedule(
                     loanAmount,
@@ -184,11 +209,11 @@ export function LoanStatusUpdate({
 
     return (
         <>
-            <Button onClick={() => setOpen(true)} size="sm">
+            <Button onClick={() => handleOpenChange(true)} size="sm">
                 Update Status
             </Button>
 
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>Update Loan Status</DialogTitle>
@@ -209,20 +234,23 @@ export function LoanStatusUpdate({
                             <Label>New Stage *</Label>
                             <Select value={newStage} onValueChange={setNewStage}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select new stage" />
+                                    <SelectValue placeholder="Select new stage..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {PROCESS_STAGES.map((stage) => (
-                                        <SelectItem key={stage} value={stage} disabled={stage === currentStage}>
-                                            {stage}
-                                        </SelectItem>
-                                    ))}
+                                    {PROCESS_STAGES.map((stage) => {
+                                        const isCurrent = stage === currentStage
+                                        return (
+                                            <SelectItem key={stage} value={stage} disabled={isCurrent}>
+                                                {stage} {isCurrent ? '(Current)' : ''}
+                                            </SelectItem>
+                                        )
+                                    })}
                                 </SelectContent>
                             </Select>
                         </div>
 
                         {/* Conditional Fields: Disbursement */}
-                        {newStage === 'Disbursement' && (
+                        {isDisbursementStage && (
                             <div className="p-4 bg-primary/5 rounded-lg space-y-3 border border-primary/10">
                                 <h4 className="font-semibold text-sm text-primary flex items-center gap-2">
                                     <AlertTriangle className="h-4 w-4" />
@@ -250,7 +278,7 @@ export function LoanStatusUpdate({
                         )}
 
                         {/* Conditional Fields: Rejection/Closing */}
-                        {newStage === 'Closed' && (
+                        {isClosedStage && (
                             <div className="p-4 bg-red-50 rounded-lg space-y-3 border border-red-100">
                                 <h4 className="font-semibold text-sm text-red-900 flex items-center gap-2">
                                     <AlertTriangle className="h-4 w-4" />
@@ -288,12 +316,12 @@ export function LoanStatusUpdate({
                     </div>
 
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+                        <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={loading}>
                             Cancel
                         </Button>
-                        <Button onClick={handleUpdate} disabled={loading || newStage === currentStage}>
+                        <Button onClick={handleUpdate} disabled={loading || !newStage || newStage === currentStage}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {loading ? 'Update Status' : 'Update Status'}
+                            {loading ? 'Updating...' : 'Update Status'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
