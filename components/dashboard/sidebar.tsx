@@ -54,6 +54,16 @@ const navItems = [
         icon: CreditCard,
     },
     {
+        href: '/dashboard/topup',
+        label: 'Top-Up Offers',
+        icon: TrendingUp,
+    },
+    {
+        href: '/dashboard/clients',
+        label: 'Clients',
+        icon: User,
+    },
+    {
         href: '/dashboard/partners',
         label: 'Bank Partners',
         icon: Building,
@@ -64,34 +74,24 @@ const navItems = [
         icon: Users,
     },
     {
-        href: '/dashboard/attendance',
-        label: 'Attendance Tracker',
-        icon: Clock,
-    },
-    {
         href: '/dashboard/calendar',
         label: 'Operations Calendar',
         icon: Calendar,
     },
     {
-        href: '/dashboard/clients',
-        label: 'Clients',
-        icon: User,
-    },
-    {
-        href: '/dashboard/topup',
-        label: 'Top-Up Offers',
-        icon: TrendingUp,
-    },
-    {
-        href: '/dashboard/wiki',
-        label: 'Policy Wiki',
-        icon: BookOpen,
+        href: '/dashboard/attendance',
+        label: 'Attendance Tracker',
+        icon: Clock,
     },
     {
         href: '/dashboard/reports',
         label: 'Reports',
         icon: BarChart3,
+    },
+    {
+        href: '/dashboard/wiki',
+        label: 'Policy Wiki',
+        icon: BookOpen,
     },
 ]
 
