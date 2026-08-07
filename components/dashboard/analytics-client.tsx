@@ -30,6 +30,7 @@ import {
     ChevronRight,
 } from 'lucide-react'
 import type { DashboardAnalytics } from '@/lib/services/analyticsService'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Premium color palettes
 const THEME_COLORS = ['#b51c1c', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e']
@@ -75,15 +76,13 @@ export function AnalyticsClient({ data, currentRange }: AnalyticsClientProps) {
     if (!mounted) {
         return (
             <div className="space-y-6">
-                <div className="h-10 w-48 bg-gray-200 animate-pulse rounded-md"></div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="h-32 bg-gray-100 animate-pulse rounded-xl"></div>
-                    ))}
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-48 rounded-lg" />
+                    <Skeleton className="h-4 w-72 rounded-md" />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="h-[350px] bg-gray-100 animate-pulse rounded-xl"></div>
-                    <div className="h-[350px] bg-gray-100 animate-pulse rounded-xl"></div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+                    <Skeleton className="h-[350px] w-full rounded-2xl" />
+                    <Skeleton className="h-[350px] w-full rounded-2xl" />
                 </div>
             </div>
         )

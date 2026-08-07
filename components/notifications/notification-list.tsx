@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { CheckCheck, Info, AlertTriangle, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 
 interface Notification {
@@ -85,9 +86,16 @@ export function NotificationList({
 
     if (loading) {
         return (
-            <div className="p-8 flex flex-col items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
+            <div className="p-4 space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex gap-3 items-center">
+                        <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                        <div className="space-y-1.5 flex-1">
+                            <Skeleton className="h-3.5 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                        </div>
+                    </div>
+                ))}
             </div>
         )
     }

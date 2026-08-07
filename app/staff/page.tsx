@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/agent/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Users, CreditCard, Flame, AlertCircle, FileText } from 'lucide-react'
+import { CardGridSkeleton } from '@/components/dashboard/card-grid-skeleton'
 
 export default function StaffDashboard() {
     const supabase = createClient()
@@ -131,7 +132,9 @@ export default function StaffDashboard() {
 
     if (loading) {
         return (
-            <div className="p-4 text-center text-gray-600">Loading...</div>
+            <div className="p-4 sm:p-6 lg:p-8">
+                <CardGridSkeleton />
+            </div>
         )
     }
 

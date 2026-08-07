@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MessageCircle, ExternalLink, Loader2, TrendingUp } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatCurrency } from '@/lib/utils'
 import { generateWhatsAppLink } from '@/lib/topup-notifications'
 import Link from 'next/link'
@@ -73,10 +74,16 @@ export function TopUpOpportunitiesWidget() {
                         Top-Up Opportunities
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                    </div>
+                <CardContent className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                            <div className="space-y-1.5 flex-1">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-24" />
+                            </div>
+                            <Skeleton className="h-6 w-20 rounded-full" />
+                        </div>
+                    ))}
                 </CardContent>
             </Card>
         )

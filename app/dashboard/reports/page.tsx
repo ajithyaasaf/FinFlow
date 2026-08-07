@@ -8,6 +8,7 @@ import { TrendingUp, Users, Calendar, CheckCircle, XCircle, Target } from 'lucid
 import { createClient } from '@/lib/supabase/client'
 import { ReportsFilter } from '@/components/dashboard/reports-filter'
 import { formatCurrency } from '@/lib/utils'
+import { CardGridSkeleton } from '@/components/dashboard/card-grid-skeleton'
 import Loading from './loading'
 
 function calculateGrowth(current: number, previous: number): { value: number; positive: boolean } {
@@ -120,7 +121,11 @@ function ReportsPageContent() {
     }, [from, to])
 
     if (loading || !reportData) {
-        return <Loading />
+        return (
+            <div className="p-4 sm:p-6 lg:p-8">
+                <CardGridSkeleton />
+            </div>
+        )
     }
 
     return (

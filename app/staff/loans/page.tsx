@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Search, Plus, CreditCard, Eye, Loader2 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { STAGE_COLORS } from '@/lib/services/loginsConstants'
+import { TableSkeleton } from '@/components/dashboard/table-skeleton'
 
 interface StaffLoan {
     loan_id: string
@@ -125,10 +126,7 @@ export default function StaffLoansPage() {
 
             {/* Content */}
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-3">
-                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                    <p className="text-sm text-gray-500 font-medium">Loading loan applications...</p>
-                </div>
+                <TableSkeleton rows={5} />
             ) : filteredLoans.length === 0 ? (
                 <Card className="rounded-2xl border-gray-100">
                     <CardContent className="p-8 text-center space-y-3">

@@ -13,6 +13,8 @@ import {
 import Link from 'next/link'
 import { EMIScheduleList } from '@/components/dashboard/emi-schedule-list'
 import { createClient } from '@/lib/supabase/client'
+import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/dashboard/table-skeleton'
 import type { EMISchedule, Payment } from '@/types'
 
 export default function LoanPaymentsPage() {
@@ -33,9 +35,12 @@ export default function LoanPaymentsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                <p className="text-sm text-gray-500 font-medium font-sans">Loading payment schedule...</p>
+            <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-48 rounded-lg" />
+                    <Skeleton className="h-4 w-72 rounded-md" />
+                </div>
+                <TableSkeleton rows={6} />
             </div>
         )
     }
