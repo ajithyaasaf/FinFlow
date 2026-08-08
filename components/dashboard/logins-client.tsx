@@ -81,35 +81,20 @@ export function LoginsClient({
         Object.entries(vals).forEach(([k, v]) => { if (v && v !== 'all') p.set(k, v) })
         const queryString = p.toString()
         const targetUrl = queryString ? `/dashboard/logins?${queryString}` : '/dashboard/logins'
-        startTransition(() => router.push(targetUrl))
+        startTransition(() => router.replace(targetUrl, { scroll: false }))
     }
 
-    // Debounced live search & auto-filter on change
+    // Debounced search input sync (never overwrites local typing state)
     useEffect(() => {
         const timer = setTimeout(() => {
             const currentSearch = searchParams.get('search') || ''
-            const currentStage = searchParams.get('stage') || 'all'
-            const currentRegion = searchParams.get('region') || 'all'
-            const currentBank = searchParams.get('bank') || 'all'
-            const currentAgent = searchParams.get('agent') || 'all'
-            const currentFrom = searchParams.get('from') || ''
-            const currentTo = searchParams.get('to') || ''
-
-            if (
-                search.trim() !== currentSearch ||
-                stage !== currentStage ||
-                region !== currentRegion ||
-                bank !== currentBank ||
-                agent !== currentAgent ||
-                from !== currentFrom ||
-                to !== currentTo
-            ) {
+            if (search.trim() !== currentSearch) {
                 push()
             }
-        }, 300)
+        }, 400)
 
         return () => clearTimeout(timer)
-    }, [search, stage, region, bank, agent, from, to])
+    }, [search])
 
     const clear = () => {
         setStage('all'); setRegion('all'); setBank('all')
@@ -201,7 +186,7 @@ export function LoginsClient({
                     {/* Stage */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-600">Stage</label>
-                        <Select value={stage} onValueChange={setStage}>
+                        <Select value={stage} onValueChange={(val) => { setStage(val); push({ stage: val }) }}>
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="All Stages" />
                             </SelectTrigger>
@@ -216,7 +201,7 @@ export function LoginsClient({
                     {/* Region */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-600">Region</label>
-                        <Select value={region} onValueChange={setRegion}>
+                        <Select value={region} onValueChange={(val) => { setRegion(val); push({ region: val }) }}>
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="All Regions" />
                             </SelectTrigger>
@@ -231,7 +216,7 @@ export function LoginsClient({
                     {/* Bank */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-600">Bank / NBFC</label>
-                        <Select value={bank} onValueChange={setBank}>
+                        <Select value={bank} onValueChange={(val) => { setBank(val); push({ bank: val }) }}>
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="All Banks" />
                             </SelectTrigger>
@@ -258,7 +243,7 @@ export function LoginsClient({
                                 })),
                             ]}
                             value={agent}
-                            onValueChange={setAgent}
+                            onValueChange={(val) => { setAgent(val); push({ agent: val }) }}
                             placeholder="All Staff"
                             searchPlaceholder="Search staff..."
                             className="h-9 text-xs"
@@ -267,12 +252,12 @@ export function LoginsClient({
                     {/* Date from */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-600">From</label>
-                        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="h-9 text-xs" />
+                        <Input type="date" value={from} onChange={(e) => { setFrom(e.target.value); push({ from: e.target.value }) }} className="h-9 text-xs" />
                     </div>
                     {/* Date to */}
                     <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-600">To</label>
-                        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-9 text-xs" />
+                        <Input type="date" value={to} onChange={(e) => { setTo(e.target.value); push({ to: e.target.value }) }} className="h-9 text-xs" />
                     </div>
                 </div>
                 {/* Search */}

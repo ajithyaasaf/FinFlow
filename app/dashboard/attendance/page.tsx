@@ -4,13 +4,16 @@ import { createClient } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-    searchParams: {
+    searchParams: Promise<{
+        date?: string
+    }> | {
         date?: string
     }
 }
 
 export default async function AttendancePage({ searchParams }: PageProps) {
-    const selectedDate = searchParams.date || new Date().toISOString().split('T')[0]
+    const sp = await Promise.resolve(searchParams)
+    const selectedDate = sp.date || new Date().toISOString().split('T')[0]
     const supabase = await createClient()
 
     // Calculate date range

@@ -7,12 +7,15 @@ import { AlertCircle } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 
 interface AnalyticsPageProps {
-    searchParams: {
+    searchParams: Promise<{
+        range?: string
+    }> | {
         range?: string
     }
 }
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
+    const sp = await Promise.resolve(searchParams)
     const supabase = await createClient()
 
     // 1. Fetch current logged-in user
@@ -39,7 +42,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
     }
 
     // 4. Fetch the analytics data with requested time range
-    const timeRange = searchParams.range || 'last_12_months'
+    const timeRange = sp.range || 'last_12_months'
     const analyticsData = await getMDAnalytics(timeRange)
 
     return (

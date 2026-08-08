@@ -29,52 +29,31 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
     const [from, setFrom] = useState(searchParams.get('from') || '')
     const [to, setTo] = useState(searchParams.get('to') || '')
 
-    // Keep state in sync with URL searchParams
-    useEffect(() => {
-        setStatus(searchParams.get('status') || 'all')
-        setAgent(searchParams.get('agent') || 'all')
-        setSearch(searchParams.get('search') || '')
-        setFrom(searchParams.get('from') || '')
-        setTo(searchParams.get('to') || '')
-    }, [searchParams])
-
-    const applyFilters = () => {
+    const applyFilters = (newSearch = search, newStatus = status, newAgent = agent, newFrom = from, newTo = to) => {
         const params = new URLSearchParams()
 
-        if (status && status !== 'all') params.set('status', status)
-        if (agent && agent !== 'all') params.set('agent', agent)
-        if (search.trim()) params.set('search', search.trim())
-        if (from) params.set('from', from)
-        if (to) params.set('to', to)
+        if (newStatus && newStatus !== 'all') params.set('status', newStatus)
+        if (newAgent && newAgent !== 'all') params.set('agent', newAgent)
+        if (newSearch.trim()) params.set('search', newSearch.trim())
+        if (newFrom) params.set('from', newFrom)
+        if (newTo) params.set('to', newTo)
 
         const queryString = params.toString()
         const targetUrl = queryString ? `/dashboard/loans?${queryString}` : '/dashboard/loans'
-        router.push(targetUrl)
+        router.replace(targetUrl, { scroll: false })
     }
 
-    // Debounced live search & auto-filter on change
+    // Debounced URL sync for search input (never overwrites local typing state)
     useEffect(() => {
         const timer = setTimeout(() => {
             const currentSearch = searchParams.get('search') || ''
-            const currentStatus = searchParams.get('status') || 'all'
-            const currentAgent = searchParams.get('agent') || 'all'
-            const currentFrom = searchParams.get('from') || ''
-            const currentTo = searchParams.get('to') || ''
-
-            // Only push if values actually changed to avoid unnecessary router calls
-            if (
-                search.trim() !== currentSearch ||
-                status !== currentStatus ||
-                agent !== currentAgent ||
-                from !== currentFrom ||
-                to !== currentTo
-            ) {
+            if (search.trim() !== currentSearch) {
                 applyFilters()
             }
-        }, 300)
+        }, 400)
 
         return () => clearTimeout(timer)
-    }, [search, status, agent, from, to])
+    }, [search])
 
     const clearFilters = () => {
         setStatus('all')
@@ -98,7 +77,7 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                 {/* Status Filter */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">Status</label>
-                    <Select value={status} onValueChange={setStatus}>
+                    <Select value={status} onValueChange={(val) => { setStatus(val); applyFilters(search, val, agent, from, to) }}>
                         <SelectTrigger>
                             <SelectValue />
                         </SelectTrigger>
@@ -139,7 +118,7 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                                 }))
                             ]}
                             value={agent}
-                            onValueChange={setAgent}
+                            onValueChange={(val) => { setAgent(val); applyFilters(search, status, val, from, to) }}
                             placeholder="Select staff member"
                             searchPlaceholder="Search staff by name or email..."
                             className="h-10 rounded-xl"
@@ -152,7 +131,7 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                     <Input
                         type="date"
                         value={from}
-                        onChange={(e) => setFrom(e.target.value)}
+                        onChange={(e) => { setFrom(e.target.value); applyFilters(search, status, agent, e.target.value, to) }}
                     />
                 </div>
 
@@ -162,7 +141,7 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                     <Input
                         type="date"
                         value={to}
-                        onChange={(e) => setTo(e.target.value)}
+                        onChange={(e) => { setTo(e.target.value); applyFilters(search, status, agent, from, e.target.value) }}
                     />
                 </div>
             </div>
