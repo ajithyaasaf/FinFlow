@@ -12,6 +12,7 @@ import { Search, Plus, CreditCard, Eye, Loader2 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { STAGE_COLORS } from '@/lib/services/loginsConstants'
 import { TableSkeleton } from '@/components/dashboard/table-skeleton'
+import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
 
 interface StaffLoan {
     loan_id: string
@@ -23,6 +24,7 @@ interface StaffLoan {
     client: {
         full_name: string
         mobile_number: string
+        onboarding_agent_id?: string | null
     } | null
 }
 
@@ -42,8 +44,15 @@ export default function StaffLoansPage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
-            // Query loans where client's onboarding_agent_id is current user
-            const { data, error } = await supabase
+            // 1. Fetch user role/profile
+            const { data: profile } = await supabase
+                .from('app_users')
+                .select('role, is_tl')
+                .eq('id', user.id)
+                .single()
+
+            // 2. Fetch loans with client details
+            const { data: allLoans, error } = await supabase
                 .from('loan_applications')
                 .select(`
                     loan_id,
@@ -52,36 +61,29 @@ export default function StaffLoansPage() {
                     tenure,
                     process_stage,
                     created_at,
-                    client:clients!inner (
-                        onboarding_agent_id,
+                    assigned_tl_id,
+                    client:clients (
+                        client_id,
                         full_name,
-                        mobile_number
+                        mobile_number,
+                        onboarding_agent_id
                     )
                 `)
-                .eq('clients.onboarding_agent_id', user.id)
                 .order('created_at', { ascending: false })
 
-            if (error) {
-                // Fallback query if client join filter fails
-                const { data: fallbackData } = await supabase
-                    .from('loan_applications')
-                    .select(`
-                        loan_id,
-                        amount,
-                        interest_rate,
-                        tenure,
-                        process_stage,
-                        created_at,
-                        client:clients (
-                            full_name,
-                            mobile_number
-                        )
-                    `)
-                    .order('created_at', { ascending: false })
-
-                setLoans((fallbackData as any[]) || [])
+            if (!error && allLoans) {
+                const accessibleLoans = (allLoans as any[]).filter((loan) => {
+                    // Admin / MD can see all loans
+                    if (profile?.role === 'ADMIN' || profile?.role === 'MD') return true
+                    // Assigned Team Leader (e.g. Durga) sees loan
+                    if (loan.assigned_tl_id === user.id) return true
+                    // Onboarding Agent sees loan
+                    if (loan.client?.onboarding_agent_id === user.id) return true
+                    return false
+                })
+                setLoans(accessibleLoans)
             } else {
-                setLoans((data as any[]) || [])
+                setLoans([])
             }
         } catch (err) {
             console.error('Error fetching staff loans:', err)
@@ -174,11 +176,21 @@ export default function StaffLoansPage() {
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-                                        <div className="text-right">
+                                    <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                                        <div className="text-right mr-2">
                                             <p className="text-base font-bold text-gray-900">{formatCurrency(loan.amount)}</p>
                                             <p className="text-[11px] text-gray-500">{loan.interest_rate}% / {loan.tenure}m</p>
                                         </div>
+
+                                        <LoanStatusUpdate
+                                            loanId={loan.loan_id}
+                                            currentStage={loan.process_stage}
+                                            clientName={loan.client?.full_name || 'Client'}
+                                            loanAmount={loan.amount}
+                                            interestRate={loan.interest_rate}
+                                            tenure={loan.tenure}
+                                            agentId={loan.client?.onboarding_agent_id}
+                                        />
 
                                         <Link href={`/staff/loans/${loan.loan_id}`}>
                                             <Button size="sm" variant="outline" className="gap-1.5 rounded-xl text-xs">

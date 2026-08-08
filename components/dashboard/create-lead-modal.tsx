@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,7 +23,32 @@ interface CreateLeadModalProps {
 export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const [currentUser, setCurrentUser] = useState<{ id: string; role: string; is_tl: boolean } | null>(null)
     const [activeTab, setActiveTab] = useState<'personal' | 'business' | 'property'>('personal')
+
+    useEffect(() => {
+        if (!open) return
+        async function fetchCurrentUser() {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('app_users')
+                    .select('id, role, is_tl')
+                    .eq('id', user.id)
+                    .single()
+                if (profile) {
+                    setCurrentUser(profile)
+                    // If regular staff (not Admin, MD, or TL), auto-assign to themselves
+                    if (profile.role === 'STAFF' && !profile.is_tl) {
+                        setFormData(prev => ({ ...prev, assigned_agent_id: profile.id }))
+                    }
+                }
+            }
+        }
+        fetchCurrentUser()
+    }, [open])
+
     const [formData, setFormData] = useState({
         full_name: '',
         company_name: '',
@@ -81,6 +107,9 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
 
         try {
             const dataToSubmit = { ...formData }
+            if (currentUser && currentUser.role === 'STAFF' && !currentUser.is_tl) {
+                dataToSubmit.assigned_agent_id = currentUser.id
+            }
             if (!dataToSubmit.assigned_agent_id) {
                 // @ts-ignore
                 delete dataToSubmit.assigned_agent_id
@@ -251,21 +280,24 @@ export function CreateLeadModal({ open, onOpenChange, agents }: CreateLeadModalP
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="assigned_agent_id">Assign Staff</Label>
-                        <SearchableSelect
-                            options={agents.map((agent) => ({
-                                value: agent.id,
-                                label: agent.email ? `${agent.full_name} (${agent.email})` : agent.full_name,
-                                searchString: agent.email ? `${agent.full_name} ${agent.email}` : agent.full_name
-                            }))}
-                            value={formData.assigned_agent_id}
-                            onValueChange={(val) => setFormData({ ...formData, assigned_agent_id: val })}
-                            placeholder="Select staff member"
-                            searchPlaceholder="Search staff by name or email..."
-                            className="h-11 rounded-xl shadow-none"
-                        />
-                            </div>
+                            {/* Assign Staff: Only visible to ADMIN, MD, and Team Leaders (TL) */}
+                            {(!currentUser || currentUser.role === 'ADMIN' || currentUser.role === 'MD' || currentUser.is_tl) && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="assigned_agent_id">Assign Staff</Label>
+                                    <SearchableSelect
+                                        options={agents.map((agent) => ({
+                                            value: agent.id,
+                                            label: agent.email ? `${agent.full_name} (${agent.email})` : agent.full_name,
+                                            searchString: agent.email ? `${agent.full_name} ${agent.email}` : agent.full_name
+                                        }))}
+                                        value={formData.assigned_agent_id}
+                                        onValueChange={(val) => setFormData({ ...formData, assigned_agent_id: val })}
+                                        placeholder="Select staff member"
+                                        searchPlaceholder="Search staff by name or email..."
+                                        className="h-11 rounded-xl shadow-none"
+                                    />
+                                </div>
+                            )}
 
                             <div className="space-y-2">
                                 <Label htmlFor="heat_level">Heat Level</Label>

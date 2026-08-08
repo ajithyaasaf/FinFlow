@@ -76,7 +76,7 @@ export default function StaffDashboard() {
                 .select('*', { count: 'exact', head: true })
                 .eq('assigned_agent_id', user.id)
 
-            // Get client IDs for active loans count
+            // 3. Active Loans count (both onboarded clients and assigned TL loans)
             const { data: clientsData } = await supabase
                 .from('clients')
                 .select('client_id')
@@ -84,17 +84,16 @@ export default function StaffDashboard() {
 
             const clientIds = clientsData?.map(c => c.client_id) || []
 
-            // 3. Active Loans count
-            let activeLoansPromise;
-            if (clientIds.length > 0) {
-                activeLoansPromise = supabase
-                    .from('loan_applications')
-                    .select('*', { count: 'exact', head: true })
-                    .in('client_id', clientIds)
-                    .in('process_stage', ['Application Submitted', 'Under Review', 'Approved', 'Disbursed'])
-            } else {
-                activeLoansPromise = Promise.resolve({ count: 0 })
-            }
+            const { data: allUserLoans } = await supabase
+                .from('loan_applications')
+                .select('loan_id, client_id, assigned_tl_id, process_stage')
+                .in('process_stage', ['Application Submitted', 'Under Review', 'Approved', 'Disbursed'])
+
+            const activeLoansCount = (allUserLoans || []).filter(l => 
+                l.assigned_tl_id === user.id || clientIds.includes(l.client_id)
+            ).length
+
+            const activeLoansPromise = Promise.resolve({ count: activeLoansCount })
 
             // 4. Overdue EMIs
             const overdueEMIsPromise = supabase

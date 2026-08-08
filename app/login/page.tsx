@@ -178,7 +178,8 @@ export default function LoginPage() {
                             {[
                                 { role: 'MD', email: 'md@finflow.com', pass: 'password123' },
                                 { role: 'Admin', email: 'admin@finflow.com', pass: 'password123' },
-                                { role: 'Staff', email: 'durga', pass: '12345678' },
+                                { role: 'Team Leader', email: 'durga', pass: '12345678' },
+                                { role: 'Staff', email: 'thaslim@finflow.com', pass: '12345678' },
                             ].map((demo) => (
                                 <div key={demo.role} className="flex items-center justify-between text-xs bg-white p-2 px-3 rounded-xl border border-gray-100 hover:border-gray-300 transition-all shadow-sm">
                                     <span className="text-[#6a6a6a] font-mono text-[11px]">

@@ -14,6 +14,7 @@ import {
 import Link from 'next/link'
 import { Skeleton } from '@/components/ui/skeleton'
 import { createClient } from '@/lib/supabase/client'
+import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
 import type { EMISchedule } from '@/types'
 
 // EMI Status Badge Component
@@ -84,11 +85,19 @@ export default function AgentLoanDetailsPage() {
                     return
                 }
 
-                // Fetch loan with documents
+                // Fetch loan with client and documents in one join
                 const { data: loanData, error: loanError } = await supabase
                     .from('loan_applications')
                     .select(`
                         *,
+                        client:clients (
+                            client_id,
+                            full_name,
+                            mobile_number,
+                            pan_number,
+                            aadhaar_number,
+                            onboarding_agent_id
+                        ),
                         documents:loan_documents(*)
                     `)
                     .eq('loan_id', id)
@@ -100,25 +109,19 @@ export default function AgentLoanDetailsPage() {
                     return
                 }
 
-                // Fetch client and EMI schedule in parallel
-                const [clientRes, emiRes] = await Promise.all([
-                    supabase
-                        .from('clients')
-                        .select('client_id, full_name, onboarding_agent_id')
-                        .eq('client_id', loanData.client_id)
-                        .single(),
-                    loanData.process_stage === 'Disbursed'
-                        ? supabase
-                            .from('emi_schedule')
-                            .select('*')
-                            .eq('loan_id', id)
-                            .order('emi_number', { ascending: true })
-                        : Promise.resolve({ data: [] })
-                ])
+                let emiData: any[] = []
+                if (loanData.process_stage === 'Disbursed') {
+                    const { data: scheduleData } = await supabase
+                        .from('emi_schedule')
+                        .select('*')
+                        .eq('loan_id', id)
+                        .order('emi_number', { ascending: true })
+                    emiData = scheduleData || []
+                }
 
                 setLoan(loanData)
-                setClient(clientRes.data || null)
-                setEmiSchedule(emiRes.data || [])
+                setClient(loanData.client || { client_id: loanData.client_id, full_name: 'Client' })
+                setEmiSchedule(emiData)
             } catch (err) {
                 console.error('Failed to load agent loan details:', err)
             } finally {
@@ -195,48 +198,36 @@ export default function AgentLoanDetailsPage() {
         )
     }
 
-    // Error: Access denied (RLS blocking)
-    if (!client) {
-        return (
-            <div className="min-h-screen bg-gray-50 pb-20">
-                <PageHeader title="Loan Details" backHref="/staff/clients" />
-                <main className="p-4">
-                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 flex items-start gap-3">
-                        <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
-                        <div>
-                            <h2 className="font-semibold text-yellow-800">Access Denied</h2>
-                            <p className="text-sm text-yellow-600 mt-1">
-                                You can only view loans for clients you onboarded.
-                            </p>
-                            <Link href="/staff/clients" className="text-sm text-yellow-700 underline mt-2 inline-block">
-                                Back to Clients
-                            </Link>
-                        </div>
-                    </div>
-                </main>
-            </div>
-        )
-    }
-
     const isDisbursed = loan.process_stage === 'Disbursed'
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <PageHeader
                 title="Loan Details"
-                subtitle={client.full_name}
-                backHref="/staff/clients"
+                subtitle={client?.full_name || 'Client Details'}
+                backHref="/staff/loans"
             />
 
             <main className="p-4 space-y-4">
                 {/* Status & Amount Card */}
                 <Card>
                     <CardContent className="pt-4">
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-sm text-gray-500">Status</span>
-                            <Badge variant={isDisbursed ? 'default' : 'secondary'}>
-                                {loan.process_stage}
-                            </Badge>
+                        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-500">Status:</span>
+                                <Badge variant={isDisbursed ? 'default' : 'secondary'} className="text-xs">
+                                    {loan.process_stage}
+                                </Badge>
+                            </div>
+                            <LoanStatusUpdate
+                                loanId={loan.loan_id}
+                                currentStage={loan.process_stage}
+                                clientName={client?.full_name || 'Client'}
+                                loanAmount={loan.amount}
+                                interestRate={loan.interest_rate}
+                                tenure={loan.tenure}
+                                agentId={client?.onboarding_agent_id}
+                            />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
