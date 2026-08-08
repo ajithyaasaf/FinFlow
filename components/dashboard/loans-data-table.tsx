@@ -16,6 +16,7 @@ import { Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { LoanWithRelations } from '@/lib/services/loanService'
 import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
+import { LoanHistoryModal } from '@/components/dashboard/loan-history-modal'
 
 interface LoansDataTableProps {
     loans: LoanWithRelations[]
@@ -123,6 +124,11 @@ export function LoansDataTable({ loans, currentPage, totalPages, total }: LoansD
                                                 interestRate={loan.interest_rate}
                                                 tenure={loan.tenure}
                                                 agentId={loan.onboarding_agent?.id}
+                                            />
+                                            <LoanHistoryModal
+                                                loanId={loan.loan_id}
+                                                clientName={client?.full_name}
+                                                referenceNo={loan.login_reference_number || undefined}
                                             />
                                             <Link href={`/dashboard/loans/${loan.loan_id}`}>
                                                 <Button

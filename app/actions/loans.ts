@@ -152,3 +152,41 @@ export async function updateLoanStatusAction(params: UpdateLoanStatusParams) {
 
     return { success: true }
 }
+
+/**
+ * Fetch chronological activity and audit history for a loan application
+ */
+export async function getLoanAuditLogsAction(loanId: string) {
+    const adminSupabase = createAdminClient()
+
+    try {
+        const { data, error } = await adminSupabase
+            .from('system_logs')
+            .select(`
+                log_id,
+                action_type,
+                old_value,
+                new_value,
+                created_at,
+                user:app_users (
+                    full_name,
+                    email,
+                    role,
+                    is_tl
+                )
+            `)
+            .eq('entity_type', 'LOAN')
+            .eq('entity_id', loanId)
+            .order('created_at', { ascending: false })
+
+        if (error) {
+            console.error('Error fetching loan audit logs:', error)
+            return { success: false, logs: [] }
+        }
+
+        return { success: true, logs: data || [] }
+    } catch (err: any) {
+        console.error('getLoanAuditLogsAction exception:', err)
+        return { success: false, logs: [] }
+    }
+}

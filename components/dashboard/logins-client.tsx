@@ -18,6 +18,7 @@ import {
 import { formatCurrency } from '@/lib/utils'
 import { LOGINS_STAGES, STAGE_COLORS, REGIONS, type LoginWithRelations, type LoginsStats } from '@/lib/services/loginsConstants'
 import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
+import { LoanHistoryModal } from '@/components/dashboard/loan-history-modal'
 
 // ─────────────────────────────────────────────
 // Metric card
@@ -377,6 +378,11 @@ function LoginsRow({ login, router }: { login: LoginWithRelations; router: Retur
                         interestRate={login.interest_rate}
                         tenure={login.tenure}
                         agentId={login.onboarding_agent?.id}
+                    />
+                    <LoanHistoryModal
+                        loanId={login.loan_id}
+                        clientName={login.client?.full_name}
+                        referenceNo={refNo}
                     />
                     <Link href={`/dashboard/loans/${login.loan_id}`}>
                         <Button
