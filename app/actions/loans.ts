@@ -143,8 +143,10 @@ export async function updateLoanStatusAction(params: UpdateLoanStatusParams) {
     revalidatePath('/dashboard/logins')
     revalidatePath('/dashboard/loans')
     revalidatePath('/dashboard/clients')
+    revalidatePath('/dashboard/leads')
     revalidatePath('/staff')
     revalidatePath('/staff/loans')
+    revalidatePath('/staff/leads')
     revalidatePath(`/staff/loans/${params.loanId}`)
     revalidatePath(`/dashboard/loans/${params.loanId}`)
 

@@ -41,14 +41,19 @@ function ReportsPageContent() {
                 const startOfLastPeriod = new Date(startOfMonth.getTime() - duration)
                 const endOfLastPeriod = new Date(startOfMonth.getTime())
 
-                // Fetch loan applications for period
+                // Fetch loan applications for period with client onboarding agent and assigned TL
                 let loanQuery = supabase.from('loan_applications').select(`
                     loan_id,
                     amount,
                     sanctioned_amount,
                     process_stage,
                     created_at,
-                    onboarding_agent_id
+                    assigned_tl_id,
+                    client:clients (
+                        client_id,
+                        full_name,
+                        onboarding_agent_id
+                    )
                 `)
 
                 if (from) loanQuery = loanQuery.gte('created_at', new Date(from).toISOString())
@@ -56,7 +61,7 @@ function ReportsPageContent() {
 
                 const [loansRes, staffRes] = await Promise.all([
                     loanQuery,
-                    supabase.from('app_users').select('id, full_name').eq('role', 'STAFF')
+                    supabase.from('app_users').select('id, full_name, role, is_tl').in('role', ['STAFF', 'ADMIN', 'MD'])
                 ])
 
                 const loans = loansRes.data || []
@@ -73,7 +78,7 @@ function ReportsPageContent() {
                     staffMap[staff.id] = { id: staff.id, full_name: staff.full_name, disbursed: 0, sanctioned: 0, applied: 0, files: 0 }
                 }
 
-                for (const loan of loans) {
+                for (const loan of loans as any[]) {
                     const amt = Number(loan.amount) || 0
                     const sanctionedAmt = Number(loan.sanctioned_amount || loan.amount) || 0
                     const stage = loan.process_stage
@@ -88,8 +93,24 @@ function ReportsPageContent() {
                         totalSanctionedVolume += sanctionedAmt
                     }
 
-                    if (loan.onboarding_agent_id && staffMap[loan.onboarding_agent_id]) {
-                        const s = staffMap[loan.onboarding_agent_id]
+                    // Attribute volume to onboarding agent
+                    const onboardingAgentId = loan.client?.onboarding_agent_id
+                    if (onboardingAgentId && staffMap[onboardingAgentId]) {
+                        const s = staffMap[onboardingAgentId]
+                        s.applied += amt
+                        s.files += 1
+                        if (stage === 'Disbursed' || stage === 'Disbursement') {
+                            s.disbursed += amt
+                        }
+                        if (stage === 'Sanctioned' || stage === 'Sanction' || stage === 'Disbursed' || stage === 'Disbursement') {
+                            s.sanctioned += sanctionedAmt
+                        }
+                    }
+
+                    // Also attribute to assigned Team Leader if different
+                    const tlId = loan.assigned_tl_id
+                    if (tlId && tlId !== onboardingAgentId && staffMap[tlId]) {
+                        const s = staffMap[tlId]
                         s.applied += amt
                         s.files += 1
                         if (stage === 'Disbursed' || stage === 'Disbursement') {
