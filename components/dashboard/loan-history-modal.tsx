@@ -1,14 +1,13 @@
-'use client'
-
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import { History, Clock, User, CheckCircle, ArrowRight, FileText, AlertCircle, Sparkles, RefreshCw } from 'lucide-react'
+import { History, Clock, User, CheckCircle, ArrowRight, FileText, Sparkles, RefreshCw, Search, Calendar as CalendarIcon, X } from 'lucide-react'
 import { getLoanAuditLogsAction } from '@/app/actions/loans'
-import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { formatCurrency, formatDateTime, formatDate } from '@/lib/utils'
 
 interface LoanHistoryModalProps {
     loanId: string
@@ -135,11 +134,15 @@ export function LoanHistoryModal({ loanId, clientName, referenceNo, trigger }: L
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [logs, setLogs] = useState<AuditLogItem[]>([])
+    const [searchQuery, setSearchQuery] = useState('')
+    const [selectedDate, setSelectedDate] = useState('')
 
     const handleOpenChange = async (isOpen: boolean) => {
         setOpen(isOpen)
         if (isOpen) {
             setLoading(true)
+            setSearchQuery('')
+            setSelectedDate('')
             try {
                 const res = await getLoanAuditLogsAction(loanId)
                 if (res.success) {
@@ -155,6 +158,39 @@ export function LoanHistoryModal({ loanId, clientName, referenceNo, trigger }: L
 
     const displayRef = referenceNo || loanId.slice(0, 8).toUpperCase()
 
+    // Filter logs by search query and selected date
+    const filteredLogs = useMemo(() => {
+        return logs.filter(log => {
+            // Date filter match
+            if (selectedDate) {
+                const logDate = new Date(log.created_at).toISOString().split('T')[0]
+                if (logDate !== selectedDate) return false
+            }
+
+            // Search query match (staff name, stage, notes, action type)
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim()
+                const userName = log.user?.full_name?.toLowerCase() || ''
+                const userRole = getRoleBadge(log.user).toLowerCase()
+                const oldStage = (log.old_value?.process_stage || '').toLowerCase()
+                const newStage = (log.new_value?.process_stage || '').toLowerCase()
+                const notes = (log.new_value?.notes || '').toLowerCase()
+                const actionLabel = (ACTION_CONFIG[log.action_type]?.label || '').toLowerCase()
+
+                const matches = userName.includes(q) ||
+                    userRole.includes(q) ||
+                    oldStage.includes(q) ||
+                    newStage.includes(q) ||
+                    notes.includes(q) ||
+                    actionLabel.includes(q)
+
+                if (!matches) return false
+            }
+
+            return true
+        })
+    }, [logs, searchQuery, selectedDate])
+
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
@@ -169,8 +205,8 @@ export function LoanHistoryModal({ loanId, clientName, referenceNo, trigger }: L
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[540px] p-0 overflow-hidden rounded-2xl border-gray-200">
-                <DialogHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/50">
+            <DialogContent className="sm:max-w-[560px] p-0 overflow-hidden rounded-2xl border-gray-200 shadow-xl">
+                <DialogHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/50 space-y-3">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -182,12 +218,51 @@ export function LoanHistoryModal({ loanId, clientName, referenceNo, trigger }: L
                             </DialogDescription>
                         </div>
                         <Badge variant="secondary" className="text-[11px] font-mono shrink-0">
-                            {logs.length} {logs.length === 1 ? 'event' : 'events'}
+                            {filteredLogs.length} / {logs.length} {logs.length === 1 ? 'event' : 'events'}
                         </Badge>
+                    </div>
+
+                    {/* Smart Search & Date Filter Bar */}
+                    <div className="flex items-center gap-2 pt-1">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-400" />
+                            <Input
+                                placeholder="Search by staff, stage, or notes..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="h-8.5 pl-8 text-xs bg-white border-gray-200 rounded-xl focus-visible:ring-primary/20"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            )}
+                        </div>
+                        <div className="relative w-36 shrink-0">
+                            <Input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="h-8.5 text-xs bg-white border-gray-200 rounded-xl focus-visible:ring-primary/20"
+                            />
+                        </div>
+                        {(searchQuery || selectedDate) && (
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => { setSearchQuery(''); setSelectedDate('') }}
+                                className="h-8.5 text-xs text-gray-500 hover:text-gray-900 px-2 rounded-xl"
+                            >
+                                Clear
+                            </Button>
+                        )}
                     </div>
                 </DialogHeader>
 
-                <ScrollArea className="max-h-[60vh] p-5">
+                <ScrollArea className="max-h-[58vh] p-5">
                     {loading ? (
                         <div className="space-y-4 py-2">
                             {[1, 2, 3].map((i) => (
@@ -210,9 +285,22 @@ export function LoanHistoryModal({ loanId, clientName, referenceNo, trigger }: L
                                 Stage transitions and term adjustments will be automatically recorded here with timestamps and user details.
                             </p>
                         </div>
+                    ) : filteredLogs.length === 0 ? (
+                        <div className="text-center py-8 space-y-2">
+                            <p className="text-sm font-medium text-gray-700">No events match your filter</p>
+                            <p className="text-xs text-gray-400">Try adjusting your search terms or date selection.</p>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => { setSearchQuery(''); setSelectedDate('') }}
+                                className="h-7 text-xs rounded-xl"
+                            >
+                                Reset Filter
+                            </Button>
+                        </div>
                     ) : (
                         <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
-                            {logs.map((log) => {
+                            {filteredLogs.map((log) => {
                                 const config = ACTION_CONFIG[log.action_type] || {
                                     label: log.action_type.replace(/_/g, ' '),
                                     badgeColor: 'bg-gray-100 text-gray-700 border-gray-200',
@@ -229,7 +317,7 @@ export function LoanHistoryModal({ loanId, clientName, referenceNo, trigger }: L
                                         </div>
 
                                         {/* Event Card */}
-                                        <div className="p-3 bg-white rounded-xl border border-gray-200/80 shadow-2xs space-y-2 hover:border-gray-300 transition-colors">
+                                        <div className="p-3.5 bg-white rounded-xl border border-gray-200/80 shadow-2xs space-y-2.5 hover:border-gray-300 transition-colors">
                                             <div className="flex items-center justify-between gap-2 flex-wrap">
                                                 <Badge className={`text-[10px] font-semibold border ${config.badgeColor}`}>
                                                     {config.label}
