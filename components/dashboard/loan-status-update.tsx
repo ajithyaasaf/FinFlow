@@ -11,11 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, AlertTriangle } from 'lucide-react'
-import { createAuditLogAction } from '@/app/actions/server-actions'
-import { createNotificationAction } from '@/app/actions/server-actions'
-import { generateEMISchedule } from '@/lib/emi-calculator'
-import { format } from 'date-fns'
-
+import { updateLoanStatusAction } from '@/app/actions/loans'
 import { LOGINS_STAGES } from '@/lib/services/loginsConstants'
 
 const PROCESS_STAGES = LOGINS_STAGES
@@ -94,114 +90,29 @@ export function LoanStatusUpdate({
         setLoading(true)
 
         try {
-            const updateData: any = {
-                process_stage: newStage,
-                updated_at: new Date().toISOString(),
-            }
+            const res = await updateLoanStatusAction({
+                loanId,
+                newStage,
+                currentStage,
+                notes: notes.trim(),
+                rejectionReason: rejectionReason || notes.trim(),
+                disbursementRef: disbursementRef.trim(),
+                disbursementDate,
+                loanAmount,
+                interestRate,
+                tenure,
+            })
 
-            if (notes.trim()) {
-                updateData.notes = notes.trim()
-            }
-
-            // Add conditional fields
-            if (isClosedStage) {
-                updateData.rejection_reason = rejectionReason || notes.trim()
-            }
-
-            if (isDisbursementStage) {
-                updateData.disbursement_reference = disbursementRef.trim()
-                updateData.disbursement_date = new Date(disbursementDate).toISOString()
-            }
-
-            const { error } = await supabase
-                .from('loan_applications')
-                .update(updateData)
-                .eq('loan_id', loanId)
-
-            if (error) throw error
-
-            // Generate EMI schedule when disbursing
-            if (isDisbursementStage && loanAmount && interestRate && tenure) {
-                const disbursementDateObj = new Date(disbursementDate)
-                const schedule = generateEMISchedule(
-                    loanAmount,
-                    interestRate,
-                    tenure,
-                    disbursementDateObj
-                )
-
-                // Insert EMI schedule into database
-                const scheduleData = schedule.map(item => ({
-                    loan_id: loanId,
-                    emi_number: item.emiNumber,
-                    due_date: format(item.dueDate, 'yyyy-MM-dd'),
-                    emi_amount: item.emiAmount,
-                    principal_component: item.principalComponent,
-                    interest_component: item.interestComponent,
-                    outstanding_principal: item.outstandingPrincipal,
-                    status: 'PENDING'
-                }))
-
-                const { error: scheduleError } = await supabase
-                    .from('emi_schedule')
-                    .insert(scheduleData)
-
-                if (scheduleError) {
-                    console.error('EMI schedule creation error:', scheduleError)
-                    // Don't throw - loan is already marked as disbursed
-                    toast.error('Warning: EMI schedule generation failed. Please check manually.')
-                } else {
-                    toast.success(`EMI schedule created with ${tenure} installments`)
-                }
-            }
-
-            // Create audit log
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                await createAuditLogAction({
-                    userId: user.id,
-                    action: 'LOAN_STATUS_CHANGE',
-                    entityType: 'LOAN',
-                    entityId: loanId,
-                    oldValue: { process_stage: currentStage },
-                    newValue: updateData,
-                })
-            }
-
-            // Send notification to agent
-            const { data: loanData } = await supabase
-                .from('loan_applications')
-                .select(`
-                    client_id,
-                    clients!inner (
-                        onboarding_agent_id,
-                        full_name
-                    )
-                `)
-                .eq('loan_id', loanId)
-                .single()
-
-            if (loanData?.clients) {
-                const client = loanData.clients as any
-                if (client.onboarding_agent_id) {
-                    await createNotificationAction({
-                        userId: client.onboarding_agent_id,
-                        title: 'Loan Status Updated',
-                        message: `Loan for ${client.full_name} moved to ${newStage}`,
-                        type: 'INFO',
-                        entityType: 'LOAN',
-                        entityId: loanId,
-                        linkUrl: `/agent/clients`,
-                    })
-                }
+            if (!res.success) {
+                throw new Error(res.error || 'Failed to update loan status')
             }
 
             toast.success(`Loan status updated to: ${newStage}`)
-            setOpen(false)       // Close immediately — user can navigate while list updates
-            router.refresh()     // Refresh loan list in background
-        } catch (error) {
+            setOpen(false)
+            router.refresh()
+        } catch (error: any) {
             console.error('Update error:', error)
-            toast.error('Failed to update loan status')
+            toast.error(error.message || 'Failed to update loan status')
         } finally {
             setLoading(false)
         }
