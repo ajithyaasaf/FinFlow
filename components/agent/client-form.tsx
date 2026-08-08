@@ -211,6 +211,7 @@ export function ClientForm({ onSuccess, returnUrl }: ClientFormProps) {
             if (onSuccess) {
                 onSuccess(client)
             } else if (returnUrl) {
+                router.refresh()
                 router.push(returnUrl)
             } else {
                 router.refresh()
