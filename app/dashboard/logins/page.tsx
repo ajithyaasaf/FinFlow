@@ -8,7 +8,16 @@ export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
 interface PageProps {
-    searchParams: {
+    searchParams: Promise<{
+        stage?: string
+        region?: string
+        bank?: string
+        agent?: string
+        search?: string
+        from?: string
+        to?: string
+        page?: string
+    }> | {
         stage?: string
         region?: string
         bank?: string
@@ -23,15 +32,17 @@ interface PageProps {
 export default async function LoginsPage({ searchParams }: PageProps) {
     const supabase = await createClient()
 
+    const sp = await Promise.resolve(searchParams)
+
     const params = {
-        stage:  searchParams.stage  || 'all',
-        region: searchParams.region || 'all',
-        bank:   searchParams.bank   || 'all',
-        agent:  searchParams.agent  || 'all',
-        search: searchParams.search || '',
-        from:   searchParams.from   || '',
-        to:     searchParams.to     || '',
-        page:   searchParams.page   || '1',
+        stage:  sp.stage  || 'all',
+        region: sp.region || 'all',
+        bank:   sp.bank   || 'all',
+        agent:  sp.agent  || 'all',
+        search: (sp.search || '').trim(),
+        from:   sp.from   || '',
+        to:     sp.to     || '',
+        page:   sp.page   || '1',
     }
 
     // Fetch everything in parallel

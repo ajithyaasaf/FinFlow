@@ -29,17 +29,52 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
     const [from, setFrom] = useState(searchParams.get('from') || '')
     const [to, setTo] = useState(searchParams.get('to') || '')
 
+    // Keep state in sync with URL searchParams
+    useEffect(() => {
+        setStatus(searchParams.get('status') || 'all')
+        setAgent(searchParams.get('agent') || 'all')
+        setSearch(searchParams.get('search') || '')
+        setFrom(searchParams.get('from') || '')
+        setTo(searchParams.get('to') || '')
+    }, [searchParams])
+
     const applyFilters = () => {
         const params = new URLSearchParams()
 
         if (status && status !== 'all') params.set('status', status)
         if (agent && agent !== 'all') params.set('agent', agent)
-        if (search) params.set('search', search)
+        if (search.trim()) params.set('search', search.trim())
         if (from) params.set('from', from)
         if (to) params.set('to', to)
 
-        router.push(`/dashboard/loans?${params.toString()}`)
+        const queryString = params.toString()
+        const targetUrl = queryString ? `/dashboard/loans?${queryString}` : '/dashboard/loans'
+        router.push(targetUrl)
     }
+
+    // Debounced live search & auto-filter on change
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const currentSearch = searchParams.get('search') || ''
+            const currentStatus = searchParams.get('status') || 'all'
+            const currentAgent = searchParams.get('agent') || 'all'
+            const currentFrom = searchParams.get('from') || ''
+            const currentTo = searchParams.get('to') || ''
+
+            // Only push if values actually changed to avoid unnecessary router calls
+            if (
+                search.trim() !== currentSearch ||
+                status !== currentStatus ||
+                agent !== currentAgent ||
+                from !== currentFrom ||
+                to !== currentTo
+            ) {
+                applyFilters()
+            }
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [search, status, agent, from, to])
 
     const clearFilters = () => {
         setStatus('all')
@@ -137,18 +172,16 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                        placeholder="Search by client name..."
+                        placeholder="Search by client name, mobile, reference no, or ID..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
                         className="pl-10"
                     />
                 </div>
-                <Button onClick={applyFilters}>Apply Filters</Button>
                 {hasActiveFilters && (
-                    <Button variant="outline" onClick={clearFilters} className="gap-2">
+                    <Button variant="outline" onClick={clearFilters} className="gap-2 shrink-0">
                         <X className="h-4 w-4" />
-                        Clear
+                        Clear Filters
                     </Button>
                 )}
             </div>

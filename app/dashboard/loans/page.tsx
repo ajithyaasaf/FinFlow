@@ -12,7 +12,14 @@ export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
 interface PageProps {
-    searchParams: {
+    searchParams: Promise<{
+        status?: string
+        agent?: string
+        search?: string
+        from?: string
+        to?: string
+        page?: string
+    }> | {
         status?: string
         agent?: string
         search?: string
@@ -25,12 +32,15 @@ interface PageProps {
 export default async function AdminLoansPage({ searchParams }: PageProps) {
     const supabase = await createClient()
 
-    const status = searchParams.status || 'all'
-    const agent = searchParams.agent || 'all'
-    const search = searchParams.search || ''
-    const fromDate = searchParams.from || ''
-    const toDate = searchParams.to || ''
-    const page = searchParams.page || '1'
+    // Next.js 15: await searchParams
+    const sp = await Promise.resolve(searchParams)
+
+    const status = sp.status || 'all'
+    const agent = sp.agent || 'all'
+    const search = (sp.search || '').trim()
+    const fromDate = sp.from || ''
+    const toDate = sp.to || ''
+    const page = sp.page || '1'
     const currentPage = parseInt(page)
 
     // Fetch agents list
@@ -57,10 +67,10 @@ export default async function AdminLoansPage({ searchParams }: PageProps) {
         query = query.eq('process_stage', status)
     }
     if (fromDate) {
-        query = query.gte('created_at', fromDate)
+        query = query.gte('created_at', `${fromDate}T00:00:00.000Z`)
     }
     if (toDate) {
-        query = query.lte('created_at', toDate)
+        query = query.lte('created_at', `${toDate}T23:59:59.999Z`)
     }
 
     const [agentsRes, loansRes] = await Promise.all([
@@ -82,15 +92,29 @@ export default async function AdminLoansPage({ searchParams }: PageProps) {
                 : loan.onboarding_agent?.onboarding_agent || null
         })) as LoanWithRelations[]
 
-        // Filtering for agent and name search
+        // Filtering for agent and search query
         if (agent && agent !== 'all') {
-            processedLoans = processedLoans.filter(loan => loan.onboarding_agent?.id === agent)
+            processedLoans = processedLoans.filter(loan =>
+                loan.onboarding_agent?.id === agent ||
+                loan.assigned_tl_id === agent ||
+                loan.client?.onboarding_agent_id === agent
+            )
         }
         if (search) {
-            const searchLower = search.toLowerCase()
-            processedLoans = processedLoans.filter(loan =>
-                loan.client?.full_name?.toLowerCase().includes(searchLower)
-            )
+            const q = search.toLowerCase()
+            processedLoans = processedLoans.filter(loan => {
+                const clientName = (loan.client?.full_name || '').toLowerCase()
+                const clientPhone = (loan.client?.mobile_number || '').toLowerCase()
+                const loanId = (loan.loan_id || '').toLowerCase()
+                const refNo = (loan.login_reference_number || '').toLowerCase()
+                const staffName = (loan.onboarding_agent?.full_name || '').toLowerCase()
+
+                return clientName.includes(q) ||
+                    clientPhone.includes(q) ||
+                    loanId.includes(q) ||
+                    refNo.includes(q) ||
+                    staffName.includes(q)
+            })
         }
 
         loans = processedLoans

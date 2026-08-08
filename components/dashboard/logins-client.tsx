@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
@@ -77,10 +77,39 @@ export function LoginsClient({
 
     const push = (extra?: Record<string, string>) => {
         const p = new URLSearchParams()
-        const vals = { stage, region, bank, agent, search, from, to, ...extra }
+        const vals = { stage, region, bank, agent, search: search.trim(), from, to, ...extra }
         Object.entries(vals).forEach(([k, v]) => { if (v && v !== 'all') p.set(k, v) })
-        startTransition(() => router.push(`/dashboard/logins?${p.toString()}`))
+        const queryString = p.toString()
+        const targetUrl = queryString ? `/dashboard/logins?${queryString}` : '/dashboard/logins'
+        startTransition(() => router.push(targetUrl))
     }
+
+    // Debounced live search & auto-filter on change
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const currentSearch = searchParams.get('search') || ''
+            const currentStage = searchParams.get('stage') || 'all'
+            const currentRegion = searchParams.get('region') || 'all'
+            const currentBank = searchParams.get('bank') || 'all'
+            const currentAgent = searchParams.get('agent') || 'all'
+            const currentFrom = searchParams.get('from') || ''
+            const currentTo = searchParams.get('to') || ''
+
+            if (
+                search.trim() !== currentSearch ||
+                stage !== currentStage ||
+                region !== currentRegion ||
+                bank !== currentBank ||
+                agent !== currentAgent ||
+                from !== currentFrom ||
+                to !== currentTo
+            ) {
+                push()
+            }
+        }, 300)
+
+        return () => clearTimeout(timer)
+    }, [search, stage, region, bank, agent, from, to])
 
     const clear = () => {
         setStage('all'); setRegion('all'); setBank('all')
@@ -246,22 +275,15 @@ export function LoginsClient({
                         <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="h-9 text-xs" />
                     </div>
                 </div>
-                {/* Search + apply */}
-                <div className="flex gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                        <Input
-                            placeholder="Search by client name, reference no, or product..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && push()}
-                            className="pl-9 h-9 text-sm"
-                        />
-                    </div>
-                    <Button onClick={() => push()} size="sm" disabled={isPending} className="gap-1.5">
-                        {isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-                        Apply
-                    </Button>
+                {/* Search */}
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                    <Input
+                        placeholder="Search by client name, reference no, or product..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-9 text-sm"
+                    />
                 </div>
             </div>
 
