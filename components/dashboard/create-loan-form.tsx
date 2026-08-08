@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
@@ -9,12 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ClientSearchSelect } from '@/components/ui/client-search-select'
-import { Loader2, Calculator, Search } from 'lucide-react'
+import { Loader2, Calculator } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect } from 'react'
 import type { Client, BankPartner, AppUser } from '@/types'
-import { calculateEMI } from '@/lib/utils'
-import { formatCurrency } from '@/lib/utils'
+import { calculateEMI, formatCurrency } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { REGIONS } from '@/lib/services/loginsConstants'
 
@@ -159,6 +157,7 @@ export function CreateLoanForm({ clients, partners, allStaff, topupContext }: Cr
             const nextUrl = isStaff
                 ? `/staff/loans/${loan.loan_id}`
                 : `/dashboard/loans/${loan.loan_id}`
+            router.refresh()
             router.push(nextUrl)
         } catch (error) {
             console.error('Create loan error:', error)
@@ -272,9 +271,9 @@ export function CreateLoanForm({ clients, partners, allStaff, topupContext }: Cr
                                     </SelectTrigger>
                                     <SelectContent>
                                         {partners.map((p) => (
-                                            <SelectItem key={p.partner_id} value={p.partner_id}>
-                                                {p.bank_name} ({p.branch_name || 'Main'})
-                                            </SelectItem>
+                                             <SelectItem key={p.partner_id} value={p.partner_id}>
+                                                 {p.bank_name} ({p.branch_name || 'Main'})
+                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
