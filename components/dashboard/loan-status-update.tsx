@@ -25,6 +25,7 @@ interface LoanStatusUpdateProps {
     interestRate?: number
     tenure?: number
     agentId?: string | null
+    onStatusChange?: (newStage: string) => void
 }
 
 export function LoanStatusUpdate({
@@ -34,7 +35,8 @@ export function LoanStatusUpdate({
     loanAmount,
     interestRate,
     tenure,
-    agentId
+    agentId,
+    onStatusChange
 }: LoanStatusUpdateProps) {
     const router = useRouter()
     const supabase = createClient()
@@ -109,6 +111,7 @@ export function LoanStatusUpdate({
 
             toast.success(`Loan status updated to: ${newStage}`)
             setOpen(false)
+            onStatusChange?.(newStage)
             router.refresh()
         } catch (error: any) {
             console.error('Update error:', error)

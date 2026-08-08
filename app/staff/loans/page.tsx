@@ -190,6 +190,7 @@ export default function StaffLoansPage() {
                                             interestRate={loan.interest_rate}
                                             tenure={loan.tenure}
                                             agentId={loan.client?.onboarding_agent_id}
+                                            onStatusChange={(stage) => setLoans(prev => prev.map(l => l.loan_id === loan.loan_id ? { ...l, process_stage: stage } : l))}
                                         />
 
                                         <Link href={`/staff/loans/${loan.loan_id}`}>

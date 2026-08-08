@@ -164,8 +164,10 @@ export async function getLoanAuditLogsAction(loanId: string) {
         return { success: false, error: 'Unauthorized', logs: [] }
     }
 
+    const adminSupabase = createAdminClient()
+
     // Role verification: strictly MD and Admin only
-    const { data: userProfile } = await supabase
+    const { data: userProfile } = await adminSupabase
         .from('app_users')
         .select('role')
         .eq('id', user.id)
@@ -174,8 +176,6 @@ export async function getLoanAuditLogsAction(loanId: string) {
     if (!userProfile || (userProfile.role !== 'MD' && userProfile.role !== 'ADMIN')) {
         return { success: false, error: 'Access restricted to Managing Director', logs: [] }
     }
-
-    const adminSupabase = createAdminClient()
 
     try {
         const { data, error } = await adminSupabase

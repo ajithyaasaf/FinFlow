@@ -230,6 +230,7 @@ export default function AgentLoanDetailsPage() {
                                 interestRate={loan.interest_rate}
                                 tenure={loan.tenure}
                                 agentId={client?.onboarding_agent_id}
+                                onStatusChange={(stage) => setLoan((prev: any) => prev ? ({ ...prev, process_stage: stage }) : null)}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
