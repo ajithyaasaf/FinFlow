@@ -14,6 +14,7 @@ import Link from 'next/link'
 import type { Client, BankPartner, AppUser } from '@/types'
 import { calculateEMI, formatCurrency } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { REGIONS } from '@/lib/services/loginsConstants'
 
 interface TopupContext {
@@ -39,9 +40,27 @@ export function CreateLoanForm({ clients, partners, allStaff, topupContext }: Cr
     const supabase = createClient()
 
     const [loading, setLoading] = useState(false)
+    const [currentUser, setCurrentUser] = useState<{ id: string; role: string; is_tl: boolean } | null>(null)
     const [lenderModel, setLenderModel] = useState<'DIRECT' | 'BROKERAGE'>('DIRECT')
     const isTopUp = !!topupContext?.topupOfferId
     const maxTopUpAmount = topupContext ? parseFloat(topupContext.maxAmount) : Infinity
+
+    useEffect(() => {
+        async function loadCurrentUser() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('app_users')
+                    .select('id, role, is_tl')
+                    .eq('id', user.id)
+                    .single()
+                if (profile) {
+                    setCurrentUser(profile)
+                }
+            }
+        }
+        loadCurrentUser()
+    }, [])
 
     const [formData, setFormData] = useState({
         client_id: topupContext?.clientId || '',
@@ -256,6 +275,46 @@ export function CreateLoanForm({ clients, partners, allStaff, topupContext }: Cr
                                 </SelectContent>
                             </Select>
                         </div>
+
+                        {/* Region */}
+                        <div className="space-y-2">
+                            <Label htmlFor="region">Region</Label>
+                            <Select
+                                value={formData.region}
+                                onValueChange={(val) => setFormData(prev => ({ ...prev, region: val }))}
+                            >
+                                <SelectTrigger id="region">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {REGIONS.map((r) => (
+                                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Assign Staff / Team Leader: Only visible to ADMIN, MD, and Team Leaders (TL) */}
+                        {(!currentUser || currentUser.role === 'ADMIN' || currentUser.role === 'MD' || currentUser.is_tl) && (
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="assigned_tl_id">Assign Staff / Team Leader <span className="text-gray-400 font-normal">(optional)</span></Label>
+                                <SearchableSelect
+                                    options={[
+                                        { value: 'none', label: 'None (Self / Unassigned)' },
+                                        ...allStaff.map((s) => ({
+                                            value: s.id,
+                                            label: `${s.full_name} (${s.role === 'STAFF' ? (s.is_tl ? 'Team Leader' : 'Staff') : s.role})`,
+                                            searchString: `${s.full_name} ${s.email || ''} ${s.role}`
+                                        }))
+                                    ]}
+                                    value={formData.assigned_tl_id || 'none'}
+                                    onValueChange={(val) => setFormData(prev => ({ ...prev, assigned_tl_id: val }))}
+                                    placeholder="Select Staff or Team Leader"
+                                    searchPlaceholder="Search staff by name, email, or role..."
+                                    className="h-11 rounded-xl shadow-none"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {lenderModel === 'BROKERAGE' && (
@@ -307,45 +366,6 @@ export function CreateLoanForm({ clients, partners, allStaff, topupContext }: Cr
                                     value={formData.original_request_date}
                                     onChange={(e) => setFormData(prev => ({ ...prev, original_request_date: e.target.value }))}
                                 />
-                            </div>
-
-                            {/* Region */}
-                            <div className="space-y-2">
-                                <Label htmlFor="region">Region</Label>
-                                <Select
-                                    value={formData.region}
-                                    onValueChange={(val) => setFormData(prev => ({ ...prev, region: val }))}
-                                >
-                                    <SelectTrigger id="region">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {REGIONS.map((r) => (
-                                            <SelectItem key={r} value={r}>{r}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Assigned TL */}
-                            <div className="space-y-2">
-                                <Label htmlFor="assigned_tl_id">Assigned TL <span className="text-gray-400 font-normal">(optional)</span></Label>
-                                <Select
-                                    value={formData.assigned_tl_id}
-                                    onValueChange={(val) => setFormData(prev => ({ ...prev, assigned_tl_id: val }))}
-                                >
-                                    <SelectTrigger id="assigned_tl_id">
-                                        <SelectValue placeholder="Select TL" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="none">None</SelectItem>
-                                        {allStaff.filter(s => s.role === 'ADMIN' || s.role === 'MD' || s.is_tl).map((s) => (
-                                            <SelectItem key={s.id} value={s.id}>
-                                                {s.full_name} ({s.role === 'STAFF' && s.is_tl ? 'TL' : s.role})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                             </div>
                         </div>
                     )}
