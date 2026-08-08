@@ -155,8 +155,26 @@ export async function updateLoanStatusAction(params: UpdateLoanStatusParams) {
 
 /**
  * Fetch chronological activity and audit history for a loan application
+ * Strictly restricted to MD (Managing Director) and Admin roles
  */
 export async function getLoanAuditLogsAction(loanId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { success: false, error: 'Unauthorized', logs: [] }
+    }
+
+    // Role verification: strictly MD and Admin only
+    const { data: userProfile } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+    if (!userProfile || (userProfile.role !== 'MD' && userProfile.role !== 'ADMIN')) {
+        return { success: false, error: 'Access restricted to Managing Director', logs: [] }
+    }
+
     const adminSupabase = createAdminClient()
 
     try {
