@@ -10,8 +10,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Search, X } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Search, X, Loader2 } from 'lucide-react'
+import { useState, useEffect, useTransition } from 'react'
 import type { AppUser } from '@/types'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 
@@ -22,6 +22,7 @@ interface LoansFiltersProps {
 export function LoansFilters({ agents }: LoansFiltersProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const [isPending, startTransition] = useTransition()
 
     const [status, setStatus] = useState(searchParams.get('status') || 'all')
     const [agent, setAgent] = useState(searchParams.get('agent') || 'all')
@@ -40,7 +41,9 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
 
         const queryString = params.toString()
         const targetUrl = queryString ? `/dashboard/loans?${queryString}` : '/dashboard/loans'
-        router.replace(targetUrl, { scroll: false })
+        startTransition(() => {
+            router.replace(targetUrl, { scroll: false })
+        })
     }
 
     // Debounced URL sync for search input (never overwrites local typing state)
@@ -149,13 +152,22 @@ export function LoansFilters({ agents }: LoansFiltersProps) {
             {/* Search */}
             <div className="flex gap-3">
                 <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    {isPending ? (
+                        <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary animate-spin" />
+                    ) : (
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    )}
                     <Input
                         placeholder="Search by client name, mobile, reference no, or ID..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="pl-10"
+                        className={`pl-10 ${isPending ? 'pr-32' : ''}`}
                     />
+                    {isPending && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-primary animate-pulse flex items-center gap-1.5 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
+                            <Loader2 className="h-3 w-3 animate-spin" /> Fetching...
+                        </span>
+                    )}
                 </div>
                 {hasActiveFilters && (
                     <Button variant="outline" onClick={clearFilters} className="gap-2 shrink-0">

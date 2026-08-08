@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import {
     ChevronLeft, ChevronRight, Eye, Search, X, MapPin, Building2, User,
-    TrendingUp, IndianRupee, Filter, RefreshCw
+    TrendingUp, IndianRupee, Filter, RefreshCw, Loader2
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { LOGINS_STAGES, STAGE_COLORS, REGIONS, type LoginWithRelations, type LoginsStats } from '@/lib/services/loginsConstants'
@@ -262,13 +262,22 @@ export function LoginsClient({
                 </div>
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                    {isPending ? (
+                        <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary animate-spin" />
+                    ) : (
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                    )}
                     <Input
                         placeholder="Search by client name, reference no, or product..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 h-9 text-sm"
+                        className={`pl-9 h-9 text-sm ${isPending ? 'pr-28' : ''}`}
                     />
+                    {isPending && (
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-primary animate-pulse flex items-center gap-1 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">
+                            <Loader2 className="h-3 w-3 animate-spin" /> Fetching...
+                        </span>
+                    )}
                 </div>
             </div>
 
