@@ -190,3 +190,97 @@ export async function getLoanAuditLogsAction(loanId: string) {
         return { success: false, logs: [] }
     }
 }
+
+interface CreateLoanParams {
+    clientId: string
+    amount: number
+    interestRate: number
+    tenure: number
+    region?: string
+    disbursementType?: string
+    assignedTlId?: string | null
+    bankPartnerId?: string | null
+    productName?: string | null
+    loginReferenceNumber?: string | null
+    originalRequestDate?: string | null
+    panNumber?: string
+    aadhaarNumber?: string
+}
+
+/**
+ * Server action to create loan applications with instant audit logging and cache invalidation
+ */
+export async function createLoanAction(params: CreateLoanParams) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Unauthorized')
+
+    const adminSupabase = createAdminClient()
+
+    // 1. Update client identity if provided
+    if (params.panNumber || params.aadhaarNumber) {
+        await adminSupabase
+            .from('clients')
+            .update({
+                pan_number: params.panNumber?.toUpperCase().trim() || null,
+                aadhaar_number: params.aadhaarNumber?.replace(/\D/g, '').trim() || null,
+            })
+            .eq('client_id', params.clientId)
+    }
+
+    // 2. Insert loan application
+    const payload: any = {
+        client_id: params.clientId,
+        amount: params.amount,
+        interest_rate: params.interestRate,
+        tenure: params.tenure,
+        process_stage: 'Application Submitted',
+        region: params.region || 'Madurai',
+        disbursement_type: params.disbursementType || 'New',
+        assigned_tl_id: params.assignedTlId || null,
+        bank_partner_id: params.bankPartnerId || null,
+        product_name: params.productName || null,
+        login_reference_number: params.loginReferenceNumber || null,
+        original_request_date: params.originalRequestDate || null,
+    }
+
+    const { data: loan, error } = await adminSupabase
+        .from('loan_applications')
+        .insert(payload)
+        .select()
+        .single()
+
+    if (error || !loan) {
+        return { success: false, error: error?.message || 'Failed to create loan' }
+    }
+
+    // 3. Create initial audit log
+    try {
+        await createAuditLog({
+            userId: user.id,
+            action: 'LOAN_CREATED',
+            entityType: 'LOAN',
+            entityId: loan.loan_id,
+            newValue: {
+                amount: params.amount,
+                interest_rate: params.interestRate,
+                tenure: params.tenure,
+                process_stage: 'Application Submitted',
+                region: params.region || 'Madurai',
+                disbursement_type: params.disbursementType || 'New',
+                reference_number: params.loginReferenceNumber || null,
+            }
+        })
+    } catch (auditErr) {
+        console.error('Failed to create initial loan audit log:', auditErr)
+    }
+
+    // 4. Invalidate caches
+    revalidatePath('/dashboard/loans')
+    revalidatePath('/dashboard/logins')
+    revalidatePath('/dashboard/reports')
+    revalidatePath('/staff/loans')
+    revalidatePath('/staff/leads')
+
+    return { success: true, loanId: loan.loan_id }
+}

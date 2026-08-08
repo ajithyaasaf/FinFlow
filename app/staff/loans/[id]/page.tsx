@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { Skeleton } from '@/components/ui/skeleton'
 import { createClient } from '@/lib/supabase/client'
 import { LoanStatusUpdate } from '@/components/dashboard/loan-status-update'
+import { ActivityTimeline } from '@/components/dashboard/activity-timeline'
 import type { EMISchedule } from '@/types'
 
 // EMI Status Badge Component
@@ -69,6 +70,7 @@ export default function AgentLoanDetailsPage() {
     const [loan, setLoan] = useState<any>(null)
     const [client, setClient] = useState<any>(null)
     const [emiSchedule, setEmiSchedule] = useState<EMISchedule[]>([])
+    const [auditLogs, setAuditLogs] = useState<any[]>([])
 
     useEffect(() => {
         if (!id) return
@@ -85,23 +87,43 @@ export default function AgentLoanDetailsPage() {
                     return
                 }
 
-                // Fetch loan with client and documents in one join
-                const { data: loanData, error: loanError } = await supabase
-                    .from('loan_applications')
-                    .select(`
-                        *,
-                        client:clients (
-                            client_id,
-                            full_name,
-                            mobile_number,
-                            pan_number,
-                            aadhaar_number,
-                            onboarding_agent_id
-                        ),
-                        documents:loan_documents(*)
-                    `)
-                    .eq('loan_id', id)
-                    .single()
+                // Fetch loan details and audit logs in parallel
+                const [loanRes, logsRes] = await Promise.all([
+                    supabase
+                        .from('loan_applications')
+                        .select(`
+                            *,
+                            client:clients (
+                                client_id,
+                                full_name,
+                                email,
+                                mobile_number,
+                                address,
+                                pan_number,
+                                aadhaar_number,
+                                kyc_document_url,
+                                onboarding_agent_id
+                            ),
+                            documents:loan_documents(*)
+                        `)
+                        .eq('loan_id', id)
+                        .single(),
+                    supabase
+                        .from('system_logs')
+                        .select(`
+                            *,
+                            user:app_users (
+                                full_name,
+                                email
+                            )
+                        `)
+                        .eq('entity_type', 'LOAN')
+                        .eq('entity_id', id)
+                        .order('created_at', { ascending: false })
+                ])
+
+                const loanData = loanRes.data
+                const loanError = loanRes.error
 
                 if (loanError || !loanData) {
                     setLoan(null)
@@ -122,6 +144,7 @@ export default function AgentLoanDetailsPage() {
                 setLoan(loanData)
                 setClient(loanData.client || { client_id: loanData.client_id, full_name: 'Client' })
                 setEmiSchedule(emiData)
+                setAuditLogs(logsRes.data || [])
             } catch (err) {
                 console.error('Failed to load agent loan details:', err)
             } finally {
@@ -301,6 +324,9 @@ export default function AgentLoanDetailsPage() {
                         <DocumentReupload documents={loan.documents || []} loanId={loan.loan_id} />
                     </CardContent>
                 </Card>
+
+                {/* Activity & Audit Timeline */}
+                <ActivityTimeline logs={auditLogs} />
             </main>
         </div>
     )

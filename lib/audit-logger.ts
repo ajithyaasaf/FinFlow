@@ -1,4 +1,4 @@
-import { createClient } from './supabase/server'
+import { createAdminClient } from './supabase/admin'
 
 export type AuditAction =
     | 'LOGIN'
@@ -31,7 +31,7 @@ interface AuditLogParams {
 
 /**
  * Create an audit log entry
- * This function uses the server-side Supabase client with elevated permissions
+ * Uses admin client to ensure system logs are always persisted regardless of user RLS
  */
 export async function createAuditLog({
     userId,
@@ -44,9 +44,9 @@ export async function createAuditLog({
     userAgent,
 }: AuditLogParams): Promise<void> {
     try {
-        const supabase = await createClient()
+        const adminSupabase = createAdminClient()
 
-        const { error } = await supabase
+        const { error } = await adminSupabase
             .from('system_logs')
             .insert({
                 user_id: userId,
@@ -60,7 +60,6 @@ export async function createAuditLog({
             })
 
         if (error) {
-            // Log error but don't throw - audit logging should not break main flow
             console.error('Audit log error:', error)
         }
     } catch (error) {
@@ -69,18 +68,23 @@ export async function createAuditLog({
 }
 
 /**
- * Get audit logs for a specific entity
+ * Get audit logs for a specific entity with full user relation
  */
 export async function getAuditLogs(entityType: EntityType, entityId: string) {
     try {
-        const supabase = await createClient()
+        const adminSupabase = createAdminClient()
 
-        const { data, error } = await supabase
+        const { data, error } = await adminSupabase
             .from('system_logs')
             .select(`
-        *,
-        user:app_users(full_name, email)
-      `)
+                *,
+                user:app_users (
+                    full_name,
+                    email,
+                    role,
+                    is_tl
+                )
+            `)
             .eq('entity_type', entityType)
             .eq('entity_id', entityId)
             .order('created_at', { ascending: false })

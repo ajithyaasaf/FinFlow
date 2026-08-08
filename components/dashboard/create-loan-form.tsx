@@ -16,6 +16,7 @@ import { calculateEMI, formatCurrency } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { REGIONS } from '@/lib/services/loginsConstants'
+import { createLoanAction } from '@/app/actions/loans'
 
 interface TopupContext {
     clientId: string
@@ -130,57 +131,35 @@ export function CreateLoanForm({ clients, partners, allStaff, topupContext }: Cr
         setLoading(true)
 
         try {
-            // Create loan application payload
-            const payload: any = {
-                client_id: formData.client_id,
+            const res = await createLoanAction({
+                clientId: formData.client_id,
                 amount: amount,
-                interest_rate: rate,
+                interestRate: rate,
                 tenure: tenure,
-                process_stage: 'Application Submitted',
-                disbursement_type: formData.disbursement_type,
+                region: formData.region || 'Madurai',
+                disbursementType: isTopUp ? 'Repeat' : formData.disbursement_type,
+                assignedTlId: (formData.assigned_tl_id && formData.assigned_tl_id !== 'none') ? formData.assigned_tl_id : null,
+                bankPartnerId: lenderModel === 'BROKERAGE' ? (formData.bank_partner_id || null) : null,
+                productName: lenderModel === 'BROKERAGE' ? (formData.product_name || null) : null,
+                loginReferenceNumber: lenderModel === 'BROKERAGE' ? (formData.login_reference_number || null) : null,
+                originalRequestDate: lenderModel === 'BROKERAGE' ? (formData.original_request_date || null) : null,
+                panNumber: formData.pan_number,
+                aadhaarNumber: formData.aadhaar_number,
+            })
+
+            if (!res.success) {
+                throw new Error(res.error || 'Failed to create loan application')
             }
-
-            if (lenderModel === 'BROKERAGE') {
-                payload.bank_partner_id = formData.bank_partner_id || null
-                payload.product_name = formData.product_name || null
-                payload.login_reference_number = formData.login_reference_number || null
-                payload.original_request_date = formData.original_request_date || null
-            }
-
-            // Always save region and TL
-            payload.region = formData.region || 'Madurai'
-            payload.assigned_tl_id = (formData.assigned_tl_id && formData.assigned_tl_id !== 'none') 
-                ? formData.assigned_tl_id 
-                : null
-
-            // Update client identity fields if they were entered
-            if (formData.pan_number || formData.aadhaar_number) {
-                await supabase
-                    .from('clients')
-                    .update({
-                        pan_number: formData.pan_number.toUpperCase().trim() || null,
-                        aadhaar_number: formData.aadhaar_number.replace(/\D/g, '').trim() || null,
-                    })
-                    .eq('client_id', formData.client_id)
-            }
-
-            const { data: loan, error } = await supabase
-                .from('loan_applications')
-                .insert(payload)
-                .select()
-                .single()
-
-            if (error) throw error
 
             toast.success('Loan application created successfully!')
             const nextUrl = isStaff
-                ? `/staff/loans/${loan.loan_id}`
-                : `/dashboard/loans/${loan.loan_id}`
+                ? `/staff/loans/${res.loanId}`
+                : `/dashboard/loans/${res.loanId}`
             router.refresh()
             router.push(nextUrl)
-        } catch (error) {
+        } catch (error: any) {
             console.error('Create loan error:', error)
-            toast.error('Failed to create loan application')
+            toast.error(error.message || 'Failed to create loan application')
         } finally {
             setLoading(false)
         }
