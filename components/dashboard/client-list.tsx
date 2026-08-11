@@ -18,9 +18,10 @@ import Link from 'next/link'
 
 interface ClientListProps {
     initialClients: any[]
+    basePath?: string
 }
 
-export function ClientList({ initialClients }: ClientListProps) {
+export function ClientList({ initialClients, basePath = '/dashboard/clients' }: ClientListProps) {
     const [search, setSearch] = useState('')
     const [clients, setClients] = useState(initialClients)
 
@@ -63,7 +64,7 @@ export function ClientList({ initialClients }: ClientListProps) {
                             <TableRow key={client.client_id} className="group">
                                 <TableCell className="font-medium">
                                     <Link
-                                        href={`/dashboard/clients/${client.client_id}`}
+                                        href={`${basePath}/${client.client_id}`}
                                         className="flex items-center gap-2 hover:text-primary transition-colors"
                                     >
                                         <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
@@ -92,7 +93,7 @@ export function ClientList({ initialClients }: ClientListProps) {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <Link href={`/dashboard/clients/${client.client_id}`}>
+                                        <Link href={`${basePath}/${client.client_id}`}>
                                             <Button variant="ghost" size="sm">
                                                 <Eye className="h-4 w-4" />
                                             </Button>

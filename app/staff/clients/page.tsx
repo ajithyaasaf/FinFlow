@@ -2,33 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { PageHeader } from '@/components/agent/page-header'
-import { ClientListSkeleton } from '@/components/agent/client-list-skeleton'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Plus, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { ChevronRight, User, Search, Plus, FileText, Phone, Eye } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
-
-interface Client {
-    client_id: string
-    full_name: string
-    mobile_number: string
-    pan_number: string
-    created_at: string
-    loans: {
-        loan_id: string
-        amount: number
-        status: string
-        created_at: string
-    }[]
-}
+import { ClientList } from '@/components/dashboard/client-list'
 
 export default function AgentClientsPage() {
-    const [clients, setClients] = useState<Client[]>([])
-    const [search, setSearch] = useState('')
+    const [clients, setClients] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const supabase = createClient()
 
@@ -37,179 +17,60 @@ export default function AgentClientsPage() {
     }, [])
 
     const fetchClients = async () => {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
+        setLoading(true)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
 
-        const { data } = await supabase
-            .from('clients')
-            .select(`
-                *,
-                loans:loan_applications(
-                    loan_id,
-                    amount,
-                    status:process_stage,
-                    created_at
-                )
-            `)
-            .eq('onboarding_agent_id', user.id)
-            .order('created_at', { ascending: false })
+            const { data: profile } = await supabase
+                .from('app_users')
+                .select('role, is_tl')
+                .eq('id', user.id)
+                .single()
 
-        setClients(data || [])
-        setLoading(false)
+            let query = supabase
+                .from('clients')
+                .select(`
+                    *,
+                    onboarding_agent:app_users!clients_onboarding_agent_id_fkey(full_name)
+                `)
+                .order('created_at', { ascending: false })
+
+            if (profile?.role !== 'ADMIN' && profile?.role !== 'MD') {
+                query = query.eq('onboarding_agent_id', user.id)
+            }
+
+            const { data } = await query
+            setClients(data || [])
+        } catch (err) {
+            console.error('Error fetching staff clients:', err)
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const filteredClients = clients.filter(client =>
-        client.full_name.toLowerCase().includes(search.toLowerCase()) ||
-        client.mobile_number.includes(search) ||
-        client.pan_number?.toLowerCase().includes(search.toLowerCase())
-    )
-
     return (
-        <div className="min-h-screen bg-gray-50">
-            <PageHeader
-                title="My Clients"
-                subtitle={`${clients.length} client${clients.length !== 1 ? 's' : ''}`}
-                backHref="/staff"
-                actions={
-                    <Button asChild size="sm" className="h-9">
-                        <Link href="/staff/clients/new">
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add
-                        </Link>
-                    </Button>
-                }
-            />
-
-            {/* Search Bar */}
-            <div className="bg-white border-b border-gray-200 px-4 py-3">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                        placeholder="Search by name, mobile, or PAN..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-9 h-11"
-                    />
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Clients</h1>
+                    <p className="text-xs md:text-sm text-gray-500">Manage client profiles and information</p>
                 </div>
+                <Link href="/staff/clients/new">
+                    <Button className="gap-2 text-sm w-full sm:w-auto">
+                        <Plus className="h-4 w-4" />
+                        Add Client
+                    </Button>
+                </Link>
             </div>
 
-            <main className="p-4 pb-24">
-                {loading ? (
-                    <ClientListSkeleton />
-                ) : filteredClients.length === 0 ? (
-                    <div className="text-center py-12">
-                        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                            <User className="h-10 w-10 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {search ? 'No clients found' : 'No clients yet'}
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-6 max-w-sm mx-auto">
-                            {search
-                                ? 'Try adjusting your search terms'
-                                : 'Click "Add" button above to create your first client'
-                            }
-                        </p>
-                        {!search && (
-                            <Button asChild size="lg">
-                                <Link href="/staff/clients/new">
-                                    <Plus className="h-5 w-5 mr-2" />
-                                    Add Client
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {filteredClients.map((client) => {
-                            const activeLoan = client.loans?.[0]
-                            const loanCount = client.loans?.length || 0
-
-                            return (
-                                <Card key={client.client_id} className="overflow-hidden border border-gray-200 bg-white hover:shadow-md transition-shadow duration-200">
-                                    <CardContent className="p-4">
-                                        <div className="flex justify-between items-start gap-3">
-                                            <div className="flex gap-3 flex-1 min-w-0">
-                                                <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
-                                                    {client.full_name.trim().charAt(0).toUpperCase() || 'U'}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-semibold text-gray-900 truncate">{client.full_name}</h3>
-                                                    <p className="text-sm text-gray-600 flex items-center gap-1 truncate">
-                                                        <Phone className="h-3 w-3 flex-shrink-0" />
-                                                        {client.mobile_number}
-                                                    </p>
-                                                    {client.pan_number && (
-                                                        <p className="text-xs text-gray-500 truncate mt-1">PAN: {client.pan_number}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="text-right flex-shrink-0">
-                                                {activeLoan && (
-                                                    <Badge
-                                                        variant={activeLoan.status === 'Disbursed' ? 'default' : 'secondary'}
-                                                        className="mb-1"
-                                                    >
-                                                        {activeLoan.status}
-                                                    </Badge>
-                                                )}
-                                                <p className="text-xs text-gray-500">
-                                                    {loanCount} {loanCount === 1 ? 'loan' : 'loans'}
-                                                </p>
-                                            </div>
-                                        </div>
- 
-                                        {activeLoan && (
-                                            <div className="mt-3 pt-3 border-t border-gray-100">
-                                                <div className="flex justify-between items-center">
-                                                    <p className="text-xs text-gray-600">Latest Loan</p>
-                                                    <p className="text-base font-bold text-gray-900">{formatCurrency(activeLoan.amount)}</p>
-                                                </div>
-                                            </div>
-                                        )}
- 
-                                        {/* Action Buttons */}
-                                        <div className="mt-4 flex gap-2">
-                                            {activeLoan ? (
-                                                <Button asChild variant="default" size="sm" className="flex-1 h-10">
-                                                    <Link href={`/staff/loans/${activeLoan.loan_id}`}>
-                                                        <FileText className="h-4 w-4 mr-2" />
-                                                        View Loan
-                                                    </Link>
-                                                </Button>
-                                            ) : (
-                                                <Button asChild variant="default" size="sm" className="flex-1 h-10">
-                                                    <Link href={`/staff/clients/${client.client_id}`}>
-                                                        <User className="h-4 w-4 mr-2" />
-                                                        View Client
-                                                    </Link>
-                                                </Button>
-                                            )}
-                                            <Button asChild
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-10 w-10 p-0 border-gray-300 hover:bg-red-50 hover:border-primary"
-                                            >
-                                                <Link href={`/staff/clients/${client.client_id}`}>
-                                                    <Eye className="h-4 w-4 text-primary" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="h-10 w-10 p-0 border-gray-300 hover:bg-red-50 hover:border-primary"
-                                                onClick={() => window.location.href = `tel:${client.mobile_number}`}
-                                            >
-                                                <Phone className="h-4 w-4 text-primary" />
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )
-                        })}
-                    </div>
-                )}
-            </main>
+            {loading ? (
+                <div className="flex items-center justify-center py-20 bg-white border border-gray-200 rounded-xl">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                </div>
+            ) : (
+                <ClientList initialClients={clients} basePath="/staff/clients" />
+            )}
         </div>
     )
 }
