@@ -15,10 +15,10 @@ export default async function StaffCalendarPage() {
         redirect('/login')
     }
 
-    // Fetch user profile to verify role
+    // Fetch user profile to verify role & TL status
     const { data: profile } = await supabase
         .from('app_users')
-        .select('id, full_name, email, role')
+        .select('id, full_name, email, role, is_tl')
         .eq('id', user.id)
         .single()
 
@@ -52,6 +52,7 @@ export default async function StaffCalendarPage() {
                         email: profile.email,
                     }}
                     userRole={profile.role}
+                    isTl={profile.is_tl || false}
                     staffMembers={staffMembers || []}
                 />
             </main>

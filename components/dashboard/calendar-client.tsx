@@ -53,6 +53,7 @@ interface CalendarClientProps {
     initialActivities: Activity[]
     currentUser: { id: string; full_name: string; email: string }
     userRole: string
+    isTl?: boolean
     staffMembers: { id: string; full_name: string; email: string }[]
 }
 
@@ -60,11 +61,14 @@ export function CalendarClient({
     initialActivities,
     currentUser,
     userRole,
+    isTl = false,
     staffMembers,
 }: CalendarClientProps) {
     const router = useRouter()
     const supabase = createClient()
     const [isPending, startTransition] = useTransition()
+
+    const canCreateTask = userRole === 'ADMIN' || userRole === 'MD' || !!isTl
 
     // Activities state
     const [activities, setActivities] = useState<Activity[]>(initialActivities)
@@ -327,8 +331,8 @@ export function CalendarClient({
                         </CardHeader>
                         <CardContent className="space-y-5">
 
-                            {/* MD Agent Selector */}
-                            {userRole !== 'STAFF' && userRole !== 'AGENT' && (
+                            {/* MD / TL Agent Selector */}
+                            {canCreateTask && (
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-semibold text-gray-500">Filter by Agent</Label>
                                     <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
@@ -633,8 +637,8 @@ export function CalendarClient({
                         </CardContent>
                     </Card>
 
-                    {/* Schedule Activity Form */}
-                    {userRole !== 'STAFF' && userRole !== 'AGENT' && (
+                    {/* Schedule Activity Form: Visible to MD, Admin, and Team Leaders (TL) */}
+                    {canCreateTask && (
                         <Card className="shadow-sm border-gray-100 bg-white">
                             <CardHeader className="pb-3 border-b border-gray-100">
                                 <CardTitle className="text-sm font-bold flex items-center gap-1.5 text-gray-900">
@@ -684,7 +688,7 @@ export function CalendarClient({
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        {userRole !== 'STAFF' && userRole !== 'AGENT' ? (
+                                        {canCreateTask ? (
                                             <div className="space-y-1">
                                                 <Label className="text-xs font-semibold text-gray-700">Assigned Agent</Label>
                                                 <Select value={newAgentId} onValueChange={setNewAgentId}>

@@ -45,13 +45,15 @@ export async function createActivity(activityData: Partial<Activity>) {
 
     const { data: profile } = await supabase
         .from('app_users')
-        .select('role')
+        .select('role, is_tl')
         .eq('id', user.id)
         .single()
 
+    const canAssignOthers = profile?.role === 'ADMIN' || profile?.role === 'MD' || !!profile?.is_tl
+
     const finalActivityData = {
         ...activityData,
-        assigned_agent_id: (profile?.role === 'AGENT' || profile?.role === 'STAFF') ? user.id : (activityData.assigned_agent_id || user.id)
+        assigned_agent_id: canAssignOthers ? (activityData.assigned_agent_id || user.id) : user.id
     }
 
     const { data, error } = await supabase
